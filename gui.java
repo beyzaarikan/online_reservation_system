@@ -1,15 +1,43 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
 
 public class gui {
     public static void main(String[] args) {
-        createUser();
-        loginUser();
+        welcome();
+    }
+    public static void welcome(){
+        JFrame frame=new JFrame("Welcome!");
+        frame.setSize(400, 300); //pencere boyutu
+
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        JPanel centerPanel = new JPanel();
+        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
+
+        centerPanel.add(Box.createVerticalStrut(50));
+        centerPanel.add(centered(new JLabel("Did you have an account? ")));
+        JButton createButton = new JButton("Sign In");
+        JButton logInButton = new JButton("Log In");
+        centerPanel.add(centered(createButton));
+        centerPanel.add(centered(logInButton));
+
+        mainPanel.add(centerPanel, BorderLayout.CENTER);
+        frame.add(mainPanel);
+        frame.setVisible(true);
+        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
+
+        createButton.addActionListener(e -> {
+            frame.dispose(); // Eski pencereyi kapat
+            createUser(); // Yeni kullanıcı oluşturma penceresini aç
+        });
+        logInButton.addActionListener(e -> {
+            frame.dispose(); // Eski pencereyi kapat
+            loginUser(); // Giriş yapma penceresini aç
+        });
     }
     
     public static void createUser(){
         JFrame frame=new JFrame("Sign In User");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(400, 300); //pencere boyutu
 
         JPanel mainPanel = new JPanel(new BorderLayout());
@@ -34,7 +62,10 @@ public class gui {
         centerPanel.add(centered(createButton));
         mainPanel.add(centerPanel, BorderLayout.CENTER);
         frame.add(mainPanel);
+
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
+
     }
 
 
@@ -46,7 +77,6 @@ public class gui {
         JPanel mainPanel = new JPanel(new BorderLayout());
 
         JPanel centerPanel = new JPanel();
-        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
 
         JTextField userText = new JTextField(15); // max 15 karakter
         JPasswordField passwordText = new JPasswordField(15);
@@ -63,6 +93,8 @@ public class gui {
         mainPanel.add(centerPanel, BorderLayout.CENTER);
         frame.add(mainPanel);
         frame.setVisible(true);
+        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
+
     }
 
     private static JPanel centered(JComponent comp) { //yatay hizalamak icin kullanilan yardimci method
