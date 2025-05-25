@@ -1,5 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class gui {
@@ -62,6 +63,15 @@ public class gui {
         centerPanel.add(centered(createButton));
         mainPanel.add(centerPanel, BorderLayout.CENTER);
         frame.add(mainPanel);
+
+        createButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane panel= new JOptionPane();
+                panel.showMessageDialog(null,"User Created Successfully!");
+                frame.dispose(); 
+                loginUser();
+            }
+        });
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
