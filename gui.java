@@ -1,4 +1,3 @@
-
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -32,7 +31,7 @@ public class gui {
     public static void welcome(){
         JFrame frame = new JFrame("Welcome to Our Platform");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(500, 400);
+        frame.setSize(500, 500);
         frame.setLocationRelativeTo(null); // Center the window
         frame.getContentPane().setBackground(BACKGROUND_COLOR);
 
@@ -57,12 +56,12 @@ public class gui {
             new EmptyBorder(40, 30, 40, 30)
         ));
 
-        JLabel questionLabel = new JLabel("Ready to get started?");
+        JLabel questionLabel = new JLabel("Dou you have an account?");
         questionLabel.setFont(new Font("Segoe UI", Font.PLAIN, 18));
         questionLabel.setForeground(TEXT_COLOR);
         questionLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JLabel subLabel = new JLabel("Choose an option below to continue");
+        JLabel subLabel = new JLabel("Choose an option ");
         subLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         subLabel.setForeground(new Color(189, 147, 249));
         subLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -73,7 +72,7 @@ public class gui {
         centerPanel.add(questionLabel);
         centerPanel.add(Box.createVerticalStrut(10));
         centerPanel.add(subLabel);
-        centerPanel.add(Box.createVerticalStrut(30));
+        centerPanel.add(Box.createVerticalStrut(50));
         centerPanel.add(signInButton);
         centerPanel.add(Box.createVerticalStrut(15));
         centerPanel.add(logInButton);
@@ -97,7 +96,7 @@ public class gui {
     public static void createUser(){
         JFrame frame = new JFrame("Create Your Account");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(500, 450);
+        frame.setSize(500, 500);
         frame.setLocationRelativeTo(null);
         frame.getContentPane().setBackground(BACKGROUND_COLOR);
 
@@ -149,9 +148,9 @@ public class gui {
     }
 
     public static void loginUser() {
-        JFrame frame = new JFrame("Welcome Back");
+        JFrame frame = new JFrame("LogIn");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(500, 400);
+        frame.setSize(500, 500);
         frame.setLocationRelativeTo(null);
         frame.getContentPane().setBackground(BACKGROUND_COLOR);
 
@@ -173,7 +172,7 @@ public class gui {
         formPanel.setBackground(CARD_COLOR);
         formPanel.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(new Color(98, 114, 164), 2, true),
-            new EmptyBorder(30, 30, 30, 30)
+            new EmptyBorder(40, 40, 30, 40)
         ));
 
         JTextField userText = createStyledTextField("Enter your username");
@@ -181,9 +180,9 @@ public class gui {
         JButton loginButton = createStyledButton("Sign In", PRIMARY_COLOR, true);
 
         formPanel.add(createFormField("Username", userText));
-        formPanel.add(Box.createVerticalStrut(20));
+        formPanel.add(Box.createVerticalStrut(60));
         formPanel.add(createFormField("Password", passwordText));
-        formPanel.add(Box.createVerticalStrut(25));
+        formPanel.add(Box.createVerticalStrut(45));
         formPanel.add(loginButton);
 
         mainPanel.add(titlePanel, BorderLayout.NORTH);
@@ -229,15 +228,16 @@ public class gui {
     }
 
     private static JTextField createStyledTextField(String placeholder) {
-        JTextField field = new JTextField(20);
+        JTextField field = new JTextField(15); // 20'den 15'e düşürdüm
         field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         field.setForeground(TEXT_COLOR);
         field.setBackground(INPUT_COLOR);
         field.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(new Color(98, 114, 164), 1, true),
-            new EmptyBorder(12, 15, 12, 15)
+            new EmptyBorder(10, 12, 10, 12) // padding'i küçülttüm
         ));
         field.setCaretColor(TEXT_COLOR);
+        field.setMaximumSize(new Dimension(250, 40)); // maksimum boyut ekledim
         
         // Add placeholder effect
         field.setText(placeholder);
@@ -262,15 +262,16 @@ public class gui {
     }
 
     private static JPasswordField createStyledPasswordField(String placeholder) {
-        JPasswordField field = new JPasswordField(20);
+        JPasswordField field = new JPasswordField(15); // 20'den 15'e düşürdüm
         field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         field.setForeground(TEXT_COLOR);
         field.setBackground(INPUT_COLOR);
         field.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(new Color(98, 114, 164), 1, true),
-            new EmptyBorder(12, 15, 12, 15)
+            new EmptyBorder(10, 12, 10, 12) // padding'i küçülttüm
         ));
         field.setCaretColor(TEXT_COLOR);
+        field.setMaximumSize(new Dimension(250, 40)); // maksimum boyut ekledim
         field.setEchoChar((char) 0); // Show placeholder text initially
         field.setText(placeholder);
         field.setForeground(Color.GRAY);
@@ -303,9 +304,9 @@ public class gui {
         JLabel label = new JLabel(labelText);
         label.setFont(new Font("Segoe UI", Font.BOLD, 14));
         label.setForeground(TEXT_COLOR);
-        label.setAlignmentX(Component.LEFT_ALIGNMENT);
+        label.setAlignmentX(Component.CENTER_ALIGNMENT);
         
-        field.setAlignmentX(Component.LEFT_ALIGNMENT);
+        field.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         panel.add(label);
         panel.add(Box.createVerticalStrut(8));
@@ -316,13 +317,13 @@ public class gui {
 
     private static void showStyledMessage(String title, String message, JFrame parent) {
         JDialog dialog = new JDialog(parent, title, true);
-        dialog.setSize(350, 200);
+        dialog.setSize(350, 100);
         dialog.setLocationRelativeTo(parent);
         dialog.getContentPane().setBackground(BACKGROUND_COLOR);
         
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(CARD_COLOR);
-        panel.setBorder(new EmptyBorder(30, 30, 30, 30));
+        panel.setBorder(new EmptyBorder(40, 30, 10, 30));
         
         JLabel messageLabel = new JLabel(message, SwingConstants.CENTER);
         messageLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
