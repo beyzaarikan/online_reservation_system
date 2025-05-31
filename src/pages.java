@@ -1,4 +1,4 @@
-package gui;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -176,11 +176,11 @@ public class pages {
             new EmptyBorder(40, 40, 30, 40)
         ));
 
-        JTextField userText = createStyledTextField("Enter your username");
+        JTextField userText = createStyledTextField("Enter your email");
         JPasswordField passwordText = createStyledPasswordField("Enter your password");
         JButton loginButton = createStyledButton("Sign In", PRIMARY_COLOR, true);
 
-        formPanel.add(createFormField("Username", userText));
+        formPanel.add(createFormField("Email", userText));
         formPanel.add(Box.createVerticalStrut(60));
         formPanel.add(createFormField("Password", passwordText));
         formPanel.add(Box.createVerticalStrut(45));

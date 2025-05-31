@@ -1,5 +1,8 @@
 package models;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Seat {
     private int seatNo;
     private boolean reserved;
@@ -8,14 +11,16 @@ public class Seat {
         this.seatNo = seatNo;
         this.reserved = false;
     }
+    
     public boolean isReserved() {
         return reserved;
     }
+    
     public int getSeatNo() {
         return seatNo;
     }
 
-    public void reserve() { //burasi degisebilir 
+    public void reserve() {
         if (!reserved) {
             reserved = true;
             System.out.println("Seat " + seatNo + " reserved.");
@@ -23,5 +28,25 @@ public class Seat {
             System.out.println("Seat " + seatNo + " already reserved.");
         }
     }
+    
+    public void unreserve() {
+        if (reserved) {
+            reserved = false;
+            System.out.println("Seat " + seatNo + " unreserved.");
+        } else {
+            System.out.println("Seat " + seatNo + " is already available.");
+        }
+    }
+    
+    public boolean isAvailable() {
+        return !reserved;
+    }
 
+    public static List<Seat> createSeats(int totalSeats) {
+        List<Seat> seatList = new ArrayList<>();
+        for (int i = 1; i <= totalSeats; i++) {
+            seatList.add(new Seat(i));
+        }
+        return seatList;
+    }
 }

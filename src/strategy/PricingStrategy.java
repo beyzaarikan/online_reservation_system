@@ -1,5 +1,7 @@
 package strategy;
 
-public class PricingStrategy {
-    
-}
+import models.Trip;
+
+public interface PricingStrategy {
+    double calculatePrice(Trip trip, int seatNumber); 
+} 
