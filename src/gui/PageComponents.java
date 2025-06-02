@@ -1,5 +1,4 @@
 package gui;
-
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -7,7 +6,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 public class PageComponents {
-    // Modern color palette - shared across all UI classes
+    // Modern color palette
     public static final Color BACKGROUND_COLOR = new Color(24, 25, 26);
     public static final Color CARD_COLOR = new Color(40, 42, 54);
     public static final Color PRIMARY_COLOR = new Color(98, 114, 164);
@@ -16,9 +15,7 @@ public class PageComponents {
     public static final Color TEXT_COLOR = new Color(248, 248, 242);
     public static final Color ACCENT_COLOR = new Color(80, 250, 123);
     public static final Color INPUT_COLOR = new Color(68, 71, 90);
-    public static final Color SUCCESS_COLOR = new Color(80, 250, 123);
-    public static final Color ERROR_COLOR = new Color(255, 85, 85);
-    
+
     public static JButton createStyledButton(String text, Color backgroundColor, boolean isPrimary) {
         JButton button = new JButton(text);
         button.setFont(new Font("Segoe UI", Font.BOLD, 16));
@@ -119,19 +116,6 @@ public class PageComponents {
         return field;
     }
 
-    public static JComboBox<String> createStyledComboBox(String[] items) {
-        JComboBox<String> comboBox = new JComboBox<>(items);
-        comboBox.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        comboBox.setForeground(TEXT_COLOR);
-        comboBox.setBackground(INPUT_COLOR);
-        comboBox.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(98, 114, 164), 1, true),
-            new EmptyBorder(5, 10, 5, 10)
-        ));
-        comboBox.setMaximumSize(new Dimension(250, 40));
-        return comboBox;
-    }
-
     public static JPanel createFormField(String labelText, JComponent field) {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
@@ -153,13 +137,13 @@ public class PageComponents {
 
     public static void showStyledMessage(String title, String message, JFrame parent) {
         JDialog dialog = new JDialog(parent, title, true);
-        dialog.setSize(350, 150);
+        dialog.setSize(350, 100);
         dialog.setLocationRelativeTo(parent);
         dialog.getContentPane().setBackground(BACKGROUND_COLOR);
         
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(CARD_COLOR);
-        panel.setBorder(new EmptyBorder(20, 30, 20, 30));
+        panel.setBorder(new EmptyBorder(40, 30, 10, 30));
         
         JLabel messageLabel = new JLabel(message, SwingConstants.CENTER);
         messageLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
@@ -177,24 +161,5 @@ public class PageComponents {
         
         dialog.add(panel);
         dialog.setVisible(true);
-    }
-    
-    public static JFrame createStyledFrame(String title, int width, int height) {
-        JFrame frame = new JFrame(title);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(width, height);
-        frame.setLocationRelativeTo(null);
-        frame.getContentPane().setBackground(BACKGROUND_COLOR);
-        return frame;
-    }
-    
-    public static JPanel createCardPanel() {
-        JPanel panel = new JPanel();
-        panel.setBackground(CARD_COLOR);
-        panel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(PRIMARY_COLOR, 2, true),
-            new EmptyBorder(30, 30, 30, 30)
-        ));
-        return panel;
     }
 }
