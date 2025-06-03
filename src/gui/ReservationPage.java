@@ -1,6 +1,6 @@
 package gui;
-import javax.swing.*;
 import java.awt.*;
+import javax.swing.*;
 
 public class ReservationPage extends BasePanel {
     private JList<String> reservationList;

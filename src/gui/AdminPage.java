@@ -1,8 +1,8 @@
 package gui;
 
+import java.awt.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import java.awt.*;
 
 public class AdminPage extends BasePanel {
     private JTable userTable;

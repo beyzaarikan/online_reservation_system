@@ -1,11 +1,11 @@
 package gui;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import javax.swing.*;
 
 public class ConsolePage extends BasePanel {
     private JTextArea consoleOutput;
