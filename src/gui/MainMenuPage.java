@@ -132,12 +132,12 @@ public class MainMenuPage extends BasePanel {
         // Action listeners for user menu
         busTripsButton.addActionListener(e -> {
             dispose();
-            //new TripSearchPage("bus").display();
+            new SearchBusTripPage().display();
         });
         
         flightTripsButton.addActionListener(e -> {
             dispose();
-            //new TripSearchPage("flight").display();
+            new SearchFlightsPage().display();
         });
         
         reservationButton.addActionListener(e -> {
@@ -146,8 +146,9 @@ public class MainMenuPage extends BasePanel {
         });
         
         profileButton.addActionListener(e -> {
-            // Profile page will be implemented
-            PageComponents.showStyledMessage("Info", "Profile page coming soon!", this);
+            dispose();
+            new MyProfilePage().display();
+            //PageComponents.showStyledMessage("Info", "Profile page coming soon!", this);
         });
     }
     
