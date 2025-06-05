@@ -53,7 +53,7 @@ public class RegisterPage extends BasePanel {
             return;
         }
         
-        if (password.equals("Enter your password") || password.trim().isEmpty()) {
+        if (password.equals("Enter your password") || password.trim().isEmpty() || password.length() <= 6) {
             PageComponents.showStyledMessage("Error", "Please enter a password!", this);
             return;
         }
