@@ -3,6 +3,8 @@ package gui;
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import singleton.*;
+import models.*;
 
 public class MyProfilePage extends BasePanel {
     private JTextField nameField;
@@ -72,6 +74,7 @@ public class MyProfilePage extends BasePanel {
     }
     
     private JPanel createPersonalInfoPanel() {
+        User user = SessionManager.getInstance().getLoggedInUser(); 
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBackground(PageComponents.BACKGROUND_COLOR);
@@ -87,8 +90,8 @@ public class MyProfilePage extends BasePanel {
         JPanel userInfoPanel = new JPanel();
         userInfoPanel.setLayout(new BoxLayout(userInfoPanel, BoxLayout.Y_AXIS));
         userInfoPanel.setBackground(PageComponents.BACKGROUND_COLOR);
-        
-        JLabel welcomeLabel = new JLabel("Welcome back, John Doe!");
+
+        JLabel welcomeLabel = new JLabel("Welcome back, "+ user.getName() + "!");
         welcomeLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
         welcomeLabel.setForeground(PageComponents.TEXT_COLOR);
         
@@ -124,7 +127,7 @@ public class MyProfilePage extends BasePanel {
         gbc.gridx = 0; gbc.gridy = 0;
         formPanel.add(createFieldLabel("Full Name:"), gbc);
         gbc.gridx = 1;
-        nameField = PageComponents.createStyledTextField("John Doe");
+        nameField = PageComponents.createStyledTextField(user.getName());
         nameField.setPreferredSize(new Dimension(250, 35));
         formPanel.add(nameField, gbc);
         
@@ -132,17 +135,9 @@ public class MyProfilePage extends BasePanel {
         gbc.gridx = 0; gbc.gridy = 1;
         formPanel.add(createFieldLabel("Email:"), gbc);
         gbc.gridx = 1;
-        emailField = PageComponents.createStyledTextField("john.doe@example.com");
+        emailField = PageComponents.createStyledTextField(user.getEmail());
         emailField.setPreferredSize(new Dimension(250, 35));
         formPanel.add(emailField, gbc);
-        
-        // Phone
-        gbc.gridx = 0; gbc.gridy = 2;
-        formPanel.add(createFieldLabel("Phone:"), gbc);
-        gbc.gridx = 1;
-        phoneField = PageComponents.createStyledTextField("+90 555 123 4567");
-        phoneField.setPreferredSize(new Dimension(250, 35));
-        formPanel.add(phoneField, gbc);
         
         // Gender
         gbc.gridx = 0; gbc.gridy = 3;
@@ -162,28 +157,28 @@ public class MyProfilePage extends BasePanel {
         formPanel.add(birthdateSpinner, gbc);
         
         // Address
-        gbc.gridx = 0; gbc.gridy = 5;
-        formPanel.add(createFieldLabel("Address:"), gbc);
-        gbc.gridx = 1;
-        addressField = PageComponents.createStyledTextField("123 Main Street, Apt 4B");
-        addressField.setPreferredSize(new Dimension(250, 35));
-        formPanel.add(addressField, gbc);
+        // gbc.gridx = 0; gbc.gridy = 5;
+        // formPanel.add(createFieldLabel("Address:"), gbc);
+        // gbc.gridx = 1;
+        // addressField = PageComponents.createStyledTextField("123 Main Street, Apt 4B");
+        // addressField.setPreferredSize(new Dimension(250, 35));
+        // formPanel.add(addressField, gbc);
         
         // City
-        gbc.gridx = 0; gbc.gridy = 6;
-        formPanel.add(createFieldLabel("City:"), gbc);
-        gbc.gridx = 1;
-        cityField = PageComponents.createStyledTextField("Istanbul");
-        cityField.setPreferredSize(new Dimension(250, 35));
-        formPanel.add(cityField, gbc);
+        // gbc.gridx = 0; gbc.gridy = 6;
+        // formPanel.add(createFieldLabel("City:"), gbc);
+        // gbc.gridx = 1;
+        // cityField = PageComponents.createStyledTextField("Istanbul");
+        // cityField.setPreferredSize(new Dimension(250, 35));
+        // formPanel.add(cityField, gbc);
         
-        // Country
-        gbc.gridx = 0; gbc.gridy = 7;
-        formPanel.add(createFieldLabel("Country:"), gbc);
-        gbc.gridx = 1;
-        countryField = PageComponents.createStyledTextField("Turkey");
-        countryField.setPreferredSize(new Dimension(250, 35));
-        formPanel.add(countryField, gbc);
+        // // Country
+        // gbc.gridx = 0; gbc.gridy = 7;
+        // formPanel.add(createFieldLabel("Country:"), gbc);
+        // gbc.gridx = 1;
+        // countryField = PageComponents.createStyledTextField("Turkey");
+        // countryField.setPreferredSize(new Dimension(250, 35));
+        // formPanel.add(countryField, gbc);
         
         // Buttons
         JPanel buttonPanel = new JPanel(new FlowLayout());

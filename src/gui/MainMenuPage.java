@@ -2,10 +2,11 @@ package gui;
 
 import java.awt.*;
 import javax.swing.*;
+import singleton.SessionManager;
+import models.User;
 
 public class MainMenuPage extends BasePanel {
     private boolean isAdmin;
-    private String userName = "User"; // Bu bilgi login'den gelecek
     
     public MainMenuPage() {
         this(false); // Default olarak normal user
@@ -32,7 +33,9 @@ public class MainMenuPage extends BasePanel {
         JLabel userIcon = new JLabel(isAdmin ? "👨‍💼" : "👤");
         userIcon.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 24));
         
-        JLabel welcomeLabel = new JLabel("Welcome, " + (isAdmin ? "Admin" : userName) + "!");
+        User currentUser = SessionManager.getInstance().getLoggedInUser(); 
+        
+        JLabel welcomeLabel = new JLabel("Welcome, " + (isAdmin ? "Admin" : currentUser.getName()) + "!");
         welcomeLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
         welcomeLabel.setForeground(PageComponents.TEXT_COLOR);
         

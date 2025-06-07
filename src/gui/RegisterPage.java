@@ -1,14 +1,19 @@
 package gui;
 import java.awt.*;
 import javax.swing.*;
+import service.UserService;
+import repository.UserRepository; 
 
 public class RegisterPage extends BasePanel {
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JTextField emailField;
+    private UserService userService;
+    
     
     public RegisterPage() {
         super("Create Your Account", 500, 500);
+        this.userService = new UserService(UserRepository.getInstance());
     }
     
     @Override
@@ -63,11 +68,19 @@ public class RegisterPage extends BasePanel {
             return;
         }
         
-        // Simulate account creation
+        try {
+        // Kullanıcıyı kaydetme
+        userService.registerCustomer(username, password, email, username, ""); // fullName ve phoneNumber şimdilik boş bırakıldı, dilerseniz arayüze ekleyebilirsiniz.
         PageComponents.showStyledMessage("Success!", "Account created successfully!", this);
-        
+
         // Navigate to login page
         dispose();
         new LoginPage().display();
+        } catch (IllegalArgumentException e) {
+            PageComponents.showStyledMessage("Registration Error", e.getMessage(), this); // UserService'den gelen hatayı göster
+        } catch (Exception e) {
+            PageComponents.showStyledMessage("Error", "An unexpected error occurred during registration.", this);
+            e.printStackTrace(); // Hata ayıklama için konsola yazdır
+        }
     }
 }
