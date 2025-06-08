@@ -3,6 +3,9 @@ import java.awt.*;
 import java.time.LocalDate;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class SearchBusTripPage extends BasePanel {
     private JTextField fromField;
@@ -117,10 +120,13 @@ public class SearchBusTripPage extends BasePanel {
         JButton searchButton = PageComponents.createStyledButton("🔍 Search Buses", PageComponents.PRIMARY_COLOR, true);
         JButton clearButton = PageComponents.createStyledButton("Clear", PageComponents.SECONDARY_COLOR, false);
         JButton backButton = PageComponents.createStyledButton("← Back to Menu", PageComponents.SECONDARY_COLOR, false);
-        
+        JButton okeyButton = PageComponents.createStyledButton("Select Trip & Proceed", PageComponents.PRIMARY_COLOR, true);
+
         buttonPanel.add(searchButton);
         buttonPanel.add(clearButton);
         buttonPanel.add(Box.createHorizontalStrut(20));
+        buttonPanel.add(okeyButton);
+        buttonPanel.add(Box.createHorizontalStrut(10));
         buttonPanel.add(backButton);
         
         // Add action listeners
@@ -130,6 +136,8 @@ public class SearchBusTripPage extends BasePanel {
             dispose();
             new MainMenuPage().display();
         });
+
+        okeyButton.addActionListener(e -> selectTripAndProceed());
         
         searchCard.add(searchTitle);
         searchCard.add(Box.createVerticalStrut(20));
@@ -154,13 +162,13 @@ public class SearchBusTripPage extends BasePanel {
         // Create table
         String[] columnNames = {
             "Bus Company", "Route", "Departure", "Arrival", "Duration", 
-            "Price", "Seats Available", "Amenities", "Book"
+            "Price", "Seats Available", "Amenities"
         };
         
         tableModel = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 8; // Only Book column is editable
+                return false; // Hiçbir hücre düzenlenemesin
             }
         };
         
@@ -172,17 +180,26 @@ public class SearchBusTripPage extends BasePanel {
         busTable.setSelectionBackground(PageComponents.PRIMARY_COLOR);
         busTable.setSelectionForeground(Color.WHITE);
         busTable.setRowHeight(40);
+        busTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); // Tek satır seçimi
         
         // Set column widths
-        busTable.getColumnModel().getColumn(0).setPreferredWidth(120); // Company
-        busTable.getColumnModel().getColumn(1).setPreferredWidth(150); // Route
-        busTable.getColumnModel().getColumn(2).setPreferredWidth(80);  // Departure
-        busTable.getColumnModel().getColumn(3).setPreferredWidth(80);  // Arrival
-        busTable.getColumnModel().getColumn(4).setPreferredWidth(70);  // Duration
-        busTable.getColumnModel().getColumn(5).setPreferredWidth(70);  // Price
-        busTable.getColumnModel().getColumn(6).setPreferredWidth(100); // Seats
-        busTable.getColumnModel().getColumn(7).setPreferredWidth(150); // Amenities
-        busTable.getColumnModel().getColumn(8).setPreferredWidth(80);  // Book
+        busTable.getColumnModel().getColumn(0).setPreferredWidth(140); // Company
+        busTable.getColumnModel().getColumn(1).setPreferredWidth(180); // Route
+        busTable.getColumnModel().getColumn(2).setPreferredWidth(90);  // Departure
+        busTable.getColumnModel().getColumn(3).setPreferredWidth(90);  // Arrival
+        busTable.getColumnModel().getColumn(4).setPreferredWidth(80);  // Duration
+        busTable.getColumnModel().getColumn(5).setPreferredWidth(80);  // Price
+        busTable.getColumnModel().getColumn(6).setPreferredWidth(120); // Seats
+        busTable.getColumnModel().getColumn(7).setPreferredWidth(180); // Amenities
+        
+        // Center align some columns
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+        busTable.getColumnModel().getColumn(2).setCellRenderer(centerRenderer); // Departure
+        busTable.getColumnModel().getColumn(3).setCellRenderer(centerRenderer); // Arrival
+        busTable.getColumnModel().getColumn(4).setCellRenderer(centerRenderer); // Duration
+        busTable.getColumnModel().getColumn(5).setCellRenderer(centerRenderer); // Price
+        busTable.getColumnModel().getColumn(6).setCellRenderer(centerRenderer); // Seats
         
         JScrollPane scrollPane = new JScrollPane(busTable);
         scrollPane.setPreferredSize(new Dimension(1000, 250));
@@ -251,26 +268,26 @@ public class SearchBusTripPage extends BasePanel {
     }
     
     private void populateSampleBusData(String from, String to) {
-        // Sample bus data
+        // Sample bus data - Book kolonu kaldırıldı
         tableModel.addRow(new Object[]{
             "Metro Turizm", from + " → " + to, "08:00", "14:30", "6h 30m", 
-            "$45.00", "12 seats", "WiFi, AC, TV", "Book Now"
+            "$45.00", "12 seats", "WiFi, AC, TV"
         });
         tableModel.addRow(new Object[]{
             "Varan Turizm", from + " → " + to, "10:15", "16:45", "6h 30m", 
-            "$52.00", "8 seats", "WiFi, AC, Refreshment", "Book Now"
+            "$52.00", "8 seats", "WiFi, AC, Refreshment"
         });
         tableModel.addRow(new Object[]{
             "Kamil Koç", from + " → " + to, "14:00", "20:30", "6h 30m", 
-            "$48.00", "15 seats", "WiFi, AC", "Book Now"
+            "$48.00", "15 seats", "WiFi, AC"
         });
         tableModel.addRow(new Object[]{
             "Pamukkale Turizm", from + " → " + to, "18:30", "01:00", "6h 30m", 
-            "$50.00", "6 seats", "WiFi, AC, TV, Meal", "Book Now"
+            "$50.00", "6 seats", "WiFi, AC, TV, Meal"
         });
         tableModel.addRow(new Object[]{
             "Ulusoy", from + " → " + to, "22:00", "04:30", "6h 30m", 
-            "$42.00", "20 seats", "WiFi, AC", "Book Now"
+            "$42.00", "20 seats", "WiFi, AC"
         });
     }
     
@@ -283,5 +300,108 @@ public class SearchBusTripPage extends BasePanel {
         roundTripCheckbox.setSelected(false);
         toggleReturnDate();
         tableModel.setRowCount(0);
+        busTable.clearSelection(); // Seçimi temizle
+    }
+    
+    private void selectTripAndProceed() {
+        int selectedRow = busTable.getSelectedRow();
+        
+        if (selectedRow == -1) {
+            PageComponents.showStyledMessage("Warning", "Please select a bus trip first!", this);
+            return;
+        }
+        
+        // Seçilen satırdan tüm bilgileri al
+        String busCompany = (String) tableModel.getValueAt(selectedRow, 0);
+        String route = (String) tableModel.getValueAt(selectedRow, 1);
+        String departure = (String) tableModel.getValueAt(selectedRow, 2);
+        String arrival = (String) tableModel.getValueAt(selectedRow, 3);
+        String duration = (String) tableModel.getValueAt(selectedRow, 4);
+        String price = (String) tableModel.getValueAt(selectedRow, 5);
+        String seatsAvailable = (String) tableModel.getValueAt(selectedRow, 6);
+        String amenities = (String) tableModel.getValueAt(selectedRow, 7);
+        
+        // Form bilgilerini al
+        String fromCity = fromField.getText();
+        String toCity = toField.getText();
+        
+        // Tarih bilgisini al
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        String departureDate = dateFormat.format((Date) dateSpinner.getValue());
+        
+        String returnDate = null;
+        if (roundTripCheckbox.isSelected()) {
+            returnDate = dateFormat.format((Date) returnDateSpinner.getValue());
+        }
+        
+        String passengerCountStr = (String) passengerCount.getSelectedItem();
+        
+        // Onay mesajı göster
+        String confirmMessage = String.format(
+            "Selected Trip Details:\n\n" +
+            "🚌 Company: %s\n" +
+            "📍 Route: %s\n" +
+            "🕐 Departure: %s on %s\n" +
+            "🕓 Arrival: %s\n" +
+            "⏱️ Duration: %s\n" +
+            "💰 Price: %s\n" +
+            "👥 Passengers: %s\n" +
+            "🎯 Amenities: %s\n" +
+            "%s\n\n" +
+            "Proceed to seat selection?",
+            busCompany, route, departure, departureDate, arrival, duration, price, 
+            passengerCountStr, amenities,
+            roundTripCheckbox.isSelected() ? "🔄 Return: " + returnDate : "➡️ One Way Trip"
+        );
+        
+        int choice = JOptionPane.showConfirmDialog(
+            this,
+            confirmMessage,
+            "Confirm Trip Selection",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.QUESTION_MESSAGE
+        );
+        
+        if (choice == JOptionPane.YES_OPTION) {
+
+            dispose();
+            new BusSeatSelectionPage(busCompany, fromCity, toCity, returnDate, departureDate, arrival, price, choice, amenities).dispose();
+            try {
+                // SeatSelectionPage constructor'ına tüm gerekli parametreleri gönder
+                // Parametreler: busCompany, route, departureDate, departureTime, arrivalTime, 
+                //              price, passengerCount, isRoundTrip, returnDate, amenities
+                
+                // Eğer SeatSelectionPage constructor'ı farklıysa, aşağıdaki parametreleri uygun şekilde düzenleyin
+                /*
+                new SeatSelectionPage(
+                    busCompany,          // Otobüs şirketi
+                    fromCity,            // Kalkış şehri  
+                    toCity,              // Varış şehri
+                    departureDate,       // Tarih
+                    departure,           // Kalkış saati
+                    arrival,             // Varış saati
+                    price,               // Fiyat
+                    Integer.parseInt(passengerCountStr.replace("+", "")), // Yolcu sayısı
+                    roundTripCheckbox.isSelected(), // Gidiş-dönüş mü?
+                    returnDate,          // Dönüş tarihi (varsa)
+                    amenities            // Özellikler
+                ).display();
+                */
+                
+                // Şimdilik test için basit bir mesaj gösterelim
+                PageComponents.showStyledMessage("Success", 
+                    "🎫 Redirecting to seat selection...\n\n" +
+                    "Trip: " + busCompany + "\n" +
+                    "Route: " + route + "\n" +
+                    "Date: " + departureDate + "\n" +
+                    "Passengers: " + passengerCountStr, this);
+                
+                // Gerçek implementasyon için yukarıdaki comment'i açın ve SeatSelectionPage constructor'ını uygun şekilde çağırın
+                
+            } catch (Exception ex) {
+                PageComponents.showStyledMessage("Error", 
+                    "Failed to proceed to seat selection: " + ex.getMessage(), this);
+            }
+        }
     }
 }

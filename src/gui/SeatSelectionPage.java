@@ -24,7 +24,7 @@ public class SeatSelectionPage extends BasePanel {
     
     private List<SeatButton> selectedSeats;
     private double basePrice;
-    
+     
     public SeatSelectionPage(String tripType, String route, String date, String departure, String price, String availableSeats) {
         super("Select Your Seat", 1000, 800);
         this.tripType = tripType;
