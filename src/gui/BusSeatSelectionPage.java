@@ -156,6 +156,7 @@ public class BusSeatSelectionPage extends BasePanel {
         JPanel busHeader = new JPanel(new BorderLayout());
         busHeader.setBackground(PageComponents.CARD_COLOR);
         
+<<<<<<< HEAD
         JLabel busLabel = new JLabel(busCompany.toUpperCase() + " BUS", SwingConstants.CENTER);
         busLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
         busLabel.setForeground(PageComponents.TEXT_COLOR);
@@ -164,6 +165,29 @@ public class BusSeatSelectionPage extends BasePanel {
         busHeader.add(busLabel, BorderLayout.CENTER);
 
         
+=======
+        JLabel busLabel = new JLabel("🚌 " + busCompany.toUpperCase() + " BUS", SwingConstants.CENTER);
+        busLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        busLabel.setForeground(PageComponents.TEXT_COLOR);
+        
+        // Driver section
+        JPanel driverPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        driverPanel.setBackground(PageComponents.CARD_COLOR);
+        
+        JLabel driverLabel = new JLabel("🚗 DRIVER");
+        driverLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        driverLabel.setForeground(PageComponents.ACCENT_COLOR);
+        driverLabel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(PageComponents.ACCENT_COLOR, 1, true),
+            BorderFactory.createEmptyBorder(8, 12, 8, 12)
+        ));
+        
+        driverPanel.add(driverLabel);
+        
+        busHeader.add(busLabel, BorderLayout.CENTER);
+        busHeader.add(driverPanel, BorderLayout.WEST);
+        
+>>>>>>> b4fe5331978d2544f9b9f0fddd7d6f97496094bf
         // Horizontal seat layout
         JPanel seatsPanel = createHorizontalSeatLayout();
         
@@ -186,6 +210,7 @@ public class BusSeatSelectionPage extends BasePanel {
         JPanel busLayout = new JPanel();
         busLayout.setLayout(new BoxLayout(busLayout, BoxLayout.Y_AXIS));
         busLayout.setBackground(PageComponents.CARD_COLOR);
+<<<<<<< HEAD
         
         Random random = new Random(42);
         int seatNumber = 1;
@@ -217,6 +242,74 @@ public class BusSeatSelectionPage extends BasePanel {
             busLayout.add(rowPanel);
         }
         
+=======
+        
+        Random random = new Random(42);
+        
+        // Create 4 rows with proper seat numbering (top to bottom)
+        // Row 1: Seats 1-10 (window seats)
+        JPanel row1 = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 8));
+        row1.setBackground(PageComponents.CARD_COLOR);
+        
+        for (int col = 1; col <= 10; col++) {
+            boolean isOccupied = random.nextDouble() > 0.75;
+            boolean isPremium = col <= 3; // First 3 columns are premium
+            BusSeatButton seat = new BusSeatButton(col, isOccupied, true, isPremium);
+            row1.add(seat);
+        }
+        
+        // Row 2: Seats 11-20 (aisle seats)
+        JPanel row2 = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 8));
+        row2.setBackground(PageComponents.CARD_COLOR);
+        
+        for (int col = 11; col <= 20; col++) {
+            boolean isOccupied = random.nextDouble() > 0.75;
+            boolean isPremium = (col - 10) <= 3; // First 3 columns are premium
+            BusSeatButton seat = new BusSeatButton(col, isOccupied, false, isPremium);
+            row2.add(seat);
+        }
+        
+        // Aisle space
+        JPanel aislePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        aislePanel.setBackground(PageComponents.CARD_COLOR);
+        JLabel aisleLabel = new JLabel("═══════════════ AISLE ═══════════════");
+        aisleLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        aisleLabel.setForeground(PageComponents.SECONDARY_COLOR);
+        aislePanel.add(aisleLabel);
+        
+        // Row 3: Seats 21-30 (aisle seats)
+        JPanel row3 = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 8));
+        row3.setBackground(PageComponents.CARD_COLOR);
+        
+        for (int col = 21; col <= 30; col++) {
+            boolean isOccupied = random.nextDouble() > 0.75;
+            boolean isPremium = (col - 20) <= 3; // First 3 columns are premium
+            BusSeatButton seat = new BusSeatButton(col, isOccupied, false, isPremium);
+            row3.add(seat);
+        }
+        
+        // Row 4: Seats 31-40 (window seats)
+        JPanel row4 = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 8));
+        row4.setBackground(PageComponents.CARD_COLOR);
+        
+        for (int col = 31; col <= 40; col++) {
+            boolean isOccupied = random.nextDouble() > 0.75;
+            boolean isPremium = (col - 30) <= 3; // First 3 columns are premium
+            BusSeatButton seat = new BusSeatButton(col, isOccupied, true, isPremium);
+            row4.add(seat);
+        }
+        
+        busLayout.add(row1);
+        busLayout.add(Box.createVerticalStrut(8));
+        busLayout.add(row2);
+        busLayout.add(Box.createVerticalStrut(15));
+        busLayout.add(aislePanel);
+        busLayout.add(Box.createVerticalStrut(15));
+        busLayout.add(row3);
+        busLayout.add(Box.createVerticalStrut(8));
+        busLayout.add(row4);
+        
+>>>>>>> b4fe5331978d2544f9b9f0fddd7d6f97496094bf
         mainPanel.add(busLayout, BorderLayout.CENTER);
         return mainPanel;
     }
@@ -240,6 +333,7 @@ public class BusSeatSelectionPage extends BasePanel {
         return legendPanel;
     }
     
+<<<<<<< HEAD
 private JPanel createLegendItem(String label, Color color, String seatText) {
     JPanel item = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 0));
     item.setBackground(color); // 🎯 PANEL'in arka planını da verilen renk yap
@@ -272,6 +366,36 @@ private boolean isLightColor(Color color) {
 }
 
 
+=======
+    private JPanel createLegendItem(String label, Color color, String seatText) {
+        JPanel item = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 0));
+        item.setBackground(PageComponents.CARD_COLOR);
+        
+        JButton sampleSeat = new JButton(seatText);
+        sampleSeat.setPreferredSize(new Dimension(40, 40));
+        sampleSeat.setBackground(color);
+        // Daha iyi kontrast için yazı renkleri
+        if (color.equals(PageComponents.ACCENT_COLOR)) {
+            sampleSeat.setForeground(Color.BLACK);
+        } else if (color.equals(new Color(255, 193, 7))) {
+            sampleSeat.setForeground(Color.BLACK);
+        } else {
+            sampleSeat.setForeground(Color.WHITE);
+        }
+        sampleSeat.setFont(new Font("Segoe UI", Font.BOLD, 10));
+        sampleSeat.setEnabled(false);
+        sampleSeat.setBorder(BorderFactory.createLineBorder(color.darker(), 1, true));
+        
+        JLabel labelText = new JLabel(label);
+        labelText.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        labelText.setForeground(PageComponents.TEXT_COLOR);
+        
+        item.add(sampleSeat);
+        item.add(labelText);
+        
+        return item;
+    }
+>>>>>>> b4fe5331978d2544f9b9f0fddd7d6f97496094bf
     
     private JPanel createSidebarPanel() {
         JPanel sidebar = new JPanel();
@@ -337,6 +461,78 @@ private boolean isLightColor(Color color) {
         clearButton.addActionListener(e -> clearSelection());
         
         return sidebar;
+<<<<<<< HEAD
+=======
+    }
+    
+    private JButton createModernButton(String text, Color color, boolean isPrimary) {
+        JButton button = new JButton(text);
+        button.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        button.setForeground(isPrimary ? Color.WHITE : PageComponents.TEXT_COLOR);
+        button.setBackground(color);
+        button.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
+        button.setFocusPainted(false);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        button.setAlignmentX(Component.CENTER_ALIGNMENT);
+        button.setMaximumSize(new Dimension(280, 50));
+        button.setPreferredSize(new Dimension(280, 50));
+        
+        // Hover effect
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                if (button.isEnabled()) {
+                    button.setBackground(color.brighter());
+                }
+            }
+            
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                if (button.isEnabled()) {
+                    button.setBackground(color);
+                }
+            }
+        });
+        
+        return button;
+    }
+    
+    private JPanel createFeaturesPanel() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBackground(PageComponents.CARD_COLOR);
+        panel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(PageComponents.SECONDARY_COLOR, 1, true),
+            BorderFactory.createEmptyBorder(20, 20, 20, 20)
+        ));
+        
+        JLabel title = new JLabel("🚌 Bus Features");
+        title.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        title.setForeground(PageComponents.TEXT_COLOR);
+        title.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        String[] features = {
+            "• Comfortable reclining seats",
+            "• " + amenities,
+            "• Professional driver service",
+            "• Air conditioning",
+            "• Safety certified"
+        };
+        
+        panel.add(title);
+        panel.add(Box.createVerticalStrut(15));
+        
+        for (String feature : features) {
+            JLabel featureLabel = new JLabel(feature);
+            featureLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+            featureLabel.setForeground(PageComponents.SECONDARY_COLOR);
+            featureLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+            panel.add(featureLabel);
+            panel.add(Box.createVerticalStrut(5));
+        }
+        
+        return panel;
+>>>>>>> b4fe5331978d2544f9b9f0fddd7d6f97496094bf
     }
     
     private JButton createModernButton(String text, Color color, boolean isPrimary) {
@@ -439,6 +635,40 @@ private boolean isLightColor(Color color) {
         }
     }
     
+<<<<<<< HEAD
+=======
+    private void confirmBooking() {
+        if (selectedSeats.size() != passengerCount) {
+            PageComponents.showStyledMessage("Error", 
+                "Please select exactly " + passengerCount + " seat(s)!", this);
+            return;
+        }
+        
+        StringBuilder message = new StringBuilder();
+        message.append("🎫 Booking Confirmed!\n\n");
+        message.append("🚌 Company: ").append(busCompany).append("\n");
+        message.append("📍 Route: ").append(fromCity).append(" → ").append(toCity).append("\n");
+        message.append("📅 Date: ").append(date).append("\n");
+        message.append("🕐 Departure: ").append(departureTime).append("\n");
+        message.append("🕓 Arrival: ").append(arrivalTime).append("\n");
+        message.append("💺 Seats: ");
+        
+        for (int i = 0; i < selectedSeats.size(); i++) {
+            if (i > 0) message.append(", ");
+            message.append(selectedSeats.get(i).getSeatNumber());
+        }
+        
+        double totalPrice = selectedSeats.stream().mapToDouble(BusSeatButton::getPrice).sum();
+        message.append("\n💰 Total: $").append(String.format("%.2f", totalPrice));
+        message.append("\n✨ Features: ").append(amenities);
+        
+        PageComponents.showStyledMessage("Booking Confirmed", message.toString(), this);
+        
+        dispose();
+        new ReservationPage().display();
+    }
+    
+>>>>>>> b4fe5331978d2544f9b9f0fddd7d6f97496094bf
     // Inner class for modern bus seat buttons
     private class BusSeatButton extends JButton {
         private int seatNumber;
@@ -467,15 +697,30 @@ private boolean isLightColor(Color color) {
                 
             if (isOccupied) {
                 setText("X");
+<<<<<<< HEAD
                 setBackground(new Color(220, 53, 69)); // kırmızı
+=======
+                setBackground(new Color(255, 85, 85));
+>>>>>>> b4fe5331978d2544f9b9f0fddd7d6f97496094bf
                 setForeground(Color.WHITE);
                 setEnabled(false);
                 setToolTipText("Seat " + seatNumber + " is occupied");
             } else {
                 setText(isPremium ? "P" + seatNumber : String.valueOf(seatNumber));
+<<<<<<< HEAD
                 setBackground(isPremium ? new Color(255, 193, 7) : new Color(50, 205, 50)); // sarı ya da yeşil
                 setForeground(Color.BLACK);
                 setToolTipText(String.format("Seat %d - $%.2f%s%s",
+=======
+                setBackground(isPremium ? new Color(255, 193, 7) : PageComponents.ACCENT_COLOR);
+                // Daha iyi kontrast için yazı renkleri
+                if (isPremium) {
+                    setForeground(Color.BLACK);
+                } else {
+                    setForeground(Color.BLACK);
+                }
+                setToolTipText(String.format("Seat %d - $%.2f%s%s", 
+>>>>>>> b4fe5331978d2544f9b9f0fddd7d6f97496094bf
                     seatNumber, price,
                     isWindow ? " (Window)" : "",
                     isPremium ? " (Premium)" : ""
@@ -483,8 +728,17 @@ private boolean isLightColor(Color color) {
             
                 addActionListener(e -> toggleSelection());
             }
+<<<<<<< HEAD
         
             setBorder(BorderFactory.createLineBorder(new Color(40, 40, 40), 1, true));
+=======
+            
+            setPreferredSize(new Dimension(50, 50));
+            setFont(new Font("Segoe UI", Font.BOLD, 11));
+            setFocusPainted(false);
+            setBorder(BorderFactory.createLineBorder(new Color(100, 100, 100), 1, true));
+            setCursor(new Cursor(Cursor.HAND_CURSOR));
+>>>>>>> b4fe5331978d2544f9b9f0fddd7d6f97496094bf
         }
 
 
@@ -521,11 +775,24 @@ private boolean isLightColor(Color color) {
             if (selected) {
                 setBackground(new Color(0, 180, 180)); // seçili renk
                 setForeground(Color.WHITE);
+<<<<<<< HEAD
                 setBorder(BorderFactory.createLineBorder(new Color(0, 140, 140), 2, true));
             } else {
                 setBackground(isPremium ? new Color(255, 193, 7) : new Color(50, 205, 50));
                 setForeground(Color.BLACK);
                 setBorder(BorderFactory.createLineBorder(new Color(40, 40, 40), 1, true));
+=======
+                setBorder(BorderFactory.createLineBorder(PageComponents.PRIMARY_COLOR.darker(), 2, true));
+            } else {
+                setBackground(isPremium ? new Color(255, 193, 7) : PageComponents.ACCENT_COLOR);
+                // Daha iyi kontrast için yazı renkleri
+                if (isPremium) {
+                    setForeground(Color.BLACK);
+                } else {
+                    setForeground(Color.BLACK);
+                }
+                setBorder(BorderFactory.createLineBorder(new Color(100, 100, 100), 1, true));
+>>>>>>> b4fe5331978d2544f9b9f0fddd7d6f97496094bf
             }
         }
 
