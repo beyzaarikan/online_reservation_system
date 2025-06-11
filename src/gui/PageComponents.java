@@ -7,18 +7,30 @@ import javax.swing.border.EmptyBorder;
 
 public class PageComponents {
     // Modern color palette - Daha zengin renkler
-    public static final Color BACKGROUND_COLOR = new Color(145, 216, 237);
-    public static final Color CARD_COLOR = new Color(30, 32, 44);
-    public static final Color PRIMARY_COLOR = new Color(79, 172, 254);
-    public static final Color PRIMARY_HOVER = new Color(104, 188, 255);
-    public static final Color SECONDARY_COLOR = new Color(75, 85, 99);
-    public static final Color TEXT_COLOR = new Color(243, 244, 246);
-    public static final Color ACCENT_COLOR = new Color(16, 185, 129);
-    public static final Color INPUT_COLOR = new Color(55, 65, 81);
-    public static final Color ERROR_COLOR = new Color(239, 68, 68);
-    public static final Color WARNING_COLOR = new Color(245, 158, 11);
-    public static final Color SUCCESS_COLOR = new Color(34, 197, 94);
-    public static final Color ADMIN_COLOR = new Color(147, 51, 234);
+public static final Color BACKGROUND_COLOR = new Color(145, 216, 237); // 🌤️ Açık mavi - genel arka plan rengi, ferah bir görünüm sağlar
+
+public static final Color CARD_COLOR = new Color(30, 32, 44); // 🟥 Çok koyu lacivert/gri - kart arka planı, dark mode panel zemini
+
+public static final Color PRIMARY_COLOR = new Color(79, 172, 254); // 🔵 Canlı açık mavi - ana buton, seçili öğe, vurgulu action
+
+public static final Color PRIMARY_HOVER = new Color(104, 188, 255); // 🔷 Hover durumundaki PRIMARY rengi - butonlarda parlama efekti verir
+
+public static final Color SECONDARY_COLOR = new Color(75, 85, 99); // ⚫ Slate gri - ikincil yazılar, borderlar, gölge metinler için ideal
+
+public static final Color TEXT_COLOR = new Color(243, 244, 246); // 🧾 Çok açık gri (neredeyse beyaz) - koyu arka plan üstüne yazı
+
+public static final Color ACCENT_COLOR = new Color(16, 185, 129); // ✅ Canlı yeşil - aktif, kullanılabilir, "available seat" gibi durumlar
+
+public static final Color INPUT_COLOR = new Color(55, 65, 81); // 🧱 Koyu gri-mavi - input alanlarının iç zemin rengi
+
+public static final Color ERROR_COLOR = new Color(239, 68, 68); // ❌ Kırmızı - hata mesajları, dolu koltuk, uyarılar için
+
+public static final Color WARNING_COLOR = new Color(245, 158, 11); // ⚠️ Turuncu - uyarı, premium koltuk gibi dikkat çeken detaylar
+
+public static final Color SUCCESS_COLOR = new Color(34, 197, 94); // 🟢 Yeşil - başarılı işlem, rezervasyon onayı gibi mesajlarda
+
+public static final Color ADMIN_COLOR = new Color(147, 51, 234); // 🟣 Mor - admin etiketleri, özel rozetler, yetkili görünümü
+
 
     public static JButton createStyledButton(String text, Color backgroundColor, boolean isPrimary) {
         JButton button = new JButton(text);
