@@ -1,7 +1,10 @@
 package gui;
 
 import java.awt.*;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.util.Date;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
@@ -129,10 +132,14 @@ public class SearchFlightsPage extends BasePanel {
         JButton searchButton = PageComponents.createStyledButton("✈️ Search Flights", PageComponents.ACCENT_COLOR, true);
         JButton clearButton = PageComponents.createStyledButton("Clear", PageComponents.SECONDARY_COLOR, false);
         JButton backButton = PageComponents.createStyledButton("← Back to Menu", PageComponents.SECONDARY_COLOR, false);
-        
+        JButton okeyButton = PageComponents.createStyledButton("Select Trip & Proceed", PageComponents.PRIMARY_COLOR, true);
+
+
         buttonPanel.add(searchButton);
         buttonPanel.add(clearButton);
         buttonPanel.add(Box.createHorizontalStrut(20));
+        buttonPanel.add(okeyButton);
+        buttonPanel.add(Box.createHorizontalStrut(10));
         buttonPanel.add(backButton);
         
         // Add action listeners
@@ -142,6 +149,8 @@ public class SearchFlightsPage extends BasePanel {
             dispose();
             new MainMenuPage().display();
         });
+
+        okeyButton.addActionListener(e -> selectTripAndProceed());
         
         searchCard.add(searchTitle);
         searchCard.add(Box.createVerticalStrut(20));
@@ -338,4 +347,92 @@ public class SearchFlightsPage extends BasePanel {
         toggleReturnDate();
         tableModel.setRowCount(0);
     }
+    private void selectTripAndProceed() {
+        int selectedRow = flightTable.getSelectedRow();
+        
+        if (selectedRow == -1) {
+            PageComponents.showStyledMessage("Warning", "Please select a flight trip first!", this);
+            return;
+        }
+
+        // Seçilen satırdan tüm bilgileri al
+        String flightCompany = (String) tableModel.getValueAt(selectedRow, 0);
+        String flightNo = (String) tableModel.getValueAt(selectedRow, 1);
+        String route = (String) tableModel.getValueAt(selectedRow, 2);
+        String departure = (String) tableModel.getValueAt(selectedRow, 3);
+        String arrival = (String) tableModel.getValueAt(selectedRow, 4);
+        String duration = (String) tableModel.getValueAt(selectedRow, 5);
+        String stops = (String) tableModel.getValueAt(selectedRow, 6);
+        String flightClass = (String) tableModel.getValueAt(selectedRow, 7);
+        String price = (String) tableModel.getValueAt(selectedRow, 6);
+        String book = (String) tableModel.getValueAt(selectedRow, 7);
+
+        // Form bilgilerini al
+        String fromCity = fromField.getText();
+        String toCity = toField.getText();
+        
+        // Tarih bilgisini al
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        String departureDate = dateFormat.format((Date) departureSpinner.getValue());
+
+        String returnDate = null;
+        if (roundTripCheckbox.isSelected()) {
+            returnDate = dateFormat.format((Date) returnSpinner.getValue());
+        }
+
+        String passengerCountStr = (String) passengerCount.getSelectedItem();
+        int passengerCountInt = Integer.parseInt(passengerCountStr);
+
+        // Onay mesajı göster
+        String confirmMessage = String.format(
+            "Selected Trip Details:\n\n" +
+            "🚌 Company: %s\n" +
+            "📍 Flight no: %s\n" +
+            "🕐 Route: %s on %s\n" +
+            "🕓 Departure: %s\n" +
+            "⏱️ Arrival: %s\n" +
+            "💰 Stops: %s\n" +
+            "👥 Class: %s\n" +
+             "🎯 Price %s\n" +
+            "    Book: %s\n" +
+            "%s\n\n" +
+            "Proceed to seat selection?",
+            flightCompany, flightNo, route, departure, arrival,stops, flightClass, price, 
+            book,
+            roundTripCheckbox.isSelected() ? "🔄 Return: " + returnDate : "➡️ One Way Trip"
+        );
+
+        int choice = JOptionPane.showConfirmDialog(
+            this,
+            confirmMessage,
+            "Confirm Trip Selection",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.QUESTION_MESSAGE
+        );   
+
+        if (choice == JOptionPane.YES_OPTION) {
+
+            dispose();
+        //     FlightseatSelectionPage = new Flight+SeatSelectionPage(flightCompany, fromCity, toCity, departureDate, departure, arrival, price, passengerCountInt, amenities);
+        //     seatSelectionPage.display();
+             try {
+               
+                
+        //         // Şimdilik test için basit bir mesaj gösterelim
+                 PageComponents.showStyledMessage("Success", 
+                     "🎫 Redirecting to seat selection...\n\n" +
+                     "Trip: " + flightCompany + "\n" +
+                     "Route: " + route + "\n" +
+                     "Date: " + departureDate + "\n" +
+        "Passengers: " + passengerCountStr, this);
+                
+        //         // Gerçek implementasyon için yukarıdaki comment'i açın ve SeatSelectionPage constructor'ını uygun şekilde çağırın
+                
+             } catch (Exception ex) {
+                 PageComponents.showStyledMessage("Error", 
+                     "Failed to proceed to seat selection: " + ex.getMessage(), this);
+             }
+         }
+        
+}
 }
