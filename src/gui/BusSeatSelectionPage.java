@@ -202,34 +202,69 @@ public class BusSeatSelectionPage extends BasePanel {
         busLayout.setBackground(PageComponents.CARD_COLOR);
         
         Random random = new Random(42);
-        int seatNumber = 1;
         
-        // Create 10 columns (representing bus length) with 4 seats each (2-2 configuration)
-        for (int row = 0; row < 4; row++) {
-            JPanel rowPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 8));
-            rowPanel.setBackground(PageComponents.CARD_COLOR);
-            
-            for (int col = 0; col < 10; col++) {
-                if (row == 1) {
-                    // Aisle space in the middle
-                    JLabel aisleLabel = new JLabel("AISLE");
-                    aisleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 8));
-                    aisleLabel.setForeground(PageComponents.SECONDARY_COLOR);
-                    aisleLabel.setPreferredSize(new Dimension(50, 20));
-                    aisleLabel.setHorizontalAlignment(SwingConstants.CENTER);
-                    rowPanel.add(aisleLabel);
-                } else {
-                    boolean isWindow = (row == 0 || row == 3);
-                    boolean isOccupied = random.nextDouble() > 0.75;
-                    boolean isPremium = col < 3; // First 3 columns are premium
-                    
-                    BusSeatButton seat = new BusSeatButton(seatNumber++, isOccupied, isWindow, isPremium);
-                    rowPanel.add(seat);
-                }
-            }
-            
-            busLayout.add(rowPanel);
+        // Create 4 rows with proper seat numbering (top to bottom)
+        // Row 1: Seats 1-10 (window seats)
+        JPanel row1 = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 8));
+        row1.setBackground(PageComponents.CARD_COLOR);
+        
+        for (int col = 1; col <= 10; col++) {
+            boolean isOccupied = random.nextDouble() > 0.75;
+            boolean isPremium = col <= 3; // First 3 columns are premium
+            BusSeatButton seat = new BusSeatButton(col, isOccupied, true, isPremium);
+            row1.add(seat);
         }
+        
+        // Row 2: Seats 11-20 (aisle seats)
+        JPanel row2 = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 8));
+        row2.setBackground(PageComponents.CARD_COLOR);
+        
+        for (int col = 11; col <= 20; col++) {
+            boolean isOccupied = random.nextDouble() > 0.75;
+            boolean isPremium = (col - 10) <= 3; // First 3 columns are premium
+            BusSeatButton seat = new BusSeatButton(col, isOccupied, false, isPremium);
+            row2.add(seat);
+        }
+        
+        // Aisle space
+        JPanel aislePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        aislePanel.setBackground(PageComponents.CARD_COLOR);
+        JLabel aisleLabel = new JLabel("═══════════════ AISLE ═══════════════");
+        aisleLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        aisleLabel.setForeground(PageComponents.SECONDARY_COLOR);
+        aislePanel.add(aisleLabel);
+        
+        // Row 3: Seats 21-30 (aisle seats)
+        JPanel row3 = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 8));
+        row3.setBackground(PageComponents.CARD_COLOR);
+        
+        for (int col = 21; col <= 30; col++) {
+            boolean isOccupied = random.nextDouble() > 0.75;
+            boolean isPremium = (col - 20) <= 3; // First 3 columns are premium
+            BusSeatButton seat = new BusSeatButton(col, isOccupied, false, isPremium);
+            row3.add(seat);
+        }
+        
+        // Row 4: Seats 31-40 (window seats)
+        JPanel row4 = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 8));
+        row4.setBackground(PageComponents.CARD_COLOR);
+        
+        for (int col = 31; col <= 40; col++) {
+            boolean isOccupied = random.nextDouble() > 0.75;
+            boolean isPremium = (col - 30) <= 3; // First 3 columns are premium
+            BusSeatButton seat = new BusSeatButton(col, isOccupied, true, isPremium);
+            row4.add(seat);
+        }
+        
+        busLayout.add(row1);
+        busLayout.add(Box.createVerticalStrut(8));
+        busLayout.add(row2);
+        busLayout.add(Box.createVerticalStrut(15));
+        busLayout.add(aislePanel);
+        busLayout.add(Box.createVerticalStrut(15));
+        busLayout.add(row3);
+        busLayout.add(Box.createVerticalStrut(8));
+        busLayout.add(row4);
         
         mainPanel.add(busLayout, BorderLayout.CENTER);
         return mainPanel;
@@ -261,7 +296,14 @@ public class BusSeatSelectionPage extends BasePanel {
         JButton sampleSeat = new JButton(seatText);
         sampleSeat.setPreferredSize(new Dimension(40, 40));
         sampleSeat.setBackground(color);
-        sampleSeat.setForeground(color.equals(PageComponents.ACCENT_COLOR) || color.equals(new Color(255, 193, 7)) ? Color.BLACK : Color.WHITE);
+        // Daha iyi kontrast için yazı renkleri
+        if (color.equals(PageComponents.ACCENT_COLOR)) {
+            sampleSeat.setForeground(Color.BLACK);
+        } else if (color.equals(new Color(255, 193, 7))) {
+            sampleSeat.setForeground(Color.BLACK);
+        } else {
+            sampleSeat.setForeground(Color.WHITE);
+        }
         sampleSeat.setFont(new Font("Segoe UI", Font.BOLD, 10));
         sampleSeat.setEnabled(false);
         sampleSeat.setBorder(BorderFactory.createLineBorder(color.darker(), 1, true));
@@ -510,7 +552,12 @@ public class BusSeatSelectionPage extends BasePanel {
             } else {
                 setText(isPremium ? "P" + seatNumber : String.valueOf(seatNumber));
                 setBackground(isPremium ? new Color(255, 193, 7) : PageComponents.ACCENT_COLOR);
-                setForeground(isPremium ? Color.BLACK : Color.BLACK);
+                // Daha iyi kontrast için yazı renkleri
+                if (isPremium) {
+                    setForeground(Color.BLACK);
+                } else {
+                    setForeground(Color.BLACK);
+                }
                 setToolTipText(String.format("Seat %d - $%.2f%s%s", 
                     seatNumber, price,
                     isWindow ? " (Window)" : "",
@@ -522,7 +569,7 @@ public class BusSeatSelectionPage extends BasePanel {
             setPreferredSize(new Dimension(50, 50));
             setFont(new Font("Segoe UI", Font.BOLD, 11));
             setFocusPainted(false);
-            setBorder(BorderFactory.createLineBorder(Color.GRAY, 1, true));
+            setBorder(BorderFactory.createLineBorder(new Color(100, 100, 100), 1, true));
             setCursor(new Cursor(Cursor.HAND_CURSOR));
         }
         
@@ -560,8 +607,13 @@ public class BusSeatSelectionPage extends BasePanel {
                 setBorder(BorderFactory.createLineBorder(PageComponents.PRIMARY_COLOR.darker(), 2, true));
             } else {
                 setBackground(isPremium ? new Color(255, 193, 7) : PageComponents.ACCENT_COLOR);
-                setForeground(isPremium ? Color.BLACK : Color.BLACK);
-                setBorder(BorderFactory.createLineBorder(Color.GRAY, 1, true));
+                // Daha iyi kontrast için yazı renkleri
+                if (isPremium) {
+                    setForeground(Color.BLACK);
+                } else {
+                    setForeground(Color.BLACK);
+                }
+                setBorder(BorderFactory.createLineBorder(new Color(100, 100, 100), 1, true));
             }
         }
         
