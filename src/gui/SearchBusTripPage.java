@@ -335,6 +335,8 @@ public class SearchBusTripPage extends BasePanel {
         }
         
         String passengerCountStr = (String) passengerCount.getSelectedItem();
+        int passengerCountInt = Integer.parseInt(passengerCountStr);
+
         
         // Onay mesajı göster
         String confirmMessage = String.format(
@@ -365,7 +367,8 @@ public class SearchBusTripPage extends BasePanel {
         if (choice == JOptionPane.YES_OPTION) {
 
             dispose();
-            new BusSeatSelectionPage(busCompany, fromCity, toCity, returnDate, departureDate, arrival, price, choice, amenities).dispose();
+            BusSeatSelectionPage seatSelectionPage = new BusSeatSelectionPage(busCompany, fromCity, toCity, departureDate, departure, arrival, price, passengerCountInt, amenities);
+            seatSelectionPage.display();
             try {
                 // SeatSelectionPage constructor'ına tüm gerekli parametreleri gönder
                 // Parametreler: busCompany, route, departureDate, departureTime, arrivalTime, 

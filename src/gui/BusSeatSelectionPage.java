@@ -104,6 +104,7 @@ public class BusSeatSelectionPage extends BasePanel {
         JLabel passengerLabel = createInfoLabel("👥 Passengers: " + passengerCount);
         JLabel amenitiesLabel = createInfoLabel("✨ Amenities: " + amenities);
         
+        
         companyLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
         companyLabel.setForeground(PageComponents.PRIMARY_COLOR);
         
