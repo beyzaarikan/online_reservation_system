@@ -27,7 +27,7 @@ public class SearchBusTripPage extends BasePanel {
         JPanel mainPanel = createMainPanel();
         
         // Title Panel
-        JPanel titlePanel = createTitlePanel(" Search Bus Trips");
+        JPanel titlePanel = createTitlePanel("🚌 Search Bus Trips");
         
         // Search Form Panel
         JPanel searchPanel = createSearchPanel();
@@ -117,7 +117,7 @@ public class SearchBusTripPage extends BasePanel {
         JPanel buttonPanel = new JPanel(new FlowLayout());
         buttonPanel.setBackground(PageComponents.CARD_COLOR);
         
-        JButton searchButton = PageComponents.createStyledButton(" Search Buses", PageComponents.PRIMARY_COLOR, true);
+        JButton searchButton = PageComponents.createStyledButton("🔍 Search Buses", PageComponents.PRIMARY_COLOR, true);
         JButton clearButton = PageComponents.createStyledButton("Clear", PageComponents.SECONDARY_COLOR, false);
         JButton backButton = PageComponents.createStyledButton("← Back to Menu", PageComponents.SECONDARY_COLOR, false);
         JButton okeyButton = PageComponents.createStyledButton("Select Trip & Proceed", PageComponents.PRIMARY_COLOR, true);
@@ -367,7 +367,7 @@ public class SearchBusTripPage extends BasePanel {
         if (choice == JOptionPane.YES_OPTION) {
 
             dispose();
-            BusSeatSelectionPage seatSelectionPage = new BusSeatSelectionPage(busCompany, fromCity, toCity, departureDate, departure, arrival, price, passengerCountInt, amenities);
+            BusSeatSelectionPage seatSelectionPage = new BusSeatSelectionPage(busCompany, fromCity, toCity, returnDate, departureDate, arrival, price, passengerCountInt, amenities);
             seatSelectionPage.display();
             try {
                 // SeatSelectionPage constructor'ına tüm gerekli parametreleri gönder
