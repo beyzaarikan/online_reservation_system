@@ -1,11 +1,11 @@
 package gui;
 import java.awt.*;
-import java.time.LocalDate;
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.DefaultTableCellRenderer;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Date;
+import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
 
 public class SearchBusTripPage extends BasePanel {
     private JTextField fromField;
@@ -27,7 +27,7 @@ public class SearchBusTripPage extends BasePanel {
         JPanel mainPanel = createMainPanel();
         
         // Title Panel
-        JPanel titlePanel = createTitlePanel("🚌 Search Bus Trips");
+        JPanel titlePanel = createTitlePanel(" Search Bus Trips");
         
         // Search Form Panel
         JPanel searchPanel = createSearchPanel();
@@ -117,7 +117,7 @@ public class SearchBusTripPage extends BasePanel {
         JPanel buttonPanel = new JPanel(new FlowLayout());
         buttonPanel.setBackground(PageComponents.CARD_COLOR);
         
-        JButton searchButton = PageComponents.createStyledButton("🔍 Search Buses", PageComponents.PRIMARY_COLOR, true);
+        JButton searchButton = PageComponents.createStyledButton(" Search Buses", PageComponents.PRIMARY_COLOR, true);
         JButton clearButton = PageComponents.createStyledButton("Clear", PageComponents.SECONDARY_COLOR, false);
         JButton backButton = PageComponents.createStyledButton("← Back to Menu", PageComponents.SECONDARY_COLOR, false);
         JButton okeyButton = PageComponents.createStyledButton("Select Trip & Proceed", PageComponents.PRIMARY_COLOR, true);

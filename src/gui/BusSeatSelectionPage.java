@@ -1,12 +1,10 @@
 package gui;
 
-import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import javax.swing.*;
 
 public class BusSeatSelectionPage extends BasePanel {
     private String busCompany;
@@ -84,7 +82,7 @@ public class BusSeatSelectionPage extends BasePanel {
         panel.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
         
         // Title
-        JLabel titleLabel = new JLabel("🚌 Select Your Bus Seat", SwingConstants.CENTER);
+        JLabel titleLabel = new JLabel("Select Your Bus Seat", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 28));
         titleLabel.setForeground(PageComponents.TEXT_COLOR);
         
@@ -97,12 +95,12 @@ public class BusSeatSelectionPage extends BasePanel {
         ));
         
         // Trip info labels
-        JLabel companyLabel = createInfoLabel("🚌 Company: " + busCompany);
-        JLabel routeLabel = createInfoLabel("📍 Route: " + fromCity + " → " + toCity);
-        JLabel dateLabel = createInfoLabel("📅 Date: " + date);
-        JLabel timeLabel = createInfoLabel("🕐 Time: " + departureTime + " - " + arrivalTime);
-        JLabel passengerLabel = createInfoLabel("👥 Passengers: " + passengerCount);
-        JLabel amenitiesLabel = createInfoLabel("✨ Amenities: " + amenities);
+        JLabel companyLabel = createInfoLabel("Company: " + busCompany);
+        JLabel routeLabel = createInfoLabel("Route: " + fromCity + " → " + toCity);
+        JLabel dateLabel = createInfoLabel("Date: " + date);
+        JLabel timeLabel = createInfoLabel("Time: " + departureTime + " - " + arrivalTime);
+        JLabel passengerLabel = createInfoLabel("Passengers: " + passengerCount);
+        JLabel amenitiesLabel = createInfoLabel("Amenities: " + amenities);
         
         
         companyLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
@@ -138,7 +136,7 @@ public class BusSeatSelectionPage extends BasePanel {
         seatMapPanel.setLayout(new BorderLayout());
         
         // Bus header
-        JLabel busLabel = new JLabel("🚌 BUS SEAT MAP - " + busCompany.toUpperCase(), SwingConstants.CENTER);
+        JLabel busLabel = new JLabel("BUS SEAT MAP - " + busCompany.toUpperCase(), SwingConstants.CENTER);
         busLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
         busLabel.setForeground(PageComponents.TEXT_COLOR);
         
@@ -157,21 +155,7 @@ public class BusSeatSelectionPage extends BasePanel {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBackground(PageComponents.CARD_COLOR);
         GridBagConstraints gbc = new GridBagConstraints();
-        
-        // Driver area
-        gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 5;
-        JPanel driverPanel = new JPanel(new FlowLayout());
-        driverPanel.setBackground(PageComponents.CARD_COLOR);
-        JLabel driverLabel = new JLabel("🚗 DRIVER", SwingConstants.CENTER);
-        driverLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        driverLabel.setForeground(PageComponents.ACCENT_COLOR);
-        driverLabel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(PageComponents.ACCENT_COLOR, 2),
-            BorderFactory.createEmptyBorder(5, 15, 5, 15)
-        ));
-        driverPanel.add(driverLabel);
-        panel.add(driverPanel, gbc);
-        
+
         // Add space after driver
         gbc.gridy = 1; gbc.gridheight = 1;
         panel.add(Box.createVerticalStrut(20), gbc);
@@ -180,14 +164,14 @@ public class BusSeatSelectionPage extends BasePanel {
         Random random = new Random(42); // For consistent random occupied seats
         int seatNumber = 1;
         
-        for (int row = 0; row < 14; row++) {
+        for (int row = 0; row < 10; row++) {
             // Left side seats (Window + Aisle)
             for (int col = 0; col < 2; col++) {
                 gbc.gridx = col;
                 gbc.gridy = row + 2;
                 gbc.gridwidth = 1;
                 gbc.gridheight = 1;
-                gbc.insets = new Insets(3, 3, 3, 3);
+                gbc.insets = new Insets(5, 5, 5, 5);
                 
                 boolean isWindow = (col == 0);
                 boolean isOccupied = random.nextDouble() > 0.75; // 25% occupied
