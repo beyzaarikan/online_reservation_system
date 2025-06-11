@@ -263,8 +263,6 @@ public class SearchBusTripPage extends BasePanel {
         // Add sample bus results
         populateSampleBusData(from, to);
         
-        PageComponents.showStyledMessage("Success", 
-            "Found " + tableModel.getRowCount() + " bus trips from " + from + " to " + to + "!", this);
     }
     
     private void populateSampleBusData(String from, String to) {
@@ -313,12 +311,12 @@ public class SearchBusTripPage extends BasePanel {
         
         // Seçilen satırdan tüm bilgileri al
         String busCompany = (String) tableModel.getValueAt(selectedRow, 0);
-        String route = (String) tableModel.getValueAt(selectedRow, 1);
-        String departure = (String) tableModel.getValueAt(selectedRow, 2);
-        String arrival = (String) tableModel.getValueAt(selectedRow, 3);
-        String duration = (String) tableModel.getValueAt(selectedRow, 4);
+        // String route = (String) tableModel.getValueAt(selectedRow, 1); // Route is constructed below
+        String departureTime = (String) tableModel.getValueAt(selectedRow, 2);
+        String arrivalTime = (String) tableModel.getValueAt(selectedRow, 3);
+        // String duration = (String) tableModel.getValueAt(selectedRow, 4); // Not directly used in constructor
         String price = (String) tableModel.getValueAt(selectedRow, 5);
-        String seatsAvailable = (String) tableModel.getValueAt(selectedRow, 6);
+        // String seatsAvailable = (String) tableModel.getValueAt(selectedRow, 6); // Not directly used in constructor
         String amenities = (String) tableModel.getValueAt(selectedRow, 7);
         
         // Form bilgilerini al
@@ -335,76 +333,27 @@ public class SearchBusTripPage extends BasePanel {
         }
         
         String passengerCountStr = (String) passengerCount.getSelectedItem();
-        int passengerCountInt = Integer.parseInt(passengerCountStr);
-
+        int passengerCountInt = Integer.parseInt(passengerCountStr.replace("+", "")); // Remove '+' for parsing
         
-        // Onay mesajı göster
-        String confirmMessage = String.format(
-            "Selected Trip Details:\n\n" +
-            "🚌 Company: %s\n" +
-            "📍 Route: %s\n" +
-            "🕐 Departure: %s on %s\n" +
-            "🕓 Arrival: %s\n" +
-            "⏱️ Duration: %s\n" +
-            "💰 Price: %s\n" +
-            "👥 Passengers: %s\n" +
-            "🎯 Amenities: %s\n" +
-            "%s\n\n" +
-            "Proceed to seat selection?",
-            busCompany, route, departure, departureDate, arrival, duration, price, 
-            passengerCountStr, amenities,
-            roundTripCheckbox.isSelected() ? "🔄 Return: " + returnDate : "➡️ One Way Trip"
-        );
-        
-        int choice = JOptionPane.showConfirmDialog(
-            this,
-            confirmMessage,
-            "Confirm Trip Selection",
-            JOptionPane.YES_NO_OPTION,
-            JOptionPane.QUESTION_MESSAGE
-        );
-        
-        if (choice == JOptionPane.YES_OPTION) {
-
-            dispose();
-            BusSeatSelectionPage seatSelectionPage = new BusSeatSelectionPage(busCompany, fromCity, toCity, returnDate, departureDate, arrival, price, passengerCountInt, amenities);
+        // Directly proceed to BusSeatSelectionPage
+        dispose();
+        try {
+            BusSeatSelectionPage seatSelectionPage = new BusSeatSelectionPage(
+                busCompany, 
+                fromCity, 
+                toCity, 
+                returnDate, 
+                departureDate, 
+                arrivalTime, 
+                price, 
+                passengerCountInt, 
+                amenities
+            );
             seatSelectionPage.display();
-            try {
-                // SeatSelectionPage constructor'ına tüm gerekli parametreleri gönder
-                // Parametreler: busCompany, route, departureDate, departureTime, arrivalTime, 
-                //              price, passengerCount, isRoundTrip, returnDate, amenities
-                
-                // Eğer SeatSelectionPage constructor'ı farklıysa, aşağıdaki parametreleri uygun şekilde düzenleyin
-                /*
-                new SeatSelectionPage(
-                    busCompany,          // Otobüs şirketi
-                    fromCity,            // Kalkış şehri  
-                    toCity,              // Varış şehri
-                    departureDate,       // Tarih
-                    departure,           // Kalkış saati
-                    arrival,             // Varış saati
-                    price,               // Fiyat
-                    Integer.parseInt(passengerCountStr.replace("+", "")), // Yolcu sayısı
-                    roundTripCheckbox.isSelected(), // Gidiş-dönüş mü?
-                    returnDate,          // Dönüş tarihi (varsa)
-                    amenities            // Özellikler
-                ).display();
-                */
-                
-                // Şimdilik test için basit bir mesaj gösterelim
-                PageComponents.showStyledMessage("Success", 
-                    "🎫 Redirecting to seat selection...\n\n" +
-                    "Trip: " + busCompany + "\n" +
-                    "Route: " + route + "\n" +
-                    "Date: " + departureDate + "\n" +
-                    "Passengers: " + passengerCountStr, this);
-                
-                // Gerçek implementasyon için yukarıdaki comment'i açın ve SeatSelectionPage constructor'ını uygun şekilde çağırın
-                
-            } catch (Exception ex) {
-                PageComponents.showStyledMessage("Error", 
-                    "Failed to proceed to seat selection: " + ex.getMessage(), this);
-            }
+        } catch (Exception ex) {
+            PageComponents.showStyledMessage("Error", 
+                "Failed to proceed to seat selection: " + ex.getMessage(), this);
+            ex.printStackTrace(); // Print stack trace for debugging
         }
     }
 }
