@@ -4,26 +4,8 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 
 public class WelcomePage extends BasePanel {
-    
-    // Modern pastel renk paleti - MainMenuPage ile uyumlu
-    private final Color BG_COLOR = new Color(248, 250, 252);
-    private final Color CARD_COLOR = Color.WHITE;
-    private final Color PRIMARY_COLOR = new Color(129, 140, 248); // Soft indigo
-    private final Color SECONDARY_COLOR = new Color(107, 114, 128);
-    private final Color ACCENT_COLOR = new Color(99, 102, 241);
-    private final Color SUCCESS_COLOR = new Color(52, 211, 153); // Soft emerald
-    private final Color WARNING_COLOR = new Color(251, 146, 60); // Soft orange
-    private final Color ERROR_COLOR = new Color(248, 113, 113); // Soft red
-    private final Color INFO_COLOR = new Color(56, 189, 248); // Soft blue
-    private final Color TEXT_PRIMARY = new Color(17, 24, 39);
-    private final Color TEXT_SECONDARY = new Color(75, 85, 99);
-    private final Color BORDER_COLOR = new Color(229, 231, 235);
-    private final Color HOVER_COLOR = new Color(243, 244, 246);
-    private final Color GRADIENT_START = new Color(139, 92, 246); // Purple
-    private final Color GRADIENT_END = new Color(59, 130, 246); // Blue
     
     public WelcomePage() {
         super("Travel Reservation System - Welcome", 1000, 750);
@@ -34,299 +16,276 @@ public class WelcomePage extends BasePanel {
     @Override
     public void setupUI() {
         setLayout(new BorderLayout());
-        getContentPane().setBackground(BG_COLOR);
-        
-        // Ana panel
-        JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.setBackground(BG_COLOR);
-        mainPanel.setBorder(new EmptyBorder(40, 60, 40, 60));
-        
-        // Header Panel
+        getContentPane().setBackground(new Color(15, 15, 35));
+
+        // Ana panel - gradient arkaplan (LoginPage ile aynı)
+        JPanel mainPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+                
+                // Gradient background
+                GradientPaint gradient = new GradientPaint(
+                    0, 0, new Color(15, 15, 35),
+                    getWidth(), getHeight(), new Color(25, 25, 55)
+                );
+                g2d.setPaint(gradient);
+                g2d.fillRect(0, 0, getWidth(), getHeight());
+                
+                // Decorative circles
+                g2d.setColor(new Color(138, 43, 226, 30));
+                g2d.fillOval(-50, -50, 200, 200);
+                g2d.fillOval(getWidth()-150, getHeight()-150, 200, 200);
+                
+                g2d.setColor(new Color(75, 0, 130, 20));
+                g2d.fillOval(getWidth()-100, -50, 150, 150);
+                g2d.fillOval(-100, getHeight()-100, 150, 150);
+                
+                // Additional decorative elements for welcome page
+                g2d.setColor(new Color(138, 43, 226, 15));
+                g2d.fillOval(getWidth()/2 - 100, -75, 200, 150);
+                g2d.fillOval(getWidth()/2 - 75, getHeight() - 75, 150, 150);
+            }
+        };
+        mainPanel.setLayout(new BorderLayout());
+        mainPanel.setOpaque(false);
+
+        // Center panel
+        JPanel centerPanel = new JPanel();
+        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
+        centerPanel.setOpaque(false);
+
+        // Header with logo
         JPanel headerPanel = createHeaderPanel();
         
-        // Content Panel
-        JPanel contentPanel = new JPanel();
-        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
-        contentPanel.setBackground(BG_COLOR);
-        
-        // Title Panel
+        // Title section
         JPanel titlePanel = createTitlePanel();
-        titlePanel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
-        // Menu Cards Panel
-        JPanel menuPanel = createMenuPanel();
-        menuPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        // Main content panel with glassmorphism effect
+        JPanel contentPanel = createContentPanel();
         
-        // Footer Panel
+        // Footer
         JPanel footerPanel = createFooterPanel();
-        footerPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        
-        contentPanel.add(titlePanel);
-        contentPanel.add(Box.createVerticalStrut(50));
-        contentPanel.add(menuPanel);
-        contentPanel.add(Box.createVerticalStrut(40));
-        contentPanel.add(footerPanel);
-        
-        mainPanel.add(headerPanel, BorderLayout.NORTH);
-        mainPanel.add(contentPanel, BorderLayout.CENTER);
-        
-        add(mainPanel);
+
+        centerPanel.add(Box.createVerticalStrut(30));
+        centerPanel.add(headerPanel);
+        centerPanel.add(Box.createVerticalStrut(20));
+        centerPanel.add(titlePanel);
+        centerPanel.add(Box.createVerticalStrut(40));
+        centerPanel.add(contentPanel);
+        centerPanel.add(Box.createVerticalStrut(30));
+        centerPanel.add(footerPanel);
+        centerPanel.add(Box.createVerticalStrut(30));
+
+        mainPanel.add(centerPanel, BorderLayout.CENTER);
+        add(mainPanel, BorderLayout.CENTER);
     }
     
     private JPanel createHeaderPanel() {
-        JPanel headerPanel = new JPanel(new BorderLayout());
-        headerPanel.setBackground(BG_COLOR);
-        headerPanel.setBorder(new EmptyBorder(0, 0, 20, 0));
+        JPanel headerPanel = new JPanel();
+        headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
+        headerPanel.setOpaque(false);
         
-        // Logo Panel
-        JPanel logoPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        logoPanel.setBackground(BG_COLOR);
+        // Logo with modern styling
+        JLabel logoLabel = new JLabel("✈️ 🚌", SwingConstants.CENTER);
+        logoLabel.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 64));
+        logoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
-        JLabel logoLabel = new JLabel("✈️ 🚌");
-        logoLabel.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 48));
-        logoLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        
-        logoPanel.add(logoLabel);
-        headerPanel.add(logoPanel, BorderLayout.CENTER);
-        
+        headerPanel.add(logoLabel);
         return headerPanel;
     }
     
     private JPanel createTitlePanel() {
-        JPanel titleCard = new JPanel();
-        titleCard.setLayout(new BoxLayout(titleCard, BoxLayout.Y_AXIS));
-        titleCard.setBackground(CARD_COLOR);
-        titleCard.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(BORDER_COLOR, 1),
-            new EmptyBorder(50, 60, 50, 60)
-        ));
-        titleCard.setMaximumSize(new Dimension(800, 200));
-        
+        JPanel titlePanel = new JPanel();
+        titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.Y_AXIS));
+        titlePanel.setOpaque(false);
+        titlePanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
+
         JLabel titleLabel = new JLabel("Travel Reservation System", SwingConstants.CENTER);
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 36));
-        titleLabel.setForeground(TEXT_PRIMARY);
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 42));
+        titleLabel.setForeground(Color.WHITE);
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        
+
         JLabel subtitleLabel = new JLabel("Bus and Flight Tickets in One Place", SwingConstants.CENTER);
-        subtitleLabel.setFont(new Font("Segoe UI", Font.ITALIC, 18));
-        subtitleLabel.setForeground(TEXT_SECONDARY);
+        subtitleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 18));
+        subtitleLabel.setForeground(new Color(189, 147, 249));
         subtitleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        titlePanel.add(titleLabel);
+        titlePanel.add(Box.createVerticalStrut(12));
+        titlePanel.add(subtitleLabel);
         
-        titleCard.add(titleLabel);
-        titleCard.add(Box.createVerticalStrut(15));
-        titleCard.add(subtitleLabel);
-        
-        return titleCard;
+        return titlePanel;
     }
     
-    private JPanel createMenuPanel() {
-        JPanel menuContainer = new JPanel();
-        menuContainer.setLayout(new BoxLayout(menuContainer, BoxLayout.Y_AXIS));
-        menuContainer.setBackground(BG_COLOR);
-        
-        // Question Panel
-        JPanel questionPanel = new JPanel();
-        questionPanel.setLayout(new BoxLayout(questionPanel, BoxLayout.Y_AXIS));
-        questionPanel.setBackground(BG_COLOR);
-        questionPanel.setBorder(new EmptyBorder(30, 0, 30, 0));
-        
-        JLabel questionLabel = new JLabel("Do you have an account?");
-        questionLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        questionLabel.setForeground(TEXT_PRIMARY);
-        questionLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        
-        JLabel subLabel = new JLabel("Choose an option to continue");
-        subLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-        subLabel.setForeground(TEXT_SECONDARY);
-        subLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        
-        questionPanel.add(questionLabel);
-        questionPanel.add(Box.createVerticalStrut(10));
-        questionPanel.add(subLabel);
-        
-        // Cards Panel
-        JPanel cardsPanel = new JPanel(new GridLayout(1, 3, 25, 0));
-        cardsPanel.setBackground(BG_COLOR);
-        cardsPanel.setMaximumSize(new Dimension(900, 220));
-        
-        // Create Account Card
-        JPanel signUpCard = createActionCard("Create New Account", 
-            "Join our travel community", ACCENT_COLOR, "signup");
-        
-        // Sign In Card
-        JPanel signInCard = createActionCard("Sign In", 
-            "Access your account", PRIMARY_COLOR, "signin");
-        
-        // Exit Card
-        JPanel exitCard = createActionCard("Exit", 
-            "Close the application", ERROR_COLOR, "exit");
-        
-        // Event listeners
-        addClickListener(signUpCard, () -> {
-            dispose();
-            new RegisterPage().display();
-        });
-        
-        addClickListener(signInCard, () -> {
-            dispose();
-            new LoginPage().display();
-        });
-        
-        addClickListener(exitCard, () -> {
-            int confirm = JOptionPane.showConfirmDialog(
-                this,
-                "Are you sure you want to exit the application?",
-                "Exit Confirmation",
-                JOptionPane.YES_NO_OPTION
-            );
-            if (confirm == JOptionPane.YES_OPTION) {
-                System.exit(0);
-            }
-        });
-        
-        cardsPanel.add(signUpCard);
-        cardsPanel.add(signInCard);
-        cardsPanel.add(exitCard);
-        
-        menuContainer.add(questionPanel);
-        menuContainer.add(cardsPanel);
-        
-        return menuContainer;
-    }
-    
-    private JPanel createActionCard(String title, String description, Color accentColor, String iconType) {
-        JPanel card = new JPanel();
-        card.setLayout(new BorderLayout());
-        card.setBackground(CARD_COLOR);
-        card.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(BORDER_COLOR, 1),
-            new EmptyBorder(30, 25, 30, 25)
-        ));
-        card.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        card.setPreferredSize(new Dimension(280, 220));
-        
-        // Icon Panel
-        JPanel iconPanel = createActionIcon(accentColor, iconType);
-        
-        // Text Panel
-        JPanel textPanel = new JPanel();
-        textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
-        textPanel.setBackground(CARD_COLOR);
-        textPanel.setBorder(new EmptyBorder(20, 0, 0, 0));
-        
-        JLabel titleLabel = new JLabel(title);
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        titleLabel.setForeground(TEXT_PRIMARY);
-        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        
-        JLabel descLabel = new JLabel("<html><center>" + description + "</center></html>");
-        descLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        descLabel.setForeground(TEXT_SECONDARY);
-        descLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        
-        textPanel.add(titleLabel);
-        textPanel.add(Box.createVerticalStrut(8));
-        textPanel.add(descLabel);
-        
-        // Hover effect
-        card.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                card.setBackground(HOVER_COLOR);
-                textPanel.setBackground(HOVER_COLOR);
-                card.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(accentColor, 2),
-                    new EmptyBorder(29, 24, 29, 24)
-                ));
-            }
-            
-            @Override
-            public void mouseExited(MouseEvent e) {
-                card.setBackground(CARD_COLOR);
-                textPanel.setBackground(CARD_COLOR);
-                card.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(BORDER_COLOR, 1),
-                    new EmptyBorder(30, 25, 30, 25)
-                ));
-            }
-        });
-        
-        card.add(iconPanel, BorderLayout.NORTH);
-        card.add(textPanel, BorderLayout.CENTER);
-        
-        return card;
-    }
-    
-    private JPanel createActionIcon(Color color, String iconType) {
-        JPanel iconPanel = new JPanel() {
+    private JPanel createContentPanel() {
+        // Main content panel with glassmorphism effect (LoginPage tarzı)
+        JPanel contentPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 Graphics2D g2d = (Graphics2D) g;
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 
-                int centerX = getWidth() / 2;
-                int centerY = getHeight() / 2;
+                // Glassmorphism background
+                g2d.setColor(new Color(255, 255, 255, 10));
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
                 
-                // Background circle
-                g2d.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), 30));
-                g2d.fillOval(centerX - 35, centerY - 35, 70, 70);
-                
-                g2d.setColor(color);
-                g2d.setStroke(new BasicStroke(3.0f));
-                
-                switch (iconType) {
-                    case "signup":
-                        // User plus icon
-                        g2d.drawOval(centerX - 8, centerY - 15, 16, 16);
-                        g2d.drawArc(centerX - 15, centerY - 5, 30, 30, 30, 120);
-                        g2d.drawLine(centerX + 15, centerY - 15, centerX + 15, centerY - 5);
-                        g2d.drawLine(centerX + 10, centerY - 10, centerX + 20, centerY - 10);
-                        break;
-                    case "signin":
-                        // Login arrow icon
-                        g2d.drawLine(centerX - 15, centerY, centerX + 10, centerY);
-                        g2d.drawLine(centerX + 5, centerY - 5, centerX + 10, centerY);
-                        g2d.drawLine(centerX + 5, centerY + 5, centerX + 10, centerY);
-                        g2d.drawRoundRect(centerX + 8, centerY - 12, 8, 24, 4, 4);
-                        break;
-                    case "exit":
-                        // Exit door icon
-                        g2d.drawRoundRect(centerX - 12, centerY - 15, 24, 30, 4, 4);
-                        g2d.drawLine(centerX - 6, centerY - 15, centerX - 6, centerY + 15);
-                        g2d.drawLine(centerX - 15, centerY, centerX - 8, centerY);
-                        g2d.drawLine(centerX - 10, centerY - 3, centerX - 8, centerY);
-                        g2d.drawLine(centerX - 10, centerY + 3, centerX - 8, centerY);
-                        break;
-                }
+                // Border
+                g2d.setColor(new Color(255, 255, 255, 30));
+                g2d.setStroke(new BasicStroke(1));
+                g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 20, 20);
             }
         };
-        iconPanel.setPreferredSize(new Dimension(80, 80));
-        iconPanel.setOpaque(false);
-        return iconPanel;
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+        contentPanel.setOpaque(false);
+        contentPanel.setBorder(BorderFactory.createEmptyBorder(50, 50, 50, 50));
+        contentPanel.setMaximumSize(new Dimension(700, 450));
+        contentPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // Question section
+        JPanel questionPanel = new JPanel();
+        questionPanel.setLayout(new BoxLayout(questionPanel, BoxLayout.Y_AXIS));
+        questionPanel.setOpaque(false);
+        questionPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 30, 0));
+        
+        JLabel questionLabel = new JLabel("Do you have an account?", SwingConstants.CENTER);
+        questionLabel.setFont(new Font("Segoe UI", Font.BOLD, 28));
+        questionLabel.setForeground(Color.WHITE);
+        questionLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        JLabel subLabel = new JLabel("Choose an option to continue", SwingConstants.CENTER);
+        subLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        subLabel.setForeground(new Color(189, 147, 249));
+        subLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        questionPanel.add(questionLabel);
+        questionPanel.add(Box.createVerticalStrut(10));
+        questionPanel.add(subLabel);
+
+        // Buttons panel
+        JPanel buttonsPanel = new JPanel();
+        buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.Y_AXIS));
+        buttonsPanel.setOpaque(false);
+        
+        // Create Account Button
+        JButton signUpButton = createModernButton("Create New Account", new Color(138, 43, 226));
+        signUpButton.setMaximumSize(new Dimension(400, 55));
+        
+        // Sign In Button
+        JButton signInButton = createModernButton("Sign In", new Color(108, 92, 231));
+        signInButton.setMaximumSize(new Dimension(400, 55));
+        
+        // Exit Button
+        JButton exitButton = createModernButton("Exit Application", new Color(220, 38, 127));
+        exitButton.setMaximumSize(new Dimension(400, 55));
+
+        // Action listeners
+        signUpButton.addActionListener(e -> {
+            dispose();
+            new RegisterPage().display();
+        });
+        
+        signInButton.addActionListener(e -> {
+            dispose();
+            new LoginPage().display();
+        });
+        
+        exitButton.addActionListener(e -> {
+            int confirm = JOptionPane.showConfirmDialog(
+                this,
+                "Are you sure you want to exit the application?",
+                "Exit Confirmation",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE
+            );
+            if (confirm == JOptionPane.YES_OPTION) {
+                System.exit(0);
+            }
+        });
+
+        buttonsPanel.add(signUpButton);
+        buttonsPanel.add(Box.createVerticalStrut(20));
+        buttonsPanel.add(signInButton);
+        buttonsPanel.add(Box.createVerticalStrut(20));
+        buttonsPanel.add(exitButton);
+
+        contentPanel.add(questionPanel);
+        contentPanel.add(buttonsPanel);
+        
+        return contentPanel;
+    }
+    
+    private JButton createModernButton(String text, Color baseColor) {
+        JButton button = new JButton(text) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                Color buttonColor;
+                if (getModel().isPressed()) {
+                    buttonColor = baseColor.darker();
+                } else if (getModel().isRollover()) {
+                    buttonColor = baseColor.brighter();
+                } else {
+                    buttonColor = baseColor;
+                }
+                
+                // Gradient effect for buttons
+                GradientPaint gradient = new GradientPaint(
+                    0, 0, buttonColor,
+                    0, getHeight(), buttonColor.darker()
+                );
+                g2d.setPaint(gradient);
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
+                
+                // Subtle inner highlight
+                g2d.setColor(new Color(255, 255, 255, 20));
+                g2d.fillRoundRect(2, 2, getWidth()-4, getHeight()/2-2, 10, 10);
+                
+                super.paintComponent(g);
+            }
+        };
+        
+        button.setForeground(Color.WHITE);
+        button.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        button.setFocusPainted(false);
+        button.setBorderPainted(false);
+        button.setContentAreaFilled(false);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        button.setAlignmentX(Component.CENTER_ALIGNMENT);
+        button.setPreferredSize(new Dimension(400, 55));
+        
+        // Hover animation effect
+        button.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                button.repaint();
+            }
+            
+            @Override
+            public void mouseExited(MouseEvent e) {
+                button.repaint();
+            }
+        });
+        
+        return button;
     }
     
     private JPanel createFooterPanel() {
         JPanel footerPanel = new JPanel();
-        footerPanel.setBackground(BG_COLOR);
-        footerPanel.setBorder(new EmptyBorder(20, 0, 0, 0));
+        footerPanel.setOpaque(false);
         
         JLabel footerLabel = new JLabel("© 2025 Travel Reservation System - Safe and Fast Booking");
         footerLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        footerLabel.setForeground(TEXT_SECONDARY);
+        footerLabel.setForeground(new Color(189, 147, 249, 150));
         footerLabel.setHorizontalAlignment(SwingConstants.CENTER);
         
         footerPanel.add(footerLabel);
         
         return footerPanel;
-    }
-    
-    private void addClickListener(JPanel card, Runnable action) {
-        card.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                action.run();
-            }
-        });
     }
 }
