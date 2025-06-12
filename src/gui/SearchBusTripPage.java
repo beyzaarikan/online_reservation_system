@@ -14,6 +14,7 @@ import models.Trip;
 import repository.*;
 import service.*;
 
+
 public class SearchBusTripPage extends BasePanel {
     private JTextField fromField;
     private JTextField toField;
@@ -637,7 +638,6 @@ public class SearchBusTripPage extends BasePanel {
                         trip.getSeats().stream().mapToInt(seat -> seat.isAvailable() ? 0 : 1).sum();
                     
                     tableModel.addRow(new Object[]{
-                        trip.getTripNo(),
                         trip.getCompany(),
                         trip.getStartPoint() + " → " + trip.getEndPoint(),
                         trip.getDepartureTime().format(timeFormatter),

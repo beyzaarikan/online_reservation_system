@@ -5,6 +5,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 // Observer sınıflarınızı içe aktarıyoruz
 import observer.Observer;
@@ -12,12 +16,14 @@ import observer.SeatManager;
 import repository.*;
 import models.*;
 import service.*;
+import singleton.SessionManagerTrip;
 
 public class BusSeatSelectionPage extends BasePanel implements Observer {
     private String busCompany;
     private String fromCity;
     private String toCity;
-    private String date;
+    private String departureDate;
+    private String returnDate;
     private String departureTime;
     private String arrivalTime;
     private String basePrice;
@@ -31,24 +37,27 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
     private JButton backButton;
 
     private List<BusSeatButton> selectedSeats;
+    private List<BusSeatButton> allSeats;
     private double basePriceValue;
 
     private SeatManager seatManager;
 
-    public BusSeatSelectionPage(String busCompany, String fromCity, String toCity, String returnDate,
-                               String departureTime, String arrivalTime, String basePrice,
-                               int passengerCount, String amenities) {
-        super("Bus Seat Selection", 1400, 800);
+    public BusSeatSelectionPage(String busCompany, String fromCity, String toCity, 
+                               String returnDate, String departureDate, String arrivalTime,
+                               String basePrice, int passengerCount, String amenities) {
+        super("Bus Seat Selection - " + busCompany, 1400, 800);
         this.busCompany = busCompany;
         this.fromCity = fromCity;
         this.toCity = toCity;
-        this.date = returnDate;
-        this.departureTime = departureTime;
+        this.departureDate = departureDate;
+        this.returnDate = returnDate;
+        this.departureTime = extractTime(departureDate); // Extract time if combined
         this.arrivalTime = arrivalTime;
         this.basePrice = basePrice;
         this.passengerCount = passengerCount;
         this.amenities = amenities;
         this.selectedSeats = new ArrayList<>();
+        this.allSeats = new ArrayList<>();
         this.seatManager = new SeatManager();
 
         this.seatManager.addObserver(this);
@@ -58,6 +67,16 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         } catch (NumberFormatException e) {
             this.basePriceValue = 45.0;
         }
+    }
+    private String extractTime(String dateTimeString) {
+        // If the string contains time, extract it, otherwise return a default
+        if (dateTimeString != null && dateTimeString.contains(" ")) {
+            String[] parts = dateTimeString.split(" ");
+            if (parts.length > 1) {
+                return parts[1];
+            }
+        }
+        return "08:00"; // Default time
     }
 
     @Override
@@ -164,10 +183,11 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         infoCard.setBorder(BorderFactory.createEmptyBorder(25, 40, 25, 40));
         infoCard.setMaximumSize(new Dimension(1000, 100));
 
+
         // Info items
         JPanel companyInfo = createModernInfoItem("🚌", busCompany, "Company");
         JPanel routeInfo = createModernInfoItem("📍", fromCity + " → " + toCity, "Route");
-        JPanel dateInfo = createModernInfoItem("📅", date + " " + departureTime, "Departure");
+        JPanel dateInfo = createModernInfoItem("📅", departureDate + " " + departureTime, "Departure");
         JPanel passengerInfo = createModernInfoItem("👥", passengerCount + " passenger(s)", "Passengers");
 
         infoCard.add(companyInfo);
@@ -249,7 +269,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         JPanel busHeader = new JPanel(new BorderLayout());
         busHeader.setOpaque(false);
 
-        JLabel busLabel = new JLabel(busCompany.toUpperCase() + " BUS", SwingConstants.CENTER);
+        JLabel busLabel = new JLabel(busCompany.toUpperCase() + "  ", SwingConstants.CENTER);
         busLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
         busLabel.setForeground(Color.WHITE);
 
