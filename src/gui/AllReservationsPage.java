@@ -13,7 +13,7 @@ public class AllReservationsPage extends BasePanel {
     private JComboBox<String> typeFilter;
     
     public AllReservationsPage() {
-        super("All Reservations Management", 1200, 800);
+        super("My Reservations ", 1200, 800);
     }
     
     @Override

@@ -423,7 +423,7 @@ public class SeatSelectionPage extends BasePanel {
         PageComponents.showStyledMessage("Booking Confirmed", message.toString(), this);
         
         dispose();
-        new ReservationPage().display();
+        new AllReservationsPage().display();
     }
     
     // Inner class for seat buttons

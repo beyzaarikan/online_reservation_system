@@ -262,7 +262,7 @@ public class MainMenuPage extends JFrame {
         
         addClickListener(reservationCard, () -> {
             dispose();
-            new ReservationPage().display();
+            new AllReservationsPage().display();
         });
         
         addClickListener(profileCard, () -> {
