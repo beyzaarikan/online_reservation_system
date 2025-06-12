@@ -11,12 +11,11 @@ public class SearchBusTripPage extends BasePanel {
     private JTextField fromField;
     private JTextField toField;
     private JSpinner dateSpinner;
-    private JSpinner returnDateSpinner;
     private JComboBox<String> passengerCount;
     private JCheckBox roundTripCheckbox;
     private JTable busTable;
     private DefaultTableModel tableModel;
-    private JPanel returnDatePanel;
+    
     
     public SearchBusTripPage() {
         super("Search Bus Trips - Travel System", 1200, 800);
@@ -134,34 +133,28 @@ public class SearchBusTripPage extends BasePanel {
         gbc.gridx = 0; gbc.gridy = 0;
         fieldsPanel.add(createFieldPanel("From City", fromField = createModernTextField("Enter departure city")), gbc);
         
-        gbc.gridx = 1;
+        gbc.gridx = 1; gbc.gridy = 0;
         fieldsPanel.add(createFieldPanel("To City", toField = createModernTextField("Enter destination city")), gbc);
 
-        // Date and Round trip - same row
+        // Date and Passengers - same row
         gbc.gridx = 0; gbc.gridy = 1;
-        fieldsPanel.add(createFieldPanel("Departure Date", dateSpinner = createDateSpinner()), gbc);
+        fieldsPanel.add(createFieldPanel("Departure Date", dateSpinner = createDateSpinner(), true), gbc);
         
-        gbc.gridx = 1;
-        JPanel roundTripPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        gbc.gridx = 1; gbc.gridy = 1;
+        passengerCount = new JComboBox<>(new String[]{"1", "2", "3", "4", "5", "6+"});
+        styleComboBox(passengerCount);
+        fieldsPanel.add(createFieldPanel("Passengers", passengerCount), gbc);
+
+        // Round trip checkbox - full width
+        gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 2;
+        JPanel roundTripPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
         roundTripPanel.setOpaque(false);
         roundTripCheckbox = new JCheckBox("Round Trip");
         roundTripCheckbox.setOpaque(false);
         roundTripCheckbox.setForeground(Color.WHITE);
         roundTripCheckbox.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        roundTripCheckbox.addActionListener(e -> toggleReturnDate());
         roundTripPanel.add(roundTripCheckbox);
-        fieldsPanel.add(createFieldPanel("Trip Type", roundTripPanel), gbc);
-
-        // Return date and passengers - same row
-        gbc.gridx = 0; gbc.gridy = 2;
-        returnDatePanel = createFieldPanel("Return Date", returnDateSpinner = createDateSpinner());
-        returnDatePanel.setVisible(false);
-        fieldsPanel.add(returnDatePanel, gbc);
-        
-        gbc.gridx = 1;
-        passengerCount = new JComboBox<>(new String[]{"1", "2", "3", "4", "5", "6+"});
-        styleComboBox(passengerCount);
-        fieldsPanel.add(createFieldPanel("Passengers", passengerCount), gbc);
+        fieldsPanel.add(roundTripPanel, gbc);
 
         // Buttons panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 0));
@@ -343,7 +336,8 @@ public class SearchBusTripPage extends BasePanel {
         return button;
     }
 
-    private JPanel createFieldPanel(String labelText, JComponent field) {
+    // Overloaded method with centerLabel parameter
+    private JPanel createFieldPanel(String labelText, JComponent field, boolean centerLabel) {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setOpaque(false);
@@ -351,13 +345,23 @@ public class SearchBusTripPage extends BasePanel {
         JLabel label = new JLabel(labelText);
         label.setForeground(new Color(189, 147, 249));
         label.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        label.setAlignmentX(Component.LEFT_ALIGNMENT);
+        
+        if (centerLabel) {
+            label.setAlignmentX(Component.CENTER_ALIGNMENT);
+        } else {
+            label.setAlignmentX(Component.LEFT_ALIGNMENT);
+        }
         
         panel.add(label);
         panel.add(Box.createVerticalStrut(8));
         panel.add(field);
         
         return panel;
+    }
+
+    // Original method without centerLabel parameter
+    private JPanel createFieldPanel(String labelText, JComponent field) {
+        return createFieldPanel(labelText, field, false);
     }
 
     private JSpinner createDateSpinner() {
@@ -399,13 +403,14 @@ public class SearchBusTripPage extends BasePanel {
         textField.setForeground(Color.WHITE);
         textField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         textField.setBorder(BorderFactory.createEmptyBorder(12, 15, 12, 15));
+        textField.setHorizontalAlignment(JTextField.CENTER);
         
         return spinner;
     }
 
     private void styleComboBox(JComboBox<String> comboBox) {
         comboBox.setBackground(new Color(255, 255, 255, 15));
-        comboBox.setForeground(Color.WHITE);
+        comboBox.setForeground(Color.BLACK);
         comboBox.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         comboBox.setPreferredSize(new Dimension(250, 45));
         comboBox.setMaximumSize(new Dimension(250, 45));
@@ -460,11 +465,6 @@ public class SearchBusTripPage extends BasePanel {
         scrollPane.getHorizontalScrollBar().setBackground(new Color(255, 255, 255, 20));
     }
 
-    private void toggleReturnDate() {
-        returnDatePanel.setVisible(roundTripCheckbox.isSelected());
-        revalidate();
-        repaint();
-    }
     
     private void searchBuses() {
         String from = fromField.getText();
@@ -516,10 +516,8 @@ public class SearchBusTripPage extends BasePanel {
         toField.setText("Enter destination city");
         toField.setForeground(new Color(150, 150, 150));
         dateSpinner.setValue(java.sql.Date.valueOf(LocalDate.now()));
-        returnDateSpinner.setValue(java.sql.Date.valueOf(LocalDate.now()));
         passengerCount.setSelectedIndex(0);
         roundTripCheckbox.setSelected(false);
-        toggleReturnDate();
         tableModel.setRowCount(0);
         busTable.clearSelection();
     }
@@ -547,10 +545,6 @@ public class SearchBusTripPage extends BasePanel {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         String departureDate = dateFormat.format((Date) dateSpinner.getValue());
         
-        String returnDate = null;
-        if (roundTripCheckbox.isSelected()) {
-            returnDate = dateFormat.format((Date) returnDateSpinner.getValue());
-        }
         
         String passengerCountStr = (String) passengerCount.getSelectedItem();
         int passengerCountInt = Integer.parseInt(passengerCountStr.replace("+", ""));
@@ -562,7 +556,7 @@ public class SearchBusTripPage extends BasePanel {
                 busCompany, 
                 fromCity, 
                 toCity, 
-                returnDate, 
+
                 departureDate, 
                 arrivalTime, 
                 price, 

@@ -32,14 +32,13 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
 
     private SeatManager seatManager;
 
-    public BusSeatSelectionPage(String busCompany, String fromCity, String toCity, String returnDate,
+    public BusSeatSelectionPage(String busCompany, String fromCity, String toCity,
                                String departureTime, String arrivalTime, String basePrice,
                                int passengerCount, String amenities) {
         super("Bus Seat Selection", 1400, 800);
         this.busCompany = busCompany;
         this.fromCity = fromCity;
         this.toCity = toCity;
-        this.date = returnDate;
         this.departureTime = departureTime;
         this.arrivalTime = arrivalTime;
         this.basePrice = basePrice;
