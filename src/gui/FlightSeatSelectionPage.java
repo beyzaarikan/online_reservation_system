@@ -268,62 +268,139 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
     }
 
     private JPanel createModernSeatLayout() {
-        JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.setOpaque(false);
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(30, 0, 30, 0));
+    JPanel mainPanel = new JPanel(new BorderLayout());
+    mainPanel.setOpaque(false);
+    mainPanel.setBorder(BorderFactory.createEmptyBorder(30, 0, 0, 0));
 
-        JPanel aircraftLayout = new JPanel();
-        aircraftLayout.setLayout(new BoxLayout(aircraftLayout, BoxLayout.Y_AXIS));
-        aircraftLayout.setOpaque(false);
+    JPanel aircraftLayout = new JPanel();
+    aircraftLayout.setLayout(new BoxLayout(aircraftLayout, BoxLayout.Y_AXIS));
+    aircraftLayout.setOpaque(false);
 
-        Random random = new Random(42);
-        int seatNumber = 1;
-        char rowLetter = 'A';
+    Random random = new Random(42);
+    int seatNumber = 1;
+    char rowLetter = 'A';
 
-        // Different layouts based on class
-        int seatsPerRow = getSeatsPerRow();
-        int totalRows = getTotalRows();
+    // Different layouts based on class
+    int seatsPerRow = getSeatsPerRow();
+    int totalRows = getTotalRows();
 
-        for (int row = 0; row < totalRows; row++) {
-            JPanel rowPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 8));
-            rowPanel.setOpaque(false);
+    for (int row = 0; row < totalRows; row++) {
+        JPanel rowPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 8));
+        rowPanel.setOpaque(false);
 
-            // Row number label
-            JLabel rowLabel = new JLabel(String.valueOf(row + 1));
-            rowLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
-            rowLabel.setForeground(new Color(189, 147, 249));
-            rowLabel.setPreferredSize(new Dimension(25, 35));
-            rowLabel.setHorizontalAlignment(SwingConstants.CENTER);
-            rowPanel.add(rowLabel);
+        // Row number label
+        JLabel rowLabel = new JLabel(String.valueOf(row + 1));
+        rowLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        rowLabel.setForeground(new Color(189, 147, 249));
+        rowLabel.setPreferredSize(new Dimension(25, 35));
+        rowLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        rowPanel.add(rowLabel);
 
-            char currentLetter = 'A';
-            for (int col = 0; col < seatsPerRow; col++) {
-                // Add aisle space for wide-body aircraft
-                if (seatsPerRow == 6 && (col == 2 || col == 4)) {
-                    JLabel aisleLabel = new JLabel("  ");
-                    aisleLabel.setPreferredSize(new Dimension(20, 35));
-                    rowPanel.add(aisleLabel);
-                }
-
-                boolean isWindow = (col == 0 || col == seatsPerRow - 1);
-                boolean isAisle = !isWindow && (seatsPerRow == 6 ? (col == 1 || col == 4) : (col == 1 || col == 2));
-                boolean isOccupied = random.nextDouble() > 0.70;
-                boolean isPremium = row < 3 || "Business".equals(flightClass) || "First Class".equals(flightClass);
-
-                String seatLabel = (row + 1) + String.valueOf(currentLetter);
-                FlightSeatButton seat = new FlightSeatButton(seatLabel, isOccupied, isWindow, isAisle, isPremium);
-                seat.setSeatManager(seatManager);
-                rowPanel.add(seat);
-
-                currentLetter++;
+        char currentLetter = 'A';
+        for (int col = 0; col < seatsPerRow; col++) {
+            // Add aisle space for wide-body aircraft
+            if (seatsPerRow == 6 && (col == 2 || col == 4)) {
+                JLabel aisleLabel = new JLabel("  ");
+                aisleLabel.setPreferredSize(new Dimension(20, 35));
+                rowPanel.add(aisleLabel);
             }
 
-            aircraftLayout.add(rowPanel);
+            boolean isWindow = (col == 0 || col == seatsPerRow - 1);
+            boolean isAisle = !isWindow && (seatsPerRow == 6 ? (col == 1 || col == 4) : (col == 1 || col == 2));
+            boolean isOccupied = random.nextDouble() > 0.70;
+            boolean isPremium = row < 3 || "Business".equals(flightClass) || "First Class".equals(flightClass);
+
+            String seatLabel = (row + 1) + String.valueOf(currentLetter);
+            FlightSeatButton seat = new FlightSeatButton(seatLabel, isOccupied, isWindow, isAisle, isPremium);
+            seat.setSeatManager(seatManager);
+            rowPanel.add(seat);
+
+            currentLetter++;
         }
 
-        mainPanel.add(aircraftLayout, BorderLayout.CENTER);
-        return mainPanel;
+        aircraftLayout.add(rowPanel);
     }
+
+    // Create a modern styled scroll pane
+    JScrollPane scrollPane = new JScrollPane(aircraftLayout) {
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            Graphics2D g2d = (Graphics2D) g;
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            
+            // Transparent background for glassmorphism effect
+            g2d.setColor(new Color(255, 255, 255, 5));
+            g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
+        }
+    };
+    
+    // Customize scroll pane appearance
+    scrollPane.setOpaque(false);
+    scrollPane.getViewport().setOpaque(false);
+    scrollPane.setBorder(null);
+    scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+    scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+    
+    // Custom scroll bar styling
+    JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
+    verticalScrollBar.setOpaque(false);
+    verticalScrollBar.setUI(new ModernScrollBarUI());
+    verticalScrollBar.setPreferredSize(new Dimension(12, 0));
+    verticalScrollBar.setUnitIncrement(16);
+    verticalScrollBar.setBlockIncrement(64);
+
+    mainPanel.add(scrollPane, BorderLayout.CENTER);
+    return mainPanel;
+}
+
+private class ModernScrollBarUI extends javax.swing.plaf.basic.BasicScrollBarUI {
+    @Override
+    protected void configureScrollBarColors() {
+        this.thumbColor = new Color(138, 43, 226, 100);
+        this.trackColor = new Color(255, 255, 255, 20);
+    }
+
+    @Override
+    protected JButton createDecreaseButton(int orientation) {
+        return createZeroButton();
+    }
+
+    @Override
+    protected JButton createIncreaseButton(int orientation) {
+        return createZeroButton();
+    }
+
+    private JButton createZeroButton() {
+        JButton button = new JButton();
+        button.setPreferredSize(new Dimension(0, 0));
+        button.setMinimumSize(new Dimension(0, 0));
+        button.setMaximumSize(new Dimension(0, 0));
+        return button;
+    }
+
+    @Override
+    protected void paintThumb(Graphics g, JComponent c, Rectangle thumbBounds) {
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        
+        g2.setColor(thumbColor);
+        g2.fillRoundRect(thumbBounds.x + 2, thumbBounds.y + 2, 
+                        thumbBounds.width - 4, thumbBounds.height - 4, 6, 6);
+        g2.dispose();
+    }
+
+    @Override
+    protected void paintTrack(Graphics g, JComponent c, Rectangle trackBounds) {
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        
+        g2.setColor(trackColor);
+        g2.fillRoundRect(trackBounds.x, trackBounds.y, 
+                        trackBounds.width, trackBounds.height, 6, 6);
+        g2.dispose();
+    }
+}
 
     private int getSeatsPerRow() {
         if ("First Class".equals(flightClass)) {
