@@ -11,23 +11,6 @@ import singleton.SessionManager;
 public class MainMenuPage extends JFrame {
     private boolean isAdmin;
     
-    // Modern pastel renk paleti
-    private final Color BG_COLOR = new Color(248, 250, 252);
-    private final Color CARD_COLOR = Color.WHITE;
-    private final Color PRIMARY_COLOR = new Color(129, 140, 248); // Soft indigo
-    private final Color SECONDARY_COLOR = new Color(107, 114, 128);
-    private final Color ACCENT_COLOR = new Color(99, 102, 241);
-    private final Color SUCCESS_COLOR = new Color(52, 211, 153); // Soft emerald
-    private final Color WARNING_COLOR = new Color(251, 146, 60); // Soft orange
-    private final Color ERROR_COLOR = new Color(248, 113, 113); // Soft red
-    private final Color INFO_COLOR = new Color(56, 189, 248); // Soft blue
-    private final Color TEXT_PRIMARY = new Color(17, 24, 39);
-    private final Color TEXT_SECONDARY = new Color(75, 85, 99);
-    private final Color BORDER_COLOR = new Color(229, 231, 235);
-    private final Color HOVER_COLOR = new Color(243, 244, 246);
-    private final Color GRADIENT_START = new Color(139, 92, 246); // Purple
-    private final Color GRADIENT_END = new Color(59, 130, 246); // Blue
-    
     public MainMenuPage() {
         this(false); // Default olarak normal user
     }
@@ -39,32 +22,51 @@ public class MainMenuPage extends JFrame {
     }
     
     private void setupWindow() {
-        setTitle(isAdmin ? "Admin Dashboard" : "Travel Dashboard");
+        setTitle(isAdmin ? "Admin Dashboard - Travel System" : "Travel Dashboard - Travel System");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1000, 750);
         setLocationRelativeTo(null);
         setResizable(false);
-        
-        // Modern Look and Feel
-        try {
-            UIManager.setLookAndFeel(UIManager.getLookAndFeel());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
     
     public void setupUI() {
-        JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.setBackground(BG_COLOR);
+        // Ana panel - gradient arkaplan
+        JPanel mainPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+                
+                // Gradient background - LoginPage ile aynı
+                GradientPaint gradient = new GradientPaint(
+                    0, 0, new Color(15, 15, 35),
+                    getWidth(), getHeight(), new Color(25, 25, 55)
+                );
+                g2d.setPaint(gradient);
+                g2d.fillRect(0, 0, getWidth(), getHeight());
+                
+                // Decorative circles - LoginPage ile aynı
+                g2d.setColor(new Color(138, 43, 226, 30));
+                g2d.fillOval(-50, -50, 200, 200);
+                g2d.fillOval(getWidth()-150, getHeight()-150, 200, 200);
+                
+                g2d.setColor(new Color(75, 0, 130, 20));
+                g2d.fillOval(getWidth()-100, -50, 150, 150);
+                g2d.fillOval(-100, getHeight()-100, 150, 150);
+            }
+        };
+        mainPanel.setLayout(new BorderLayout());
+        mainPanel.setOpaque(false);
         
-        // Header Panel with user info
+        // Header Panel with user info and logout
         JPanel headerPanel = createHeaderPanel();
         
         // Main Content Panel
         JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
-        contentPanel.setBackground(BG_COLOR);
-        contentPanel.setBorder(new EmptyBorder(40, 60, 40, 60));
+        contentPanel.setOpaque(false);
+        contentPanel.setBorder(new EmptyBorder(20, 60, 40, 60));
         
         // Title Panel
         JPanel titlePanel = createTitlePanel();
@@ -75,7 +77,7 @@ public class MainMenuPage extends JFrame {
         menuPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         contentPanel.add(titlePanel);
-        contentPanel.add(Box.createVerticalStrut(40));
+        contentPanel.add(Box.createVerticalStrut(30));
         contentPanel.add(menuPanel);
         
         mainPanel.add(headerPanel, BorderLayout.NORTH);
@@ -86,12 +88,30 @@ public class MainMenuPage extends JFrame {
     
     private JPanel createHeaderPanel() {
         JPanel headerPanel = new JPanel(new BorderLayout());
-        headerPanel.setBackground(BG_COLOR);
-        headerPanel.setBorder(new EmptyBorder(20, 40, 20, 40));
+        headerPanel.setOpaque(false);
+        headerPanel.setBorder(new EmptyBorder(20, 40, 10, 40));
         
-        // User info panel
-        JPanel userInfoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        userInfoPanel.setBackground(BG_COLOR);
+        // User info panel with glassmorphism
+        JPanel userInfoPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                // Glassmorphism background
+                g2d.setColor(new Color(255, 255, 255, 10));
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
+                
+                // Border
+                g2d.setColor(new Color(255, 255, 255, 30));
+                g2d.setStroke(new BasicStroke(1));
+                g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 15, 15);
+            }
+        };
+        userInfoPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        userInfoPanel.setOpaque(false);
+        userInfoPanel.setBorder(new EmptyBorder(15, 20, 15, 20));
         
         // User avatar
         JPanel avatarPanel = new JPanel() {
@@ -104,8 +124,12 @@ public class MainMenuPage extends JFrame {
                 int centerX = getWidth() / 2;
                 int centerY = getHeight() / 2;
                 
-                // Profil dairesi
-                g2d.setColor(isAdmin ? ACCENT_COLOR : PRIMARY_COLOR);
+                // Profil dairesi - gradient
+                GradientPaint avatarGradient = new GradientPaint(
+                    0, 0, new Color(138, 43, 226),
+                    getWidth(), getHeight(), new Color(108, 92, 231)
+                );
+                g2d.setPaint(avatarGradient);
                 g2d.fillOval(centerX - 20, centerY - 20, 40, 40);
                 
                 // Kullanıcı simgesi
@@ -125,15 +149,15 @@ public class MainMenuPage extends JFrame {
         
         JLabel welcomeLabel = new JLabel("Welcome, " + (isAdmin ? "Admin" : currentUser.getName()) + "!");
         welcomeLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        welcomeLabel.setForeground(TEXT_PRIMARY);
+        welcomeLabel.setForeground(Color.WHITE);
         
         JLabel statusLabel = new JLabel(isAdmin ? "Administrator" : "Customer");
         statusLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        statusLabel.setForeground(isAdmin ? ACCENT_COLOR : PRIMARY_COLOR);
+        statusLabel.setForeground(new Color(189, 147, 249));
         
         JPanel textPanel = new JPanel();
         textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
-        textPanel.setBackground(BG_COLOR);
+        textPanel.setOpaque(false);
         textPanel.add(welcomeLabel);
         textPanel.add(statusLabel);
         
@@ -141,10 +165,9 @@ public class MainMenuPage extends JFrame {
         userInfoPanel.add(Box.createHorizontalStrut(15));
         userInfoPanel.add(textPanel);
         
-        // Logout button
-        JButton logoutButton = createSecondaryButton("Logout");
-        logoutButton.setBackground(ERROR_COLOR);
-        logoutButton.setForeground(Color.WHITE);
+        // Logout button - modern style
+        JButton logoutButton = createModernButton("Logout", new Color(220, 38, 127), false);
+        logoutButton.setPreferredSize(new Dimension(100, 40));
         logoutButton.addActionListener(e -> handleLogout());
         
         headerPanel.add(userInfoPanel, BorderLayout.WEST);
@@ -154,55 +177,77 @@ public class MainMenuPage extends JFrame {
     }
     
     private JPanel createTitlePanel() {
-        JPanel titleCard = new JPanel();
-        titleCard.setLayout(new BoxLayout(titleCard, BoxLayout.Y_AXIS));
-        titleCard.setBackground(CARD_COLOR);
-        titleCard.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(BORDER_COLOR, 1),
-            new EmptyBorder(40, 50, 40, 50)
-        ));
-        
-        JLabel titleLabel = new JLabel(isAdmin ? "Admin Dashboard" : "Travel Dashboard");
+        JPanel titlePanel = new JPanel();
+        titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.Y_AXIS));
+        titlePanel.setOpaque(false);
+        titlePanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
+
+        JLabel titleLabel = new JLabel(isAdmin ? "Admin Dashboard" : "Travel Dashboard", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 32));
-        titleLabel.setForeground(TEXT_PRIMARY);
+        titleLabel.setForeground(Color.WHITE);
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        
-        JLabel subtitleLabel = new JLabel(isAdmin ? "Manage your travel system" : "Plan your perfect journey");
+
+        JLabel subtitleLabel = new JLabel(isAdmin ? "Manage your travel system" : "Plan your perfect journey", SwingConstants.CENTER);
         subtitleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-        subtitleLabel.setForeground(TEXT_SECONDARY);
+        subtitleLabel.setForeground(new Color(189, 147, 249));
         subtitleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        titlePanel.add(titleLabel);
+        titlePanel.add(Box.createVerticalStrut(8));
+        titlePanel.add(subtitleLabel);
         
-        titleCard.add(titleLabel);
-        titleCard.add(Box.createVerticalStrut(10));
-        titleCard.add(subtitleLabel);
-        
-        return titleCard;
+        return titlePanel;
     }
     
     private JPanel createMenuPanel() {
-        JPanel menuGrid = new JPanel(new GridLayout(isAdmin ? 3 : 2, 2, 25, 25));
-        menuGrid.setBackground(BG_COLOR);
-        menuGrid.setPreferredSize(new Dimension(700, isAdmin ? 450 : 300));
+        JPanel menuContainer = new JPanel();
+        menuContainer.setLayout(new BoxLayout(menuContainer, BoxLayout.Y_AXIS));
+        menuContainer.setOpaque(false);
+        
+        // Glassmorphism container for menu cards
+        JPanel menuPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                // Glassmorphism background
+                g2d.setColor(new Color(255, 255, 255, 8));
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
+                
+                // Border
+                g2d.setColor(new Color(255, 255, 255, 25));
+                g2d.setStroke(new BasicStroke(1));
+                g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 20, 20);
+            }
+        };
+        
+        menuPanel.setLayout(new GridLayout(isAdmin ? 3 : 2, 2, 25, 25));
+        menuPanel.setOpaque(false);
+        menuPanel.setBorder(new EmptyBorder(40, 40, 40, 40));
+        menuPanel.setPreferredSize(new Dimension(700, isAdmin ? 480 : 320));
         
         if (isAdmin) {
-            setupAdminMenu(menuGrid);
+            setupAdminMenu(menuPanel);
         } else {
-            setupUserMenu(menuGrid);
+            setupUserMenu(menuPanel);
         }
         
-        return menuGrid;
+        menuContainer.add(menuPanel);
+        return menuContainer;
     }
     
     private void setupUserMenu(JPanel menuGrid) {
         // User menu options
-        JPanel busTripsCard = createVisualMenuCard("Search Bus Trips", 
-            "Find and book bus journeys", PRIMARY_COLOR, "bus");
-        JPanel flightTripsCard = createVisualMenuCard("Search Flights", 
-            "Discover flight options", INFO_COLOR, "flight");
-        JPanel reservationCard = createVisualMenuCard("My Reservations", 
-            "View your bookings", SUCCESS_COLOR, "reservation");
-        JPanel profileCard = createVisualMenuCard("My Profile", 
-            "Manage your account", WARNING_COLOR, "profile");
+        JPanel busTripsCard = createModernMenuCard("Search Bus Trips", 
+            "Find and book bus journeys", new Color(138, 43, 226), "🚌");
+        JPanel flightTripsCard = createModernMenuCard("Search Flights", 
+            "Discover flight options", new Color(56, 189, 248), "✈️");
+        JPanel reservationCard = createModernMenuCard("My Reservations", 
+            "View your bookings", new Color(52, 211, 153), "🎫");
+        JPanel profileCard = createModernMenuCard("My Profile", 
+            "Manage your account", new Color(251, 146, 60), "👤");
         
         // Event listeners
         addClickListener(busTripsCard, () -> {
@@ -233,16 +278,16 @@ public class MainMenuPage extends JFrame {
     
     private void setupAdminMenu(JPanel menuGrid) {
         // Admin menu options
-        JPanel userManagementCard = createVisualMenuCard("User Management", 
-            "Manage system users", ACCENT_COLOR, "users");
-        JPanel tripManagementCard = createVisualMenuCard("Trip Management", 
-            "Manage trips and routes", PRIMARY_COLOR, "trips");
-        JPanel reservationManagementCard = createVisualMenuCard("All Reservations", 
-            "View all bookings", SUCCESS_COLOR, "allreservations");
-        JPanel reportsCard = createVisualMenuCard("Reports & Analytics", 
-            "System reports and stats", INFO_COLOR, "reports");
-        JPanel consoleCard = createVisualMenuCard("System Console", 
-            "Advanced system tools", ERROR_COLOR, "console");
+        JPanel userManagementCard = createModernMenuCard("User Management", 
+            "Manage system users", new Color(108, 92, 231), "👥");
+        JPanel tripManagementCard = createModernMenuCard("Trip Management", 
+            "Manage trips and routes", new Color(138, 43, 226), "🗺️");
+        JPanel reservationManagementCard = createModernMenuCard("All Reservations", 
+            "View all bookings", new Color(52, 211, 153), "📋");
+        JPanel reportsCard = createModernMenuCard("Reports & Analytics", 
+            "System reports and stats", new Color(56, 189, 248), "📊");
+        JPanel consoleCard = createModernMenuCard("System Console", 
+            "Advanced system tools", new Color(220, 38, 127), "⚙️");
         
         // Event listeners
         addClickListener(userManagementCard, () -> {
@@ -263,7 +308,7 @@ public class MainMenuPage extends JFrame {
         addClickListener(reportsCard, () -> {
             showEnhancedFeatureDialog("Reports & Analytics", 
                 "Reports page will be available soon.\n\nFeatures:\n" +
-                "• User statistics\n• Revenue reports\n• Trip analytics", INFO_COLOR);
+                "• User statistics\n• Revenue reports\n• Trip analytics");
         });
         
         addClickListener(consoleCard, () -> {
@@ -279,69 +324,31 @@ public class MainMenuPage extends JFrame {
         menuGrid.add(new JPanel()); // Empty panel for spacing
     }
     
-    private JPanel createVisualMenuCard(String title, String description, Color accentColor, String iconType) {
-        JPanel card = new JPanel();
+    private JPanel createModernMenuCard(String title, String description, Color accentColor, String emoji) {
+        JPanel card = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                // Glassmorphism background
+                g2d.setColor(new Color(255, 255, 255, 12));
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
+                
+                // Border
+                g2d.setColor(new Color(255, 255, 255, 30));
+                g2d.setStroke(new BasicStroke(1));
+                g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 15, 15);
+            }
+        };
+        
         card.setLayout(new BorderLayout());
-        card.setBackground(CARD_COLOR);
-        card.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(BORDER_COLOR, 1),
-            new EmptyBorder(25, 25, 25, 25)
-        ));
+        card.setOpaque(false);
+        card.setBorder(new EmptyBorder(25, 25, 25, 25));
         card.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
-        // Görsel ikon
-        JPanel iconPanel = createSimpleIcon(accentColor, iconType);
-        
-        // Başlık ve açıklama
-        JPanel textPanel = new JPanel();
-        textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
-        textPanel.setBackground(CARD_COLOR);
-        
-        JLabel titleLabel = new JLabel(title);
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        titleLabel.setForeground(TEXT_PRIMARY);
-        titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        
-        JLabel descLabel = new JLabel("<html>" + description + "</html>");
-        descLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        descLabel.setForeground(TEXT_SECONDARY);
-        descLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        
-        textPanel.add(titleLabel);
-        textPanel.add(Box.createVerticalStrut(8));
-        textPanel.add(descLabel);
-        
-        // Hover efekti
-        card.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                card.setBackground(HOVER_COLOR);
-                textPanel.setBackground(HOVER_COLOR);
-                card.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(accentColor, 2),
-                    new EmptyBorder(24, 24, 24, 24)
-                ));
-            }
-            
-            @Override
-            public void mouseExited(MouseEvent e) {
-                card.setBackground(CARD_COLOR);
-                textPanel.setBackground(CARD_COLOR);
-                card.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(BORDER_COLOR, 1),
-                    new EmptyBorder(25, 25, 25, 25)
-                ));
-            }
-        });
-        
-        card.add(iconPanel, BorderLayout.WEST);
-        card.add(Box.createHorizontalStrut(20), BorderLayout.CENTER);
-        card.add(textPanel, BorderLayout.EAST);
-        
-        return card;
-    }
-    
-    private JPanel createSimpleIcon(Color color, String iconType) {
+        // Icon panel
         JPanel iconPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -352,113 +359,92 @@ public class MainMenuPage extends JFrame {
                 int centerX = getWidth() / 2;
                 int centerY = getHeight() / 2;
                 
-                // Arka plan dairesi
-                g2d.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), 30));
+                // Icon background circle with gradient
+                GradientPaint iconGradient = new GradientPaint(
+                    0, 0, accentColor,
+                    getWidth(), getHeight(), accentColor.darker()
+                );
+                g2d.setPaint(iconGradient);
                 g2d.fillOval(centerX - 25, centerY - 25, 50, 50);
                 
-                g2d.setColor(color);
-                g2d.setStroke(new BasicStroke(2.5f));
-                
-                switch (iconType) {
-                    case "bus":
-                        // Bus icon
-                        g2d.drawRoundRect(centerX - 10, centerY - 6, 20, 12, 4, 4);
-                        g2d.drawLine(centerX - 6, centerY - 6, centerX - 6, centerY + 6);
-                        g2d.drawLine(centerX + 2, centerY - 6, centerX + 2, centerY + 6);
-                        g2d.fillOval(centerX - 8, centerY + 8, 4, 4);
-                        g2d.fillOval(centerX + 4, centerY + 8, 4, 4);
-                        break;
-                    case "flight":
-                        // Plane icon
-                        g2d.drawLine(centerX - 8, centerY + 2, centerX + 8, centerY - 2);
-                        g2d.drawLine(centerX - 4, centerY - 4, centerX + 4, centerY);
-                        g2d.drawLine(centerX + 2, centerY + 2, centerX + 6, centerY + 4);
-                        break;
-                    case "reservation":
-                        // Ticket icon
-                        g2d.drawRoundRect(centerX - 8, centerY - 4, 16, 8, 2, 2);
-                        g2d.drawLine(centerX - 2, centerY - 4, centerX - 2, centerY + 4);
-                        g2d.drawLine(centerX + 2, centerY - 4, centerX + 2, centerY + 4);
-                        break;
-                    case "profile":
-                        // User icon
-                        g2d.drawOval(centerX - 4, centerY - 8, 8, 8);
-                        g2d.drawArc(centerX - 8, centerY - 2, 16, 16, 30, 120);
-                        break;
-                    case "users":
-                        // Multiple users icon
-                        g2d.drawOval(centerX - 8, centerY - 6, 6, 6);
-                        g2d.drawOval(centerX + 2, centerY - 6, 6, 6);
-                        g2d.drawArc(centerX - 10, centerY, 8, 8, 30, 120);
-                        g2d.drawArc(centerX, centerY, 8, 8, 30, 120);
-                        break;
-                    case "trips":
-                        // Route icon
-                        g2d.drawOval(centerX - 8, centerY - 2, 4, 4);
-                        g2d.drawOval(centerX + 4, centerY - 2, 4, 4);
-                        g2d.drawLine(centerX - 4, centerY, centerX + 4, centerY);
-                        break;
-                    case "allreservations":
-                        // List icon
-                        g2d.drawLine(centerX - 8, centerY - 6, centerX + 8, centerY - 6);
-                        g2d.drawLine(centerX - 8, centerY, centerX + 8, centerY);
-                        g2d.drawLine(centerX - 8, centerY + 6, centerX + 8, centerY + 6);
-                        break;
-                    case "reports":
-                        // Chart icon
-                        g2d.drawLine(centerX - 8, centerY + 8, centerX - 8, centerY - 8);
-                        g2d.drawLine(centerX - 8, centerY + 8, centerX + 8, centerY + 8);
-                        g2d.drawLine(centerX - 6, centerY + 6, centerX - 6, centerY + 2);
-                        g2d.drawLine(centerX - 2, centerY + 6, centerX - 2, centerY - 2);
-                        g2d.drawLine(centerX + 2, centerY + 6, centerX + 2, centerY + 4);
-                        g2d.drawLine(centerX + 6, centerY + 6, centerX + 6, centerY);
-                        break;
-                    case "console":
-                        // Terminal icon
-                        g2d.drawRoundRect(centerX - 8, centerY - 6, 16, 12, 2, 2);
-                        g2d.drawLine(centerX - 4, centerY - 2, centerX - 2, centerY);
-                        g2d.drawLine(centerX - 2, centerY, centerX - 4, centerY + 2);
-                        g2d.drawLine(centerX, centerY + 2, centerX + 4, centerY + 2);
-                        break;
-                }
+                // Emoji
+                g2d.setColor(Color.WHITE);
+                g2d.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 24));
+                FontMetrics fm = g2d.getFontMetrics();
+                int textX = centerX - fm.stringWidth(emoji) / 2;
+                int textY = centerY + fm.getAscent() / 2 - 2;
+                g2d.drawString(emoji, textX, textY);
             }
         };
         iconPanel.setPreferredSize(new Dimension(60, 60));
         iconPanel.setOpaque(false);
-        return iconPanel;
-    }
-    
-    private JButton createSecondaryButton(String text) {
-        JButton button = new JButton(text);
-        button.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        button.setBackground(CARD_COLOR);
-        button.setForeground(TEXT_SECONDARY);
-        button.setFocusPainted(false);
-        button.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(BORDER_COLOR, 1),
-            new EmptyBorder(12, 24, 12, 24)
-        ));
-        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
-        button.addMouseListener(new MouseAdapter() {
+        // Text panel
+        JPanel textPanel = new JPanel();
+        textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
+        textPanel.setOpaque(false);
+        
+        JLabel titleLabel = new JLabel(title);
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        titleLabel.setForeground(Color.WHITE);
+        titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        
+        JLabel descLabel = new JLabel("<html>" + description + "</html>");
+        descLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        descLabel.setForeground(new Color(189, 147, 249));
+        descLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        
+        textPanel.add(titleLabel);
+        textPanel.add(Box.createVerticalStrut(8));
+        textPanel.add(descLabel);
+        
+        // Hover effect
+        card.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                button.setBackground(HOVER_COLOR);
-                button.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(PRIMARY_COLOR, 1),
-                    new EmptyBorder(12, 24, 12, 24)
-                ));
+                // Enhanced glassmorphism on hover
+                card.repaint();
             }
             
             @Override
             public void mouseExited(MouseEvent e) {
-                button.setBackground(CARD_COLOR);
-                button.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(BORDER_COLOR, 1),
-                    new EmptyBorder(12, 24, 12, 24)
-                ));
+                card.repaint();
             }
         });
+        
+        card.add(iconPanel, BorderLayout.WEST);
+        card.add(Box.createHorizontalStrut(20), BorderLayout.CENTER);
+        card.add(textPanel, BorderLayout.EAST);
+        
+        return card;
+    }
+    
+    private JButton createModernButton(String text, Color baseColor, boolean isPrimary) {
+        JButton button = new JButton(text) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                if (getModel().isPressed()) {
+                    g2d.setColor(baseColor.darker());
+                } else if (getModel().isRollover()) {
+                    g2d.setColor(baseColor.brighter());
+                } else {
+                    g2d.setColor(baseColor);
+                }
+                
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+                super.paintComponent(g);
+            }
+        };
+        
+        button.setForeground(Color.WHITE);
+        button.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        button.setFocusPainted(false);
+        button.setBorderPainted(false);
+        button.setContentAreaFilled(false);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
         return button;
     }
@@ -493,40 +479,60 @@ public class MainMenuPage extends JFrame {
         }
     }
     
-    private void showEnhancedFeatureDialog(String title, String message, Color accentColor) {
-        // Özel dialog oluştur
+    private void showEnhancedFeatureDialog(String title, String message) {
+        // Modern dialog with glassmorphism
         JDialog dialog = new JDialog(this, title, true);
         dialog.setSize(450, 300);
         dialog.setLocationRelativeTo(this);
         dialog.setResizable(false);
         
-        JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.setBackground(BG_COLOR);
+        // Main panel with gradient background
+        JPanel mainPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+                
+                GradientPaint gradient = new GradientPaint(
+                    0, 0, new Color(15, 15, 35),
+                    getWidth(), getHeight(), new Color(25, 25, 55)
+                );
+                g2d.setPaint(gradient);
+                g2d.fillRect(0, 0, getWidth(), getHeight());
+            }
+        };
+        mainPanel.setLayout(new BorderLayout());
         mainPanel.setBorder(new EmptyBorder(30, 30, 30, 30));
         
-        // Başlık paneli
-        JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        headerPanel.setBackground(BG_COLOR);
-        
-        JLabel titleLabel = new JLabel(title);
+        // Title
+        JLabel titleLabel = new JLabel(title, SwingConstants.CENTER);
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
-        titleLabel.setForeground(TEXT_PRIMARY);
+        titleLabel.setForeground(Color.WHITE);
         
-        headerPanel.add(titleLabel);
-        
-        // İçerik paneli
-        JPanel contentPanel = new JPanel();
-        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
-        contentPanel.setBackground(CARD_COLOR);
-        contentPanel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(accentColor, 2),
-            new EmptyBorder(25, 25, 25, 25)
-        ));
+        // Content panel with glassmorphism
+        JPanel contentPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                g2d.setColor(new Color(255, 255, 255, 10));
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
+                
+                g2d.setColor(new Color(255, 255, 255, 30));
+                g2d.setStroke(new BasicStroke(1));
+                g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 15, 15);
+            }
+        };
+        contentPanel.setOpaque(false);
+        contentPanel.setBorder(new EmptyBorder(25, 25, 25, 25));
         
         JTextArea messageArea = new JTextArea(message);
         messageArea.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        messageArea.setForeground(TEXT_SECONDARY);
-        messageArea.setBackground(CARD_COLOR);
+        messageArea.setForeground(new Color(189, 147, 249));
+        messageArea.setOpaque(false);
         messageArea.setEditable(false);
         messageArea.setWrapStyleWord(true);
         messageArea.setLineWrap(true);
@@ -534,18 +540,16 @@ public class MainMenuPage extends JFrame {
         
         contentPanel.add(messageArea);
         
-        // Buton paneli
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        buttonPanel.setBackground(BG_COLOR);
-        buttonPanel.setBorder(new EmptyBorder(20, 0, 0, 0));
-        
-        JButton okButton = createSecondaryButton("Tamam");
-        okButton.setBackground(PRIMARY_COLOR);
-        okButton.setForeground(Color.WHITE);
+        // OK Button
+        JButton okButton = createModernButton("OK", new Color(138, 43, 226), true);
+        okButton.setPreferredSize(new Dimension(100, 40));
         okButton.addActionListener(e -> dialog.dispose());
+        
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        buttonPanel.setOpaque(false);
         buttonPanel.add(okButton);
         
-        mainPanel.add(headerPanel, BorderLayout.NORTH);
+        mainPanel.add(titleLabel, BorderLayout.NORTH);
         mainPanel.add(contentPanel, BorderLayout.CENTER);
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
         

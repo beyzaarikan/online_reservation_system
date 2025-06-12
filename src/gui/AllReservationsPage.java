@@ -3,6 +3,7 @@ package gui;
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 
 public class AllReservationsPage extends BasePanel {
     private JTable reservationTable;
@@ -12,186 +13,214 @@ public class AllReservationsPage extends BasePanel {
     private JComboBox<String> typeFilter;
     
     public AllReservationsPage() {
-        super("All Reservations Management", 1000, 700);
+        super("All Reservations Management", 1200, 800);
     }
     
     @Override
     public void setupUI() {
-        JPanel mainPanel = createMainPanel();
+        setLayout(new BorderLayout());
+        getContentPane().setBackground(new Color(15, 15, 35));
+
+        // Ana panel - gradient arkaplan
+        JPanel mainPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+                
+                // Gradient background
+                GradientPaint gradient = new GradientPaint(
+                    0, 0, new Color(15, 15, 35),
+                    getWidth(), getHeight(), new Color(25, 25, 55)
+                );
+                g2d.setPaint(gradient);
+                g2d.fillRect(0, 0, getWidth(), getHeight());
+                
+                // Decorative circles
+                g2d.setColor(new Color(138, 43, 226, 30));
+                g2d.fillOval(-50, -50, 200, 200);
+                g2d.fillOval(getWidth()-150, getHeight()-150, 200, 200);
+                
+                g2d.setColor(new Color(75, 0, 130, 20));
+                g2d.fillOval(getWidth()-100, -50, 150, 150);
+                g2d.fillOval(-100, getHeight()-100, 150, 150);
+            }
+        };
+        mainPanel.setLayout(new BorderLayout());
+        mainPanel.setOpaque(false);
+
+        // Header panel
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setOpaque(false);
+        headerPanel.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
+
+        // Back button panel
+        JPanel backPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        backPanel.setOpaque(false);
+        JButton backButton = createModernButton("← Back", new Color(108, 92, 231), false);
+        backButton.setPreferredSize(new Dimension(100, 35));
+        backButton.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        backPanel.add(backButton);
+
+        // Title section
+        JPanel titlePanel = new JPanel();
+        titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.Y_AXIS));
+        titlePanel.setOpaque(false);
+
+        JLabel titleLabel = new JLabel("Reservation Management", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 28));
+        titleLabel.setForeground(Color.WHITE);
+        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel subtitleLabel = new JLabel("Manage all customer reservations", SwingConstants.CENTER);
+        subtitleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        subtitleLabel.setForeground(new Color(189, 147, 249));
+        subtitleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        titlePanel.add(titleLabel);
+        titlePanel.add(Box.createVerticalStrut(5));
+        titlePanel.add(subtitleLabel);
+
+        headerPanel.add(backPanel, BorderLayout.WEST);
+        headerPanel.add(titlePanel, BorderLayout.CENTER);
+
+        // Statistics Panel with glassmorphism
+        JPanel statsPanel = createGlassmorphismPanel();
+        statsPanel.setLayout(new GridLayout(1, 4, 20, 0));
+        statsPanel.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
         
-        // Title Panel
-        JPanel titlePanel = createTitlePanel("All Reservations Management");
-        
-        // Filter and Search Panel
-        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        filterPanel.setBackground(PageComponents.BACKGROUND_COLOR);
-        
-        // Search components
-        searchField = PageComponents.createStyledTextField("Search by customer name or ID...");
-        searchField.setPreferredSize(new Dimension(250, 35));
-        
-        statusFilter = new JComboBox<>(new String[]{"All Status", "Confirmed", "Pending", "Cancelled"});
-        statusFilter.setBackground(PageComponents.INPUT_COLOR);
-        statusFilter.setForeground(PageComponents.TEXT_COLOR);
-        statusFilter.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        
-        typeFilter = new JComboBox<>(new String[]{"All Types", "Bus", "Flight"});
-        typeFilter.setBackground(PageComponents.INPUT_COLOR);
-        typeFilter.setForeground(PageComponents.TEXT_COLOR);
-        typeFilter.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        
-        JButton searchButton = PageComponents.createStyledButton("Search", PageComponents.PRIMARY_COLOR, true);
-        JButton refreshButton = PageComponents.createStyledButton("Refresh", PageComponents.SECONDARY_COLOR, false);
-        JButton exportButton = PageComponents.createStyledButton("Export", PageComponents.ACCENT_COLOR, true);
-        
-        filterPanel.add(new JLabel("Search: ") {{ 
-            setForeground(PageComponents.TEXT_COLOR); 
-            setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        }});
-        filterPanel.add(searchField);
-        filterPanel.add(Box.createHorizontalStrut(10));
-        filterPanel.add(new JLabel("Status: ") {{ 
-            setForeground(PageComponents.TEXT_COLOR); 
-            setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        }});
-        filterPanel.add(statusFilter);
-        filterPanel.add(Box.createHorizontalStrut(10));
-        filterPanel.add(new JLabel("Type: ") {{ 
-            setForeground(PageComponents.TEXT_COLOR); 
-            setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        }});
-        filterPanel.add(typeFilter);
-        filterPanel.add(Box.createHorizontalStrut(15));
-        filterPanel.add(searchButton);
-        filterPanel.add(refreshButton);
-        filterPanel.add(exportButton);
-        
-        // Statistics Panel
-        JPanel statsPanel = new JPanel(new GridLayout(1, 4, 15, 0));
-        statsPanel.setBackground(PageComponents.BACKGROUND_COLOR);
-        statsPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 20, 0));
-        
-        JPanel totalCard = createStatCard("Total Reservations", "156", PageComponents.PRIMARY_COLOR);
-        JPanel confirmedCard = createStatCard("Confirmed", "142", PageComponents.ACCENT_COLOR);
-        JPanel pendingCard = createStatCard("Pending", "8", new Color(255, 193, 7));
-        JPanel cancelledCard = createStatCard("Cancelled", "6", new Color(255, 85, 85));
+        JPanel totalCard = createStatCard("Total Reservations", "156", new Color(138, 43, 226));
+        JPanel confirmedCard = createStatCard("Confirmed", "142", new Color(46, 204, 113));
+        JPanel pendingCard = createStatCard("Pending", "8", new Color(241, 196, 15));
+        JPanel cancelledCard = createStatCard("Cancelled", "6", new Color(231, 76, 60));
         
         statsPanel.add(totalCard);
         statsPanel.add(confirmedCard);
         statsPanel.add(pendingCard);
         statsPanel.add(cancelledCard);
+
+        // Filter Panel with glassmorphism
+        JPanel filterPanel = createGlassmorphismPanel();
+        filterPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 15, 15));
+        filterPanel.setBorder(BorderFactory.createEmptyBorder(10, 30, 10, 30));
         
-        // Table Panel
-        JPanel tablePanel = createCardPanel();
-        tablePanel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(PageComponents.PRIMARY_COLOR, 2, true),
-            new javax.swing.border.EmptyBorder(20, 20, 20, 20)
-        ));
+        // Search components
+        searchField = createModernTextField("Search by customer name or ID...");
+        searchField.setPreferredSize(new Dimension(250, 40));
         
-        // Create table with enhanced columns
-        String[] columnNames = {
-            "Reservation ID", "Customer Name", "Email", "Type", "Route", 
-            "Date", "Time", "Seat", "Price", "Status", "Actions"
-        };
+        statusFilter = createModernComboBox(new String[]{"All Status", "Confirmed", "Pending", "Cancelled"});
+        typeFilter = createModernComboBox(new String[]{"All Types", "Bus", "Flight"});
         
-        tableModel = new DefaultTableModel(columnNames, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return column == 10; // Only actions column is editable
-            }
-        };
+        JButton searchButton = createModernButton("Search", new Color(138, 43, 226), true);
+        JButton refreshButton = createModernButton("Refresh", new Color(52, 152, 219), true);
+        JButton exportButton = createModernButton("Export", new Color(46, 204, 113), true);
         
-        reservationTable = new JTable(tableModel);
-        reservationTable.setBackground(PageComponents.INPUT_COLOR);
-        reservationTable.setForeground(PageComponents.TEXT_COLOR);
-        reservationTable.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        reservationTable.setGridColor(PageComponents.SECONDARY_COLOR);
-        reservationTable.setSelectionBackground(PageComponents.PRIMARY_COLOR);
-        reservationTable.setSelectionForeground(Color.WHITE);
-        reservationTable.setRowHeight(35);
+        // Filter labels
+        JLabel searchLabel = createFilterLabel("Search:");
+        JLabel statusLabel = createFilterLabel("Status:");
+        JLabel typeLabel = createFilterLabel("Type:");
         
-        // Set column widths
-        reservationTable.getColumnModel().getColumn(0).setPreferredWidth(100); // ID
-        reservationTable.getColumnModel().getColumn(1).setPreferredWidth(120); // Name
-        reservationTable.getColumnModel().getColumn(2).setPreferredWidth(150); // Email
-        reservationTable.getColumnModel().getColumn(3).setPreferredWidth(60);  // Type
-        reservationTable.getColumnModel().getColumn(4).setPreferredWidth(120); // Route
-        reservationTable.getColumnModel().getColumn(5).setPreferredWidth(80);  // Date
-        reservationTable.getColumnModel().getColumn(6).setPreferredWidth(60);  // Time
-        reservationTable.getColumnModel().getColumn(7).setPreferredWidth(50);  // Seat
-        reservationTable.getColumnModel().getColumn(8).setPreferredWidth(60);  // Price
-        reservationTable.getColumnModel().getColumn(9).setPreferredWidth(80);  // Status
-        reservationTable.getColumnModel().getColumn(10).setPreferredWidth(100); // Actions
+        filterPanel.add(searchLabel);
+        filterPanel.add(searchField);
+        filterPanel.add(statusLabel);
+        filterPanel.add(statusFilter);
+        filterPanel.add(typeLabel);
+        filterPanel.add(typeFilter);
+        filterPanel.add(searchButton);
+        filterPanel.add(refreshButton);
+        filterPanel.add(exportButton);
+
+        // Main content panel with glassmorphism
+        JPanel contentPanel = createGlassmorphismPanel();
+        contentPanel.setLayout(new BorderLayout());
+        contentPanel.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
         
-        // Populate sample data
+        // Table setup
+        createTable();
         populateSampleData();
         
         JScrollPane scrollPane = new JScrollPane(reservationTable);
-        scrollPane.setPreferredSize(new Dimension(900, 300));
-        scrollPane.getViewport().setBackground(PageComponents.INPUT_COLOR);
+        scrollPane.setOpaque(false);
+        scrollPane.getViewport().setOpaque(false);
+        scrollPane.setPreferredSize(new Dimension(1100, 300));
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
         
-        // Action Buttons Panel
-        JPanel actionPanel = new JPanel(new FlowLayout());
-        actionPanel.setBackground(PageComponents.CARD_COLOR);
+        // Action buttons panel
+        JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 15));
+        actionPanel.setOpaque(false);
         
-        JButton viewDetailsButton = PageComponents.createStyledButton("View Details", PageComponents.PRIMARY_COLOR, true);
-        JButton updateStatusButton = PageComponents.createStyledButton("Update Status", PageComponents.ACCENT_COLOR, true);
-        JButton cancelReservationButton = PageComponents.createStyledButton("Cancel Reservation", new Color(255, 121, 121), true);
-        JButton sendEmailButton = PageComponents.createStyledButton("Send Email", PageComponents.SECONDARY_COLOR, false);
-        JButton backButton = PageComponents.createStyledButton("← Back", PageComponents.SECONDARY_COLOR, false);
+        JButton viewDetailsButton = createModernButton("View Details", new Color(138, 43, 226), true);
+        JButton updateStatusButton = createModernButton("Update Status", new Color(52, 152, 219), true);
+        JButton cancelReservationButton = createModernButton("Cancel Reservation", new Color(231, 76, 60), true);
+        JButton sendEmailButton = createModernButton("Send Email", new Color(46, 204, 113), true);
         
         actionPanel.add(viewDetailsButton);
         actionPanel.add(updateStatusButton);
         actionPanel.add(cancelReservationButton);
         actionPanel.add(sendEmailButton);
-        actionPanel.add(Box.createHorizontalStrut(20));
-        actionPanel.add(backButton);
         
-        tablePanel.add(new JLabel("Reservation Management") {{
-            setFont(new Font("Segoe UI", Font.BOLD, 18));
-            setForeground(PageComponents.TEXT_COLOR);
-        }});
-        tablePanel.add(Box.createVerticalStrut(15));
-        tablePanel.add(scrollPane);
-        tablePanel.add(Box.createVerticalStrut(15));
-        tablePanel.add(actionPanel);
-        
-        mainPanel.add(titlePanel, BorderLayout.NORTH);
-        
+        contentPanel.add(scrollPane, BorderLayout.CENTER);
+        contentPanel.add(actionPanel, BorderLayout.SOUTH);
+
+        // Layout assembly
         JPanel centerPanel = new JPanel(new BorderLayout());
-        centerPanel.setBackground(PageComponents.BACKGROUND_COLOR);
-        centerPanel.add(filterPanel, BorderLayout.NORTH);
-        centerPanel.add(statsPanel, BorderLayout.CENTER);
-        
+        centerPanel.setOpaque(false);
+        centerPanel.add(statsPanel, BorderLayout.NORTH);
+        centerPanel.add(filterPanel, BorderLayout.CENTER);
+
+        mainPanel.add(headerPanel, BorderLayout.NORTH);
         mainPanel.add(centerPanel, BorderLayout.CENTER);
-        mainPanel.add(tablePanel, BorderLayout.SOUTH);
+        mainPanel.add(contentPanel, BorderLayout.SOUTH);
         add(mainPanel);
         
         // Action listeners
-        searchButton.addActionListener(e -> searchReservations());
-        refreshButton.addActionListener(e -> refreshData());
-        exportButton.addActionListener(e -> exportData());
-        viewDetailsButton.addActionListener(e -> viewReservationDetails());
-        updateStatusButton.addActionListener(e -> updateReservationStatus());
-        cancelReservationButton.addActionListener(e -> cancelReservation());
-        sendEmailButton.addActionListener(e -> sendEmailToCustomer());
-        backButton.addActionListener(e -> {
-            dispose();
-            new MainMenuPage().display(); // Ana menüye dön
-        });
-        
-        statusFilter.addActionListener(e -> filterByStatus());
-        typeFilter.addActionListener(e -> filterByType());
+        setupActionListeners(backButton, searchButton, refreshButton, exportButton,
+                           viewDetailsButton, updateStatusButton, cancelReservationButton,
+                           sendEmailButton);
     }
-    
+
+    private JPanel createGlassmorphismPanel() {
+        return new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                // Glassmorphism background
+                g2d.setColor(new Color(255, 255, 255, 10));
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
+                
+                // Border
+                g2d.setColor(new Color(255, 255, 255, 30));
+                g2d.setStroke(new BasicStroke(1));
+                g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 15, 15);
+            }
+        };
+    }
+
     private JPanel createStatCard(String title, String value, Color accentColor) {
-        JPanel card = new JPanel();
+        JPanel card = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                // Card background
+                g2d.setColor(new Color(255, 255, 255, 15));
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
+                
+                // Accent border
+                g2d.setColor(accentColor);
+                g2d.setStroke(new BasicStroke(2));
+                g2d.drawRoundRect(1, 1, getWidth()-3, getHeight()-3, 12, 12);
+            }
+        };
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-        card.setBackground(PageComponents.CARD_COLOR);
-        card.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(accentColor, 2, true),
-            BorderFactory.createEmptyBorder(15, 15, 15, 15)
-        ));
+        card.setOpaque(false);
+        card.setBorder(BorderFactory.createEmptyBorder(20, 15, 20, 15));
         
         JLabel valueLabel = new JLabel(value, SwingConstants.CENTER);
         valueLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
@@ -200,44 +229,266 @@ public class AllReservationsPage extends BasePanel {
         
         JLabel titleLabel = new JLabel(title, SwingConstants.CENTER);
         titleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        titleLabel.setForeground(PageComponents.TEXT_COLOR);
+        titleLabel.setForeground(Color.WHITE);
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         card.add(valueLabel);
-        card.add(Box.createVerticalStrut(5));
+        card.add(Box.createVerticalStrut(8));
         card.add(titleLabel);
         
         return card;
     }
+
+    private JTextField createModernTextField(String placeholder) {
+        JTextField field = new JTextField() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                // Background
+                g2d.setColor(new Color(255, 255, 255, 15));
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+                
+                // Border
+                if (isFocusOwner()) {
+                    g2d.setColor(new Color(138, 43, 226));
+                } else {
+                    g2d.setColor(new Color(255, 255, 255, 30));
+                }
+                g2d.setStroke(new BasicStroke(1));
+                g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 10, 10);
+                
+                super.paintComponent(g);
+            }
+        };
+        field.setOpaque(false);
+        field.setForeground(Color.WHITE);
+        field.setCaretColor(Color.WHITE);
+        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        field.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
+        field.setText(placeholder);
+        field.setForeground(new Color(150, 150, 150));
+        
+        field.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                if (field.getText().equals(placeholder)) {
+                    field.setText("");
+                    field.setForeground(Color.WHITE);
+                }
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                if (field.getText().isEmpty()) {
+                    field.setText(placeholder);
+                    field.setForeground(new Color(150, 150, 150));
+                }
+            }
+        });
+        
+        return field;
+    }
+
+    private JComboBox<String> createModernComboBox(String[] items) {
+        JComboBox<String> comboBox = new JComboBox<String>(items) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                // Background
+                g2d.setColor(new Color(255, 255, 255, 15));
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+                
+                // Border
+                g2d.setColor(new Color(255, 255, 255, 30));
+                g2d.setStroke(new BasicStroke(1));
+                g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 10, 10);
+                
+                super.paintComponent(g);
+            }
+        };
+        comboBox.setOpaque(false);
+        comboBox.setForeground(Color.WHITE);
+        comboBox.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        comboBox.setPreferredSize(new Dimension(120, 40));
+        return comboBox;
+    }
+
+    private JButton createModernButton(String text, Color baseColor, boolean isPrimary) {
+        JButton button = new JButton(text) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                if (getModel().isPressed()) {
+                    g2d.setColor(baseColor.darker());
+                } else if (getModel().isRollover()) {
+                    g2d.setColor(baseColor.brighter());
+                } else {
+                    g2d.setColor(baseColor);
+                }
+                
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+                super.paintComponent(g);
+            }
+        };
+        
+        button.setForeground(Color.WHITE);
+        button.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        button.setFocusPainted(false);
+        button.setBorderPainted(false);
+        button.setContentAreaFilled(false);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        button.setPreferredSize(new Dimension(isPrimary ? 120 : 100, 35));
+        
+        return button;
+    }
+
+    private JLabel createFilterLabel(String text) {
+        JLabel label = new JLabel(text);
+        label.setForeground(new Color(189, 147, 249));
+        label.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        return label;
+    }
+
+    private void createTable() {
+        String[] columnNames = {
+            "ID", "Customer", "Email", "Type", "Route", 
+            "Date", "Time", "Seat", "Price", "Status"
+        };
+        
+        tableModel = new DefaultTableModel(columnNames, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        
+        reservationTable = new JTable(tableModel) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                // Table background
+                g2d.setColor(new Color(255, 255, 255, 8));
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+                
+                super.paintComponent(g);
+            }
+        };
+        
+        reservationTable.setOpaque(false);
+        reservationTable.setBackground(new Color(255, 255, 255, 8));
+        reservationTable.setForeground(Color.WHITE);
+        reservationTable.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        reservationTable.setGridColor(new Color(255, 255, 255, 30));
+        reservationTable.setSelectionBackground(new Color(138, 43, 226, 100));
+        reservationTable.setSelectionForeground(Color.WHITE);
+        reservationTable.setRowHeight(40);
+        reservationTable.setShowGrid(true);
+        
+        // Header styling
+        reservationTable.getTableHeader().setOpaque(false);
+        reservationTable.getTableHeader().setBackground(new Color(138, 43, 226, 150));
+        reservationTable.getTableHeader().setForeground(Color.WHITE);
+        reservationTable.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
+        
+        // Custom cell renderer
+        DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, 
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                
+                if (!isSelected) {
+                    c.setBackground(new Color(255, 255, 255, 5));
+                    c.setForeground(Color.WHITE);
+                    
+                    // Status column coloring
+                    if (column == 9 && value != null) {
+                        String status = value.toString();
+                        switch (status) {
+                            case "Confirmed":
+                                c.setForeground(new Color(46, 204, 113));
+                                break;
+                            case "Pending":
+                                c.setForeground(new Color(241, 196, 15));
+                                break;
+                            case "Cancelled":
+                                c.setForeground(new Color(231, 76, 60));
+                                break;
+                        }
+                    }
+                }
+                
+                setOpaque(false);
+                return c;
+            }
+        };
+        
+        for (int i = 0; i < reservationTable.getColumnCount(); i++) {
+            reservationTable.getColumnModel().getColumn(i).setCellRenderer(cellRenderer);
+        }
+        
+        // Set column widths
+        int[] columnWidths = {80, 120, 150, 60, 120, 80, 60, 50, 70, 80};
+        for (int i = 0; i < columnWidths.length; i++) {
+            reservationTable.getColumnModel().getColumn(i).setPreferredWidth(columnWidths[i]);
+        }
+    }
     
     private void populateSampleData() {
-        // Bus reservations
+        // Sample data
         tableModel.addRow(new Object[]{
             "RES001", "John Doe", "john@example.com", "Bus", "Istanbul → Ankara", 
-            "15/06/2025", "09:00", "A12", "$50.00", "Confirmed", "Actions"
+            "15/06/2025", "09:00", "A12", "$50.00", "Confirmed"
         });
         tableModel.addRow(new Object[]{
             "RES002", "Jane Smith", "jane@example.com", "Flight", "Istanbul → London", 
-            "18/06/2025", "14:30", "12F", "$450.00", "Confirmed", "Actions"
+            "18/06/2025", "14:30", "12F", "$450.00", "Confirmed"
         });
         tableModel.addRow(new Object[]{
             "RES003", "Mike Wilson", "mike@example.com", "Bus", "Ankara → Izmir", 
-            "20/06/2025", "22:00", "B05", "$65.00", "Pending", "Actions"
+            "20/06/2025", "22:00", "B05", "$65.00", "Pending"
         });
         tableModel.addRow(new Object[]{
             "RES004", "Sarah Jones", "sarah@example.com", "Flight", "Izmir → Paris", 
-            "22/06/2025", "16:45", "8A", "$380.00", "Confirmed", "Actions"
+            "22/06/2025", "16:45", "8A", "$380.00", "Confirmed"
         });
         tableModel.addRow(new Object[]{
             "RES005", "David Brown", "david@example.com", "Bus", "Istanbul → Izmir", 
-            "25/06/2025", "08:30", "C18", "$45.00", "Cancelled", "Actions"
+            "25/06/2025", "08:30", "C18", "$45.00", "Cancelled"
         });
         tableModel.addRow(new Object[]{
             "RES006", "Emily Davis", "emily@example.com", "Flight", "Ankara → Berlin", 
-            "28/06/2025", "11:20", "15C", "$520.00", "Pending", "Actions"
+            "28/06/2025", "11:20", "15C", "$520.00", "Pending"
         });
     }
+
+    private void setupActionListeners(JButton backButton, JButton searchButton, JButton refreshButton,
+                                    JButton exportButton, JButton viewDetailsButton, JButton updateStatusButton,
+                                    JButton cancelReservationButton, JButton sendEmailButton) {
+        
+        backButton.addActionListener(e -> {
+            dispose();
+            new MainMenuPage().display();
+        });
+        
+        searchButton.addActionListener(e -> searchReservations());
+        refreshButton.addActionListener(e -> refreshData());
+        exportButton.addActionListener(e -> exportData());
+        viewDetailsButton.addActionListener(e -> viewReservationDetails());
+        updateStatusButton.addActionListener(e -> updateReservationStatus());
+        cancelReservationButton.addActionListener(e -> cancelReservation());
+        sendEmailButton.addActionListener(e -> sendEmailToCustomer());
+        
+        statusFilter.addActionListener(e -> filterByStatus());
+        typeFilter.addActionListener(e -> filterByType());
+    }
     
+    // Keep all the existing action methods unchanged
     private void searchReservations() {
         String searchTerm = searchField.getText();
         if (searchTerm.equals("Search by customer name or ID...") || searchTerm.trim().isEmpty()) {
@@ -384,12 +635,10 @@ public class AllReservationsPage extends BasePanel {
     private void filterByStatus() {
         String selectedStatus = (String) statusFilter.getSelectedItem();
         PageComponents.showStyledMessage("Info", "Filtering by status: " + selectedStatus, this);
-        // Implement actual filtering logic here
     }
     
     private void filterByType() {
         String selectedType = (String) typeFilter.getSelectedItem();
         PageComponents.showStyledMessage("Info", "Filtering by type: " + selectedType, this);
-        // Implement actual filtering logic here
     }
 }
