@@ -17,579 +17,906 @@ public class MyProfilePage extends BasePanel {
     private JPasswordField newPasswordField;
     private JPasswordField confirmPasswordField;
     private JComboBox<String> genderCombo;
-    private JSpinner birthdateSpinner;
     private JCheckBox emailNotifications;
     private JCheckBox smsNotifications;
     private JCheckBox promotionalEmails;
+    private JPanel currentContentPanel;
+    private String currentTab = "personal";
     
     public MyProfilePage() {
-        super("My Profile", 1000, 700);
+        super("My Profile", 1200, 800);
     }
     
     @Override
     public void setupUI() {
-        JPanel mainPanel = createMainPanel();
+        setLayout(new BorderLayout());
+        getContentPane().setBackground(new Color(25, 0, 51)); // Purple background
+
+        // Main panel with gradient background
+        JPanel mainPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+                
+                // Purple gradient background
+                GradientPaint gradient = new GradientPaint(
+                    0, 0, new Color(25, 0, 51),
+                    getWidth(), getHeight(), new Color(124, 58, 237));
+                
+                g2d.setPaint(gradient);
+                g2d.fillRect(0, 0, getWidth(), getHeight());
+
+                // Decorative circles
+                g2d.setColor(new Color(138, 43, 240, 30));
+                g2d.fillOval(-100, -100, 300, 300);
+                g2d.fillOval(getWidth()-200, getHeight()-200, 300, 300);
+                
+                g2d.setColor(new Color(75, 0, 130, 20));
+                g2d.fillOval(getWidth()-150, -100, 200, 200);
+                g2d.fillOval(-150, getHeight()-150, 200, 200);
+            }
+        };
+        mainPanel.setLayout(new BorderLayout());
+        mainPanel.setOpaque(false);
         
-        // Title Panel
-        JPanel titlePanel = createTitlePanel("👤 My Profile");
+        // Top section with back button and title
+        JPanel topSection = createTopSection();
         
-        // Create tabbed pane for different sections
-        JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.setBackground(PageComponents.BACKGROUND_COLOR);
-        tabbedPane.setForeground(PageComponents.TEXT_COLOR);
-        tabbedPane.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        // Main content area
+        JPanel contentArea = new JPanel(new BorderLayout());
+        contentArea.setOpaque(false);
+        contentArea.setBorder(new EmptyBorder(0, 60, 60, 60));
         
-        // Personal Information Tab
-        JPanel personalInfoPanel = createPersonalInfoPanel();
-        tabbedPane.addTab("Personal Information", personalInfoPanel);
+        // Left sidebar with tabs
+        JPanel sidebar = createSidebar();
         
-        // Security Tab
-        JPanel securityPanel = createSecurityPanel();
-        tabbedPane.addTab("Security", securityPanel);
+        // Right content panel
+        JPanel rightPanel = createContentPanel();
         
-        // Preferences Tab
-        JPanel preferencesPanel = createPreferencesPanel();
-        tabbedPane.addTab("Preferences", preferencesPanel);
+        contentArea.add(sidebar, BorderLayout.WEST);
+        contentArea.add(rightPanel, BorderLayout.CENTER);
         
-        // Statistics Tab
-        JPanel statsPanel = createStatsPanel();
-        tabbedPane.addTab("Travel Statistics", statsPanel);
+        mainPanel.add(topSection, BorderLayout.NORTH);
+        mainPanel.add(contentArea, BorderLayout.CENTER);
         
-        // Back Button Panel
-        JPanel backPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        backPanel.setBackground(PageComponents.BACKGROUND_COLOR);
+        add(mainPanel);
+    }
+
+    private JPanel createTopSection() {
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.setOpaque(false);
+        topPanel.setBorder(new EmptyBorder(30, 60, 30, 60));
         
-        JButton backButton = PageComponents.createStyledButton("← Back to Menu", PageComponents.SECONDARY_COLOR, false);
+        // Back button
+        JButton backButton = new JButton("← Back to Menu") {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                if (getModel().isRollover()) {
+                    g2d.setColor(new Color(255, 255, 255, 20));
+                    g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
+                }
+                
+                super.paintComponent(g);
+            }
+        };
+        backButton.setOpaque(false);
+        backButton.setContentAreaFilled(false);
+        backButton.setBorderPainted(false);
+        backButton.setForeground(new Color(196, 181, 253));
+        backButton.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        backButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         backButton.addActionListener(e -> {
             dispose();
             new MainMenuPage().display();
         });
-        backPanel.add(backButton);
         
-        mainPanel.add(titlePanel, BorderLayout.NORTH);
-        mainPanel.add(tabbedPane, BorderLayout.CENTER);
-        mainPanel.add(backPanel, BorderLayout.SOUTH);
+        // Title section
+        JPanel titleSection = new JPanel();
+        titleSection.setLayout(new BoxLayout(titleSection, BoxLayout.Y_AXIS));
+        titleSection.setOpaque(false);
         
-        add(mainPanel);
+        JLabel titleLabel = new JLabel(" My Profile");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 32));
+        titleLabel.setForeground(Color.WHITE);
+        
+        JLabel subtitleLabel = new JLabel("Manage your account settings and preferences");
+        subtitleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        subtitleLabel.setForeground(new Color(196, 181, 253));
+        
+        titleSection.add(titleLabel);
+        titleSection.add(Box.createVerticalStrut(5));
+        titleSection.add(subtitleLabel);
+        
+        topPanel.add(backButton, BorderLayout.WEST);
+        topPanel.add(titleSection, BorderLayout.CENTER);
+        
+        return topPanel;
     }
-    
-    private JPanel createPersonalInfoPanel() {
-        User user = SessionManager.getInstance().getLoggedInUser(); 
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBackground(PageComponents.BACKGROUND_COLOR);
-        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
-        
-        // Profile Header
-        JPanel headerPanel = new JPanel(new FlowLayout());
-        headerPanel.setBackground(PageComponents.BACKGROUND_COLOR);
-        
-        JLabel profileIcon = new JLabel("👤");
-        profileIcon.setFont(new Font("Segoe UI", Font.PLAIN, 48));
-        
-        JPanel userInfoPanel = new JPanel();
-        userInfoPanel.setLayout(new BoxLayout(userInfoPanel, BoxLayout.Y_AXIS));
-        userInfoPanel.setBackground(PageComponents.BACKGROUND_COLOR);
 
-        JLabel welcomeLabel = new JLabel("Welcome back, "+ user.getName() + "!");
-        welcomeLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
-        welcomeLabel.setForeground(PageComponents.TEXT_COLOR);
+    private JPanel createSidebar() {
+        JPanel sidebar = new JPanel();
+        sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
+        sidebar.setOpaque(false);
+        sidebar.setPreferredSize(new Dimension(250, 0));
+        sidebar.setBorder(new EmptyBorder(0, 0, 0, 30));
         
-        JLabel memberSinceLabel = new JLabel("Member since: January 2023");
-        memberSinceLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        memberSinceLabel.setForeground(PageComponents.SECONDARY_COLOR);
+        // Tab buttons
+        JButton personalInfoTab = createTabButton(" Personal Info", true);
+        JButton securityTab = createTabButton(" Security", false);
+        JButton preferencesTab = createTabButton(" Preferences", false);
+        JButton statisticsTab = createTabButton("Statistics", false);
         
-        userInfoPanel.add(welcomeLabel);
-        userInfoPanel.add(memberSinceLabel);
+        // Add action listeners for tab switching
+        personalInfoTab.addActionListener(e -> switchTab(personalInfoTab, "personal"));
+        securityTab.addActionListener(e -> switchTab(securityTab, "security"));
+        preferencesTab.addActionListener(e -> switchTab(preferencesTab, "preferences"));
+        statisticsTab.addActionListener(e -> switchTab(statisticsTab, "statistics"));
         
-        headerPanel.add(profileIcon);
-        headerPanel.add(Box.createHorizontalStrut(15));
-        headerPanel.add(userInfoPanel);
+        sidebar.add(personalInfoTab);
+        sidebar.add(Box.createVerticalStrut(10));
+        sidebar.add(securityTab);
+        sidebar.add(Box.createVerticalStrut(10));
+        sidebar.add(preferencesTab);
+        sidebar.add(Box.createVerticalStrut(10));
+        sidebar.add(statisticsTab);
+        sidebar.add(Box.createVerticalGlue());
         
-        // Personal Information Form
-        JPanel formCard = createCardPanel();
-        formCard.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(PageComponents.PRIMARY_COLOR, 2, true),
-            new EmptyBorder(25, 25, 25, 25)
-        ));
+        return sidebar;
+    }
+
+    private JButton createTabButton(String text, boolean isActive) {
+        JButton button = new JButton(text) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                if (isSelected() || getModel().isRollover()) {
+                    // Active/hover state with purple background
+                    g2d.setColor(new Color(139, 92, 246));
+                    g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
+                }
+                
+                super.paintComponent(g);
+            }
+        };
         
-        JLabel formTitle = new JLabel("Personal Information", SwingConstants.LEFT);
-        formTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        formTitle.setForeground(PageComponents.TEXT_COLOR);
+        button.setOpaque(false);
+        button.setContentAreaFilled(false);
+        button.setBorderPainted(false);
+        button.setHorizontalAlignment(SwingConstants.LEFT);
+        button.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        button.setForeground(isActive ? Color.WHITE : new Color(196, 181, 253));
+        button.setPreferredSize(new Dimension(220, 45));
+        button.setBorder(new EmptyBorder(12, 20, 12, 20));
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        button.setSelected(isActive);
         
-        JPanel formPanel = new JPanel(new GridBagLayout());
-        formPanel.setBackground(PageComponents.CARD_COLOR);
+        return button;
+    }
+
+    private JPanel createContentPanel() {
+    JPanel contentPanel = new JPanel() {
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            Graphics2D g2d = (Graphics2D) g;
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            
+            // Glassmorphism background
+            g2d.setColor(new Color(255, 255, 255, 10));
+            g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 24, 24);
+            
+            // Border
+            g2d.setColor(new Color(255, 255, 255, 20));
+            g2d.setStroke(new BasicStroke(1));
+            g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 24, 24);
+        }
+    };
+    contentPanel.setLayout(new BorderLayout());
+    contentPanel.setOpaque(false);
+    contentPanel.setBorder(new EmptyBorder(40, 40, 40, 40));
+    
+    // Store reference for switching content - YENİ SATIR
+    this.currentContentPanel = contentPanel;
+    
+    // Default content - Personal Info
+    JPanel personalInfoContent = createPersonalInfoContent();
+    contentPanel.add(personalInfoContent, BorderLayout.CENTER);
+    
+    return contentPanel;
+}
+
+    private JPanel createPersonalInfoContent() {
+        User user = SessionManager.getInstance().getLoggedInUser();
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setOpaque(false);
+        
+        // Welcome section with profile picture
+        JPanel welcomeSection = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        welcomeSection.setOpaque(false);
+        welcomeSection.setBorder(new EmptyBorder(0, 0, 40, 0));
+        
+        // Profile picture circle
+        JPanel profilePic = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                // Circle background
+                g2d.setColor(new Color(139, 92, 246));
+                g2d.fillOval(0, 0, getWidth(), getHeight());
+                
+                // User icon
+                g2d.setColor(Color.WHITE);
+                g2d.setFont(new Font("Segoe UI", Font.PLAIN, 32));
+                FontMetrics fm = g2d.getFontMetrics();
+                String icon = "👤";
+                int x = (getWidth() - fm.stringWidth(icon)) / 2;
+                int y = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
+                g2d.drawString(icon, x, y);
+            }
+        };
+        profilePic.setPreferredSize(new Dimension(80, 80));
+        profilePic.setOpaque(false);
+        
+        JPanel userInfo = new JPanel();
+        userInfo.setLayout(new BoxLayout(userInfo, BoxLayout.Y_AXIS));
+        userInfo.setOpaque(false);
+        userInfo.setBorder(new EmptyBorder(10, 20, 10, 0));
+        
+        JLabel nameLabel = new JLabel("Welcome back, " + user.getName() + "!");
+        nameLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        nameLabel.setForeground(Color.WHITE);
+        
+        JLabel memberLabel = new JLabel("Member since: January 2023");
+        memberLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        memberLabel.setForeground(new Color(196, 181, 253));
+        
+        userInfo.add(nameLabel);
+        userInfo.add(Box.createVerticalStrut(5));
+        userInfo.add(memberLabel);
+        
+        welcomeSection.add(profilePic);
+        welcomeSection.add(userInfo);
+        
+        // Form section
+        JPanel formSection = new JPanel(new GridBagLayout());
+        formSection.setOpaque(false);
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(15, 0, 15, 40);
+        gbc.anchor = GridBagConstraints.WEST;
         
         // Full Name
         gbc.gridx = 0; gbc.gridy = 0;
-        formPanel.add(createFieldLabel("Full Name:"), gbc);
+        formSection.add(createFieldLabel("Full Name"), gbc);
         gbc.gridx = 1;
-        nameField = PageComponents.createStyledTextField(user.getName());
-        nameField.setPreferredSize(new Dimension(250, 35));
-        formPanel.add(nameField, gbc);
+        nameField = createModernTextField(user.getName());
+        formSection.add(nameField, gbc);
         
-        // Email
+        // Email Address
         gbc.gridx = 0; gbc.gridy = 1;
-        formPanel.add(createFieldLabel("Email:"), gbc);
+        formSection.add(createFieldLabel("Email Address"), gbc);
         gbc.gridx = 1;
-        emailField = PageComponents.createStyledTextField(user.getEmail());
-        emailField.setPreferredSize(new Dimension(250, 35));
-        formPanel.add(emailField, gbc);
+        emailField = createModernTextField(user.getEmail());
+        formSection.add(emailField, gbc);
         
         // Gender
-        gbc.gridx = 0; gbc.gridy = 3;
-        formPanel.add(createFieldLabel("Gender:"), gbc);
+        gbc.gridx = 0; gbc.gridy = 2;
+        formSection.add(createFieldLabel("Gender"), gbc);
         gbc.gridx = 1;
-        genderCombo = new JComboBox<>(new String[]{"Male", "Female", "Other", "Prefer not to say"});
-        genderCombo.setBackground(PageComponents.INPUT_COLOR);
-        genderCombo.setForeground(PageComponents.TEXT_COLOR);
-        genderCombo.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        formPanel.add(genderCombo, gbc);
-        
-        // Birthdate
-        gbc.gridx = 0; gbc.gridy = 4;
-        formPanel.add(createFieldLabel("Birth Date:"), gbc);
-        gbc.gridx = 1;
-        birthdateSpinner = createDateSpinner();
-        formPanel.add(birthdateSpinner, gbc);
-        
-        // Address
-        // gbc.gridx = 0; gbc.gridy = 5;
-        // formPanel.add(createFieldLabel("Address:"), gbc);
-        // gbc.gridx = 1;
-        // addressField = PageComponents.createStyledTextField("123 Main Street, Apt 4B");
-        // addressField.setPreferredSize(new Dimension(250, 35));
-        // formPanel.add(addressField, gbc);
-        
-        // City
-        // gbc.gridx = 0; gbc.gridy = 6;
-        // formPanel.add(createFieldLabel("City:"), gbc);
-        // gbc.gridx = 1;
-        // cityField = PageComponents.createStyledTextField("Istanbul");
-        // cityField.setPreferredSize(new Dimension(250, 35));
-        // formPanel.add(cityField, gbc);
-        
-        // // Country
-        // gbc.gridx = 0; gbc.gridy = 7;
-        // formPanel.add(createFieldLabel("Country:"), gbc);
-        // gbc.gridx = 1;
-        // countryField = PageComponents.createStyledTextField("Turkey");
-        // countryField.setPreferredSize(new Dimension(250, 35));
-        // formPanel.add(countryField, gbc);
+        genderCombo = createModernComboBox(new String[]{"Male", "Female", "Other", "Prefer not to say"});
+        formSection.add(genderCombo, gbc);
         
         // Buttons
-        JPanel buttonPanel = new JPanel(new FlowLayout());
-        buttonPanel.setBackground(PageComponents.CARD_COLOR);
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 30));
+        buttonPanel.setOpaque(false);
         
-        JButton saveButton = PageComponents.createStyledButton("💾 Save Changes", PageComponents.PRIMARY_COLOR, true);
-        JButton cancelButton = PageComponents.createStyledButton("Cancel", PageComponents.SECONDARY_COLOR, false);
+        JButton saveButton = createModernButton(" Save Changes", new Color(139, 92, 246), true);
+        JButton cancelButton = createModernButton("Cancel", new Color(138, 92, 246), false);
         
         saveButton.addActionListener(e -> savePersonalInfo());
         cancelButton.addActionListener(e -> resetPersonalInfo());
         
         buttonPanel.add(saveButton);
+        buttonPanel.add(Box.createHorizontalStrut(15));
         buttonPanel.add(cancelButton);
         
-        formCard.add(formTitle);
-        formCard.add(Box.createVerticalStrut(15));
-        formCard.add(formPanel);
-        formCard.add(Box.createVerticalStrut(15));
-        formCard.add(buttonPanel);
-        
-        panel.add(headerPanel);
-        panel.add(Box.createVerticalStrut(20));
-        panel.add(formCard);
+        panel.add(welcomeSection, BorderLayout.NORTH);
+        panel.add(formSection, BorderLayout.CENTER);
+        panel.add(buttonPanel, BorderLayout.SOUTH);
         
         return panel;
     }
-    
-    private JPanel createSecurityPanel() {
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBackground(PageComponents.BACKGROUND_COLOR);
-        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
-        
-        // Security Card
-        JPanel securityCard = createCardPanel();
-        securityCard.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(255, 85, 85), 2, true),
-            new EmptyBorder(25, 25, 25, 25)
-        ));
-        
-        JLabel securityTitle = new JLabel("🔒 Security Settings", SwingConstants.LEFT);
-        securityTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        securityTitle.setForeground(PageComponents.TEXT_COLOR);
-        
-        // Password Change Form
-        JPanel passwordPanel = new JPanel(new GridBagLayout());
-        passwordPanel.setBackground(PageComponents.CARD_COLOR);
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        
-        // Current Password
-        gbc.gridx = 0; gbc.gridy = 0;
-        passwordPanel.add(createFieldLabel("Current Password:"), gbc);
-        gbc.gridx = 1;
-        currentPasswordField = createPasswordField();
-        passwordPanel.add(currentPasswordField, gbc);
-        
-        // New Password
-        gbc.gridx = 0; gbc.gridy = 1;
-        passwordPanel.add(createFieldLabel("New Password:"), gbc);
-        gbc.gridx = 1;
-        newPasswordField = createPasswordField();
-        passwordPanel.add(newPasswordField, gbc);
-        
-        // Confirm Password
-        gbc.gridx = 0; gbc.gridy = 2;
-        passwordPanel.add(createFieldLabel("Confirm New Password:"), gbc);
-        gbc.gridx = 1;
-        confirmPasswordField = createPasswordField();
-        passwordPanel.add(confirmPasswordField, gbc);
-        
-        // Security Info
-        JPanel infoPanel = new JPanel();
-        infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
-        infoPanel.setBackground(PageComponents.CARD_COLOR);
-        infoPanel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(255, 193, 7), 1),
-            new EmptyBorder(10, 10, 10, 10)
-        ));
-        
-        JLabel infoTitle = new JLabel("ℹ️ Password Requirements:");
-        infoTitle.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        infoTitle.setForeground(PageComponents.TEXT_COLOR);
-        
-        String[] requirements = {
-            "• At least 8 characters long",
-            "• Contains uppercase and lowercase letters",
-            "• Contains at least one number",
-            "• Contains at least one special character"
+
+    private JLabel createFieldLabel(String text) {
+        JLabel label = new JLabel(text);
+        label.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        label.setForeground(new Color(203, 213, 225));
+        label.setPreferredSize(new Dimension(120, 25));
+        return label;
+    }
+
+    private JTextField createModernTextField(String text) {
+        JTextField field = new JTextField(text) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                // Background
+                g2d.setColor(new Color(255, 255, 255, 10));
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
+                
+                // Border
+                if (isFocusOwner()) {
+                    g2d.setColor(new Color(139, 92, 246));
+                    g2d.setStroke(new BasicStroke(2));
+                } else {
+                    g2d.setColor(new Color(255, 255, 255, 30));
+                    g2d.setStroke(new BasicStroke(1));
+                }
+                g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 8, 8);
+                
+                super.paintComponent(g);
+            }
         };
         
-        infoPanel.add(infoTitle);
-        for (String req : requirements) {
-            JLabel reqLabel = new JLabel(req);
-            reqLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-            reqLabel.setForeground(PageComponents.SECONDARY_COLOR);
-            infoPanel.add(reqLabel);
+        field.setOpaque(false);
+        field.setForeground(Color.WHITE);
+        field.setCaretColor(Color.WHITE);
+        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        field.setBorder(BorderFactory.createEmptyBorder(12, 16, 12, 16));
+        field.setPreferredSize(new Dimension(300, 45));
+        
+        return field;
+    }
+
+    private JComboBox<String> createModernComboBox(String[] items) {
+        JComboBox<String> combo = new JComboBox<String>(items) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                // Background
+                g2d.setColor(new Color(255, 255, 255, 10));
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
+                
+                // Border
+                if (isFocusOwner()) {
+                    g2d.setColor(new Color(139, 92, 246));
+                    g2d.setStroke(new BasicStroke(2));
+                } else {
+                    g2d.setColor(new Color(255, 255, 255, 30));
+                    g2d.setStroke(new BasicStroke(1));
+                }
+                g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 8, 8);
+                
+                super.paintComponent(g);
+            }
+        };
+        
+        combo.setOpaque(false);
+        combo.setForeground(Color.WHITE);
+        combo.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        combo.setPreferredSize(new Dimension(300, 45));
+        combo.setBackground(new Color(255, 255, 255, 10));
+        
+        return combo;
+    }
+
+    private JTextField createModernDateField() {
+        JTextField dateField = new JTextField("01.01.1990") {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                // Background
+                g2d.setColor(new Color(255, 255, 255, 10));
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
+                
+                // Border
+                if (isFocusOwner()) {
+                    g2d.setColor(new Color(139, 92, 246));
+                    g2d.setStroke(new BasicStroke(2));
+                } else {
+                    g2d.setColor(new Color(255, 255, 255, 30));
+                    g2d.setStroke(new BasicStroke(1));
+                }
+                g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 8, 8);
+                
+                super.paintComponent(g);
+            }
+        };
+        
+        dateField.setOpaque(false);
+        dateField.setForeground(Color.WHITE);
+        dateField.setCaretColor(Color.WHITE);
+        dateField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        dateField.setBorder(BorderFactory.createEmptyBorder(12, 16, 12, 16));
+        dateField.setPreferredSize(new Dimension(300, 45));
+        
+        // Add calendar icon at the end
+        JPanel datePanel = new JPanel(new BorderLayout());
+        datePanel.setOpaque(false);
+        datePanel.add(dateField, BorderLayout.CENTER);
+        
+        JLabel calendarIcon = new JLabel("📅");
+        calendarIcon.setBorder(new EmptyBorder(0, 0, 0, 10));
+        datePanel.add(calendarIcon, BorderLayout.EAST);
+        
+        return dateField;
+    }
+
+    private JButton createModernButton(String text, Color backgroundColor, boolean isPrimary) {
+        JButton button = new JButton(text) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                Color bgColor = backgroundColor;
+                if (getModel().isPressed()) {
+                    bgColor = new Color(
+                        Math.max(0, backgroundColor.getRed() - 30),
+                        Math.max(0, backgroundColor.getGreen() - 30),
+                        Math.max(0, backgroundColor.getBlue() - 30)
+                    );
+                } else if (getModel().isRollover()) {
+                    bgColor = new Color(
+                        Math.min(255, backgroundColor.getRed() + 20),
+                        Math.min(255, backgroundColor.getGreen() + 20),
+                        Math.min(255, backgroundColor.getBlue() + 20)
+                    );
+                }
+                
+                g2d.setColor(bgColor);
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
+                
+                super.paintComponent(g);
+            }
+        };
+        
+        button.setOpaque(false);
+        button.setContentAreaFilled(false);
+        button.setBorderPainted(false);
+        button.setForeground(Color.WHITE);
+        button.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        button.setPreferredSize(new Dimension(150, 45));
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        button.setFocusPainted(false);
+        
+        return button;
+    }
+
+    // Tab switching functionality
+   private void switchTab(JButton activeTab, String tabType) {
+    // Reset all tab buttons
+    Component[] components = activeTab.getParent().getComponents();
+    for (Component comp : components) {
+        if (comp instanceof JButton) {
+            JButton btn = (JButton) comp;
+            btn.setSelected(false);
+            btn.setForeground(new Color(196, 181, 253));
         }
-        
-        // Buttons
-        JPanel buttonPanel = new JPanel(new FlowLayout());
-        buttonPanel.setBackground(PageComponents.CARD_COLOR);
-        
-        JButton changePasswordButton = PageComponents.createStyledButton("🔐 Change Password", new Color(255, 85, 85), true);
-        JButton cancelButton = PageComponents.createStyledButton("Cancel", PageComponents.SECONDARY_COLOR, false);
-        
-        changePasswordButton.addActionListener(e -> changePassword());
-        cancelButton.addActionListener(e -> clearPasswordFields());
-        
-        buttonPanel.add(changePasswordButton);
-        buttonPanel.add(cancelButton);
-        
-        securityCard.add(securityTitle);
-        securityCard.add(Box.createVerticalStrut(15));
-        securityCard.add(passwordPanel);
-        securityCard.add(Box.createVerticalStrut(15));
-        securityCard.add(infoPanel);
-        securityCard.add(Box.createVerticalStrut(15));
-        securityCard.add(buttonPanel);
-        
-        panel.add(securityCard);
-        
-        return panel;
     }
     
-    private JPanel createPreferencesPanel() {
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBackground(PageComponents.BACKGROUND_COLOR);
-        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
+    // Set active tab
+    activeTab.setSelected(true);
+    activeTab.setForeground(Color.WHITE);
+    
+    // Remove current content
+    currentContentPanel.removeAll();
+    
+    // Add new content based on tab type
+    JPanel newContent = null;
+    switch (tabType) {
+        case "personal":
+            newContent = createPersonalInfoContent();
+            break;
+        case "security":
+            newContent = createSecurityContent();
+            break;
+        case "preferences":
+            newContent = createPreferencesContent();
+            break;
+        case "statistics":
+            newContent = createStatisticsContent();
+            break;
+    }
+    
+    if (newContent != null) {
+        currentContentPanel.add(newContent, BorderLayout.CENTER);
+        currentTab = tabType;
+    }
+    
+    // Refresh the panel
+    currentContentPanel.revalidate();
+    currentContentPanel.repaint();
+}
+
+    // Action Methods (keeping your original methods)
+    private void savePersonalInfo() {
+        try {
+            User user = SessionManager.getInstance().getLoggedInUser();
+            
+            if (nameField.getText().trim().isEmpty()) {
+                showErrorMessage("Name cannot be empty!");
+                return;
+            }
+            
+            if (emailField.getText().trim().isEmpty() || !isValidEmail(emailField.getText())) {
+                showErrorMessage("Please enter a valid email address!");
+                return;
+            }
+            
+            user.setName(nameField.getText().trim());
+            user.setEmail(emailField.getText().trim());
+            
+            showSuccessMessage("Personal information updated successfully!");
+            
+        } catch (Exception e) {
+            showErrorMessage("Error updating personal information: " + e.getMessage());
+        }
+    }
+
+    private void resetPersonalInfo() {
+        User user = SessionManager.getInstance().getLoggedInUser();
+        nameField.setText(user.getName());
+        emailField.setText(user.getEmail());
+        genderCombo.setSelectedIndex(0);
+    }
+
+    private boolean isValidEmail(String email) {
+        String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
+        return email.matches(emailRegex);
+    }
+
+    private void showSuccessMessage(String message) {
+        JOptionPane.showMessageDialog(this, message, "Success", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void showErrorMessage(String message) {
+        JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
+    }private JPanel createSecurityContent() {
+    JPanel panel = new JPanel(new BorderLayout());
+    panel.setOpaque(false);
+    
+    // Title section
+    JPanel titleSection = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+    titleSection.setOpaque(false);
+    titleSection.setBorder(new EmptyBorder(0, 0, 40, 0));
+    
+    JLabel titleLabel = new JLabel("🔐 Security Settings");
+    titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
+    titleLabel.setForeground(Color.WHITE);
+    
+    JLabel subtitleLabel = new JLabel("Manage your password and security preferences");
+    subtitleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+    subtitleLabel.setForeground(new Color(196, 181, 253));
+    
+    JPanel titleInfo = new JPanel();
+    titleInfo.setLayout(new BoxLayout(titleInfo, BoxLayout.Y_AXIS));
+    titleInfo.setOpaque(false);
+    titleInfo.add(titleLabel);
+    titleInfo.add(Box.createVerticalStrut(5));
+    titleInfo.add(subtitleLabel);
+    
+    titleSection.add(titleInfo);
+    
+    // Form section
+    JPanel formSection = new JPanel(new GridBagLayout());
+    formSection.setOpaque(false);
+    GridBagConstraints gbc = new GridBagConstraints();
+    gbc.insets = new Insets(15, 0, 15, 40);
+    gbc.anchor = GridBagConstraints.WEST;
+    
+    // Current Password
+    gbc.gridx = 0; gbc.gridy = 0;
+    formSection.add(createFieldLabel("Current Password"), gbc);
+    gbc.gridx = 1;
+    currentPasswordField = createModernPasswordField();
+    formSection.add(currentPasswordField, gbc);
+    
+    // New Password
+    gbc.gridx = 0; gbc.gridy = 1;
+    formSection.add(createFieldLabel("New Password"), gbc);
+    gbc.gridx = 1;
+    newPasswordField = createModernPasswordField();
+    formSection.add(newPasswordField, gbc);
+    
+    // Confirm Password
+    gbc.gridx = 0; gbc.gridy = 2;
+    formSection.add(createFieldLabel("Confirm Password"), gbc);
+    gbc.gridx = 1;
+    confirmPasswordField = createModernPasswordField();
+    formSection.add(confirmPasswordField, gbc);
+    
+    // Buttons
+    JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 30));
+    buttonPanel.setOpaque(false);
+    
+    JButton updatePasswordButton = createModernButton("🔑 Update Password", new Color(139, 92, 246), true);
+    JButton cancelButton = createModernButton("Cancel", new Color(138, 92, 246), false);
+    
+    updatePasswordButton.addActionListener(e -> updatePassword());
+    cancelButton.addActionListener(e -> resetSecurityFields());
+    
+    buttonPanel.add(updatePasswordButton);
+    buttonPanel.add(Box.createHorizontalStrut(15));
+    buttonPanel.add(cancelButton);
+    
+    panel.add(titleSection, BorderLayout.NORTH);
+    panel.add(formSection, BorderLayout.CENTER);
+    panel.add(buttonPanel, BorderLayout.SOUTH);
+    
+    return panel;
+    }private JPanel createPreferencesContent() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setOpaque(false);
         
-        // Preferences Card
-        JPanel preferencesCard = createCardPanel();
-        preferencesCard.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(PageComponents.ACCENT_COLOR, 2, true),
-            new EmptyBorder(25, 25, 25, 25)
-        ));
+        // Title section
+        JPanel titleSection = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        titleSection.setOpaque(false);
+        titleSection.setBorder(new EmptyBorder(0, 0, 40, 0));
         
-        JLabel preferencesTitle = new JLabel("⚙️ Notification Preferences", SwingConstants.LEFT);
-        preferencesTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        preferencesTitle.setForeground(PageComponents.TEXT_COLOR);
+        JLabel titleLabel = new JLabel("⚙️ Preferences");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        titleLabel.setForeground(Color.WHITE);
+        
+        JLabel subtitleLabel = new JLabel("Customize your experience and notification settings");
+        subtitleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        subtitleLabel.setForeground(new Color(196, 181, 253));
+        
+        JPanel titleInfo = new JPanel();
+        titleInfo.setLayout(new BoxLayout(titleInfo, BoxLayout.Y_AXIS));
+        titleInfo.setOpaque(false);
+        titleInfo.add(titleLabel);
+        titleInfo.add(Box.createVerticalStrut(5));
+        titleInfo.add(subtitleLabel);
+        
+        titleSection.add(titleInfo);
+        
+        // Preferences section
+        JPanel preferencesSection = new JPanel();
+        preferencesSection.setLayout(new BoxLayout(preferencesSection, BoxLayout.Y_AXIS));
+        preferencesSection.setOpaque(false);
         
         // Notification Settings
-        JPanel notificationPanel = new JPanel();
-        notificationPanel.setLayout(new BoxLayout(notificationPanel, BoxLayout.Y_AXIS));
-        notificationPanel.setBackground(PageComponents.CARD_COLOR);
+        JLabel notificationLabel = new JLabel("📱 Notification Settings");
+        notificationLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        notificationLabel.setForeground(Color.WHITE);
+        notificationLabel.setBorder(new EmptyBorder(0, 0, 20, 0));
         
-        emailNotifications = createStyledCheckbox("📧 Email Notifications", "Receive booking confirmations and updates via email");
-        smsNotifications = createStyledCheckbox("📱 SMS Notifications", "Receive important alerts via SMS");
-        promotionalEmails = createStyledCheckbox("🎯 Promotional Emails", "Receive special offers and deals");
+        emailNotifications = createModernCheckBox("📧 Email Notifications", true);
+        smsNotifications = createModernCheckBox("📱 SMS Notifications", false);
+        promotionalEmails = createModernCheckBox("🎯 Promotional Emails", true);
         
-        emailNotifications.setSelected(true);
-        smsNotifications.setSelected(true);
-        
-        notificationPanel.add(emailNotifications);
-        notificationPanel.add(Box.createVerticalStrut(10));
-        notificationPanel.add(smsNotifications);
-        notificationPanel.add(Box.createVerticalStrut(10));
-        notificationPanel.add(promotionalEmails);
-        
-        // Travel Preferences
-        JPanel travelPrefsPanel = new JPanel();
-        travelPrefsPanel.setLayout(new BoxLayout(travelPrefsPanel, BoxLayout.Y_AXIS));
-        travelPrefsPanel.setBackground(PageComponents.CARD_COLOR);
-        travelPrefsPanel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(PageComponents.PRIMARY_COLOR),
-            "✈️ Travel Preferences",
-            0, 0,
-            new Font("Segoe UI", Font.BOLD, 14),
-            PageComponents.TEXT_COLOR
-        ));
-        
-        JPanel currencyPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        currencyPanel.setBackground(PageComponents.CARD_COLOR);
-        currencyPanel.add(createFieldLabel("Preferred Currency:"));
-        
-        JComboBox<String> currencyCombo = new JComboBox<>(new String[]{"USD ($)", "EUR (€)", "TRY (₺)", "GBP (£)"});
-        currencyCombo.setBackground(PageComponents.INPUT_COLOR);
-        currencyCombo.setForeground(PageComponents.TEXT_COLOR);
-        currencyCombo.setSelectedIndex(2); // TRY selected
-        currencyPanel.add(currencyCombo);
-        
-        JPanel languagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        languagePanel.setBackground(PageComponents.CARD_COLOR);
-        languagePanel.add(createFieldLabel("Language:"));
-        
-        JComboBox<String> languageCombo = new JComboBox<>(new String[]{"English", "Türkçe", "Deutsch", "Français"});
-        languageCombo.setBackground(PageComponents.INPUT_COLOR);
-        languageCombo.setForeground(PageComponents.TEXT_COLOR);
-        languagePanel.add(languageCombo);
-        
-        travelPrefsPanel.add(currencyPanel);
-        travelPrefsPanel.add(languagePanel);
+        preferencesSection.add(notificationLabel);
+        preferencesSection.add(emailNotifications);
+        preferencesSection.add(Box.createVerticalStrut(15));
+        preferencesSection.add(smsNotifications);
+        preferencesSection.add(Box.createVerticalStrut(15));
+        preferencesSection.add(promotionalEmails);
         
         // Buttons
-        JPanel buttonPanel = new JPanel(new FlowLayout());
-        buttonPanel.setBackground(PageComponents.CARD_COLOR);
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 30));
+        buttonPanel.setOpaque(false);
         
-        JButton savePrefsButton = PageComponents.createStyledButton("💾 Save Preferences", PageComponents.ACCENT_COLOR, true);
-        JButton resetButton = PageComponents.createStyledButton("Reset to Default", PageComponents.SECONDARY_COLOR, false);
+        JButton savePreferencesButton = createModernButton("💾 Save Preferences", new Color(139, 92, 246), true);
+        JButton resetButton = createModernButton("Reset", new Color(138, 92, 246), false);
         
-        savePrefsButton.addActionListener(e -> savePreferences());
+        savePreferencesButton.addActionListener(e -> savePreferences());
         resetButton.addActionListener(e -> resetPreferences());
         
-        buttonPanel.add(savePrefsButton);
+        buttonPanel.add(savePreferencesButton);
+        buttonPanel.add(Box.createHorizontalStrut(15));
         buttonPanel.add(resetButton);
         
-        preferencesCard.add(preferencesTitle);
-        preferencesCard.add(Box.createVerticalStrut(15));
-        preferencesCard.add(notificationPanel);
-        preferencesCard.add(Box.createVerticalStrut(20));
-        preferencesCard.add(travelPrefsPanel);
-        preferencesCard.add(Box.createVerticalStrut(15));
-        preferencesCard.add(buttonPanel);
-        
-        panel.add(preferencesCard);
+        panel.add(titleSection, BorderLayout.NORTH);
+        panel.add(preferencesSection, BorderLayout.CENTER);
+        panel.add(buttonPanel, BorderLayout.SOUTH);
         
         return panel;
-    }
-    
-    private JPanel createStatsPanel() {
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBackground(PageComponents.BACKGROUND_COLOR);
-        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
+    }private JPanel createStatisticsContent() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setOpaque(false);
         
-        // Statistics Cards
-        JPanel statsGrid = new JPanel(new GridLayout(2, 2, 15, 15));
-        statsGrid.setBackground(PageComponents.BACKGROUND_COLOR);
+        // Title section
+        JPanel titleSection = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        titleSection.setOpaque(false);
+        titleSection.setBorder(new EmptyBorder(0, 0, 40, 0));
         
-        JPanel totalTripsCard = createStatCard("Total Trips", "23", "🚗", PageComponents.PRIMARY_COLOR);
-        JPanel totalSpentCard = createStatCard("Total Spent", "$2,450", "💰", PageComponents.ACCENT_COLOR);
-        JPanel favDestCard = createStatCard("Favorite Destination", "Istanbul", "📍", new Color(255, 193, 7));
-        JPanel membershipCard = createStatCard("Membership Level", "Gold", "⭐", new Color(255, 85, 85));
+        JLabel titleLabel = new JLabel("📊 Account Statistics");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        titleLabel.setForeground(Color.WHITE);
         
-        statsGrid.add(totalTripsCard);
-        statsGrid.add(totalSpentCard);
-        statsGrid.add(favDestCard);
-        statsGrid.add(membershipCard);
+        JLabel subtitleLabel = new JLabel("View your account activity and usage statistics");
+        subtitleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        subtitleLabel.setForeground(new Color(196, 181, 253));
         
-        // Recent Activity
-        JPanel activityCard = createCardPanel();
-        activityCard.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(PageComponents.PRIMARY_COLOR, 2, true),
-            new EmptyBorder(20, 20, 20, 20)
-        ));
+        JPanel titleInfo = new JPanel();
+        titleInfo.setLayout(new BoxLayout(titleInfo, BoxLayout.Y_AXIS));
+        titleInfo.setOpaque(false);
+        titleInfo.add(titleLabel);
+        titleInfo.add(Box.createVerticalStrut(5));
+        titleInfo.add(subtitleLabel);
         
-        JLabel activityTitle = new JLabel("📈 Recent Activity", SwingConstants.LEFT);
-        activityTitle.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        activityTitle.setForeground(PageComponents.TEXT_COLOR);
+        titleSection.add(titleInfo);
         
-        String[] activities = {
-            "✈️ Flight booked to London - June 18, 2025",
-            "🚌 Bus trip completed: Istanbul → Ankara - June 15, 2025",
-            "💳 Payment processed for reservation RES002",
-            "📧 Confirmation email sent for upcoming trip",
-            "⭐ Upgraded to Gold membership - June 10, 2025"
+        // Statistics cards
+        JPanel statsSection = new JPanel(new GridLayout(2, 2, 20, 20));
+        statsSection.setOpaque(false);
+        
+        // Create statistic cards
+        JPanel totalLoginsCard = createStatCard("🔐 Total Logins", "156", "times");
+        JPanel lastLoginCard = createStatCard("⏰ Last Login", "2 hours", "ago");
+        JPanel accountAgeCard = createStatCard("📅 Account Age", "2 years", "3 months");
+        JPanel settingsChangedCard = createStatCard("⚙️ Settings Changed", "12", "times");
+        
+        statsSection.add(totalLoginsCard);
+        statsSection.add(lastLoginCard);
+        statsSection.add(accountAgeCard);
+        statsSection.add(settingsChangedCard);
+        
+        panel.add(titleSection, BorderLayout.NORTH);
+        panel.add(statsSection, BorderLayout.CENTER);
+        
+        return panel;
+    }private JPasswordField createModernPasswordField() {
+        JPasswordField field = new JPasswordField() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                // Background
+                g2d.setColor(new Color(255, 255, 255, 10));
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
+                
+                // Border
+                if (isFocusOwner()) {
+                    g2d.setColor(new Color(139, 92, 246));
+                    g2d.setStroke(new BasicStroke(2));
+                } else {
+                    g2d.setColor(new Color(255, 255, 255, 30));
+                    g2d.setStroke(new BasicStroke(1));
+                }
+                g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 8, 8);
+                
+                super.paintComponent(g);
+            }
         };
         
-        JPanel activityList = new JPanel();
-        activityList.setLayout(new BoxLayout(activityList, BoxLayout.Y_AXIS));
-        activityList.setBackground(PageComponents.CARD_COLOR);
+        field.setOpaque(false);
+        field.setForeground(Color.WHITE);
+        field.setCaretColor(Color.WHITE);
+        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        field.setBorder(BorderFactory.createEmptyBorder(12, 16, 12, 16));
+        field.setPreferredSize(new Dimension(300, 45));
         
-        for (String activity : activities) {
-            JLabel activityLabel = new JLabel(activity);
-            activityLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-            activityLabel.setForeground(PageComponents.TEXT_COLOR);
-            activityLabel.setBorder(new EmptyBorder(5, 0, 5, 0));
-            activityList.add(activityLabel);
-        }
-        
-        activityCard.add(activityTitle);
-        activityCard.add(Box.createVerticalStrut(15));
-        activityCard.add(activityList);
-        
-        panel.add(statsGrid);
-        panel.add(Box.createVerticalStrut(20));
-        panel.add(activityCard);
-        
-        return panel;
+        return field;
     }
     
-    private JPanel createStatCard(String title, String value, String icon, Color accentColor) {
-        JPanel card = new JPanel();
+    private JCheckBox createModernCheckBox(String text, boolean selected) {
+        JCheckBox checkBox = new JCheckBox(text, selected) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                super.paintComponent(g);
+            }
+        };
+        
+        checkBox.setOpaque(false);
+        checkBox.setForeground(Color.WHITE);
+        checkBox.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        checkBox.setFocusPainted(false);
+        
+        return checkBox;
+    }
+    
+    private JPanel createStatCard(String title, String value, String unit) {
+        JPanel card = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                // Card background
+                g2d.setColor(new Color(255, 255, 255, 15));
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 16, 16);
+                
+                // Border
+                g2d.setColor(new Color(255, 255, 255, 25));
+                g2d.setStroke(new BasicStroke(1));
+                g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 16, 16);
+            }
+        };
+        
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-        card.setBackground(PageComponents.CARD_COLOR);
-        card.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(accentColor, 2, true),
-            new EmptyBorder(20, 20, 20, 20)
-        ));
+        card.setOpaque(false);
+        card.setBorder(new EmptyBorder(20, 20, 20, 20));
         
-        JLabel iconLabel = new JLabel(icon, SwingConstants.CENTER);
-        iconLabel.setFont(new Font("Segoe UI", Font.PLAIN, 24));
-        iconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        
-        JLabel valueLabel = new JLabel(value, SwingConstants.CENTER);
-        valueLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
-        valueLabel.setForeground(accentColor);
-        valueLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        
-        JLabel titleLabel = new JLabel(title, SwingConstants.CENTER);
-        titleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        titleLabel.setForeground(PageComponents.TEXT_COLOR);
+        JLabel titleLabel = new JLabel(title);
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        titleLabel.setForeground(new Color(196, 181, 253));
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
-        card.add(iconLabel);
+        JLabel valueLabel = new JLabel(value);
+        valueLabel.setFont(new Font("Segoe UI", Font.BOLD, 28));
+        valueLabel.setForeground(Color.WHITE);
+        valueLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        JLabel unitLabel = new JLabel(unit);
+        unitLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        unitLabel.setForeground(new Color(196, 181, 253));
+        unitLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        card.add(titleLabel);
         card.add(Box.createVerticalStrut(10));
         card.add(valueLabel);
         card.add(Box.createVerticalStrut(5));
-        card.add(titleLabel);
+        card.add(unitLabel);
         
         return card;
     }
     
-    private JLabel createFieldLabel(String text) {
-        JLabel label = new JLabel(text);
-        label.setForeground(PageComponents.TEXT_COLOR);
-        label.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        return label;
-    }
-    
-    private JSpinner createDateSpinner() {
-        SpinnerDateModel dateModel = new SpinnerDateModel();
-        JSpinner spinner = new JSpinner(dateModel);
+    private void updatePassword() {
+        String currentPassword = new String(currentPasswordField.getPassword());
+        String newPassword = new String(newPasswordField.getPassword());
+        String confirmPassword = new String(confirmPasswordField.getPassword());
         
-        JSpinner.DateEditor dateEditor = new JSpinner.DateEditor(spinner, "dd/MM/yyyy");
-        spinner.setEditor(dateEditor);
-        spinner.setPreferredSize(new Dimension(120, 35));
-        
-        spinner.getEditor().getComponent(0).setBackground(PageComponents.INPUT_COLOR);
-        spinner.getEditor().getComponent(0).setForeground(PageComponents.TEXT_COLOR);
-        
-        return spinner;
-    }
-    
-    private JPasswordField createPasswordField() {
-        JPasswordField field = new JPasswordField();
-        field.setBackground(PageComponents.INPUT_COLOR);
-        field.setForeground(PageComponents.TEXT_COLOR);
-        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        field.setPreferredSize(new Dimension(250, 35));
-        field.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(PageComponents.SECONDARY_COLOR),
-            new EmptyBorder(5, 10, 5, 10)
-        ));
-        return field;
-    }
-    
-    private JCheckBox createStyledCheckbox(String text, String tooltip) {
-        JCheckBox checkbox = new JCheckBox(text);
-        checkbox.setBackground(PageComponents.CARD_COLOR);
-        checkbox.setForeground(PageComponents.TEXT_COLOR);
-        checkbox.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        checkbox.setToolTipText(tooltip);
-        return checkbox;
-    }
-    
-    // Action Methods
-    private void savePersonalInfo() {
-        PageComponents.showStyledMessage("Success", "Personal information saved successfully!", this);
-    }
-    
-    private void resetPersonalInfo() {
-        nameField.setText("John Doe");
-        emailField.setText("john.doe@example.com");
-        phoneField.setText("+90 555 123 4567");
-        addressField.setText("123 Main Street, Apt 4B");
-        cityField.setText("Istanbul");
-        countryField.setText("Turkey");
-        genderCombo.setSelectedIndex(0);
-    }
-    
-    private void changePassword() {
-        String current = new String(currentPasswordField.getPassword());
-        String newPass = new String(newPasswordField.getPassword());
-        String confirm = new String(confirmPasswordField.getPassword());
-        
-        if (current.isEmpty() || newPass.isEmpty() || confirm.isEmpty()) {
-            PageComponents.showStyledMessage("Error", "Please fill in all password fields!", this);
+        if (currentPassword.isEmpty()) {
+            showErrorMessage("Please enter your current password!");
             return;
         }
         
-        if (!newPass.equals(confirm)) {
-            PageComponents.showStyledMessage("Error", "New passwords do not match!", this);
+        if (newPassword.isEmpty()) {
+            showErrorMessage("Please enter a new password!");
             return;
         }
         
-        if (newPass.length() < 8) {
-            PageComponents.showStyledMessage("Error", "New password must be at least 8 characters long!", this);
+        if (newPassword.length() < 6) {
+            showErrorMessage("New password must be at least 6 characters long!");
             return;
         }
         
-        PageComponents.showStyledMessage("Success", "Password changed successfully!", this);
-        clearPasswordFields();
+        if (!newPassword.equals(confirmPassword)) {
+            showErrorMessage("New password and confirmation do not match!");
+            return;
+        }
+        
+        showSuccessMessage("Password updated successfully!");
+        resetSecurityFields();
     }
     
-    private void clearPasswordFields() {
+    private void resetSecurityFields() {
         currentPasswordField.setText("");
         newPasswordField.setText("");
         confirmPasswordField.setText("");
     }
     
     private void savePreferences() {
-        PageComponents.showStyledMessage("Success", "Preferences saved successfully!", this);
+        showSuccessMessage("Preferences saved successfully!");
     }
     
     private void resetPreferences() {
         emailNotifications.setSelected(true);
-        smsNotifications.setSelected(true);
-        promotionalEmails.setSelected(false);
-        PageComponents.showStyledMessage("Info", "Preferences reset to default values!", this);
+        smsNotifications.setSelected(false);
+        promotionalEmails.setSelected(true);
     }
-}
+    
+    
+    }
