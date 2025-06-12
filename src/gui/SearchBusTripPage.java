@@ -2,10 +2,17 @@ package gui;
 import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import models.BusTrip;
+import models.Trip;
+import repository.*;
+import service.*;
 
 public class SearchBusTripPage extends BasePanel {
     private JTextField fromField;
@@ -18,8 +25,132 @@ public class SearchBusTripPage extends BasePanel {
     private DefaultTableModel tableModel;
     private JPanel returnDatePanel;
     
+    // Repository and Service
+    private TripRepository tripRepository;
+    private TripService tripService;
+    
     public SearchBusTripPage() {
         super("Search Bus Trips - Travel System", 1200, 800);
+        // Initialize repository and service
+        this.tripRepository = new TripRepository();
+        this.tripService = new TripService(tripRepository);
+        
+        // Initialize with sample data
+        initializeSampleData();
+    }
+    
+    private void initializeSampleData() {
+        // Add sample bus trips to repository
+        try {
+            BusTrip trip1 = new BusTrip(
+                "BT001",
+                "Istanbul",
+                "Ankara",
+                LocalDateTime.of(2025, 6, 15, 8, 0),
+                LocalDateTime.of(2025, 6, 15, 14, 30),
+                45.0,
+                40,
+                "Metro Turizm",
+                "6h 30m",
+                "WiFi, AC, TV",
+                "34-MT-001"
+            );
+            tripService.addTrip(trip1);
+            
+            BusTrip trip2 = new BusTrip(
+                "BT002",
+                "Istanbul",
+                "Ankara",
+                LocalDateTime.of(2025, 6, 15, 10, 15),
+                LocalDateTime.of(2025, 6, 15, 16, 45),
+                52.0,
+                40,
+                "Varan Turizm",
+                "6h 30m",
+                "WiFi, AC, Refreshment",
+                "34-VR-002"
+            );
+            tripService.addTrip(trip2);
+            
+            BusTrip trip3 = new BusTrip(
+                "BT003",
+                "Istanbul",
+                "Ankara",
+                LocalDateTime.of(2025, 6, 15, 14, 0),
+                LocalDateTime.of(2025, 6, 15, 20, 30),
+                48.0,
+                40,
+                "Kamil Koç",
+                "6h 30m",
+                "WiFi, AC",
+                "34-KK-003"
+            );
+            tripService.addTrip(trip3);
+            
+            BusTrip trip4 = new BusTrip(
+                "BT004",
+                "Istanbul",
+                "Ankara",
+                LocalDateTime.of(2025, 6, 15, 18, 30),
+                LocalDateTime.of(2025, 6, 16, 1, 0),
+                50.0,
+                40,
+                "Pamukkale Turizm",
+                "6h 30m",
+                "WiFi, AC, TV, Meal",
+                "34-PK-004"
+            );
+            tripService.addTrip(trip4);
+            
+            BusTrip trip5 = new BusTrip(
+                "BT005",
+                "Istanbul",
+                "Ankara",
+                LocalDateTime.of(2025, 6, 15, 22, 0),
+                LocalDateTime.of(2025, 6, 16, 4, 30),
+                42.0,
+                40,
+                "Ulusoy",
+                "6h 30m",
+                "WiFi, AC",
+                "34-UL-005"
+            );
+            tripService.addTrip(trip5);
+            
+            // Add trips for different routes
+            BusTrip trip6 = new BusTrip(
+                "BT006",
+                "Ankara",
+                "Izmir",
+                LocalDateTime.of(2025, 6, 15, 9, 0),
+                LocalDateTime.of(2025, 6, 15, 16, 0),
+                55.0,
+                40,
+                "Metro Turizm",
+                "7h 0m",
+                "WiFi, AC, TV",
+                "06-MT-006"
+            );
+            tripService.addTrip(trip6);
+            
+            BusTrip trip7 = new BusTrip(
+                "BT007",
+                "Izmir",
+                "Istanbul",
+                LocalDateTime.of(2025, 6, 15, 11, 30),
+                LocalDateTime.of(2025, 6, 15, 19, 0),
+                48.0,
+                40,
+                "Varan Turizm",
+                "7h 30m",
+                "WiFi, AC, Refreshment",
+                "35-VR-007"
+            );
+            tripService.addTrip(trip7);
+            
+        } catch (Exception e) {
+            System.err.println("Error initializing sample data: " + e.getMessage());
+        }
     }
     
     @Override
@@ -479,35 +610,46 @@ public class SearchBusTripPage extends BasePanel {
             PageComponents.showStyledMessage("Error", "Please enter destination city!", this);
             return;
         }
+        Date selectedDate = (Date) dateSpinner.getValue();
+        LocalDateTime searchDate = LocalDateTime.ofInstant(selectedDate.toInstant(), 
+                                                           java.time.ZoneId.systemDefault());
         
         // Clear previous results
         tableModel.setRowCount(0);
         
-        // Add sample bus results
-        populateSampleBusData(from, to);
-    }
-    
-    private void populateSampleBusData(String from, String to) {
-        tableModel.addRow(new Object[]{
-            "Metro Turizm", from + " → " + to, "08:00", "14:30", "6h 30m", 
-            "$45.00", "12 seats", "WiFi, AC, TV"
-        });
-        tableModel.addRow(new Object[]{
-            "Varan Turizm", from + " → " + to, "10:15", "16:45", "6h 30m", 
-            "$52.00", "8 seats", "WiFi, AC, Refreshment"
-        });
-        tableModel.addRow(new Object[]{
-            "Kamil Koç", from + " → " + to, "14:00", "20:30", "6h 30m", 
-            "$48.00", "15 seats", "WiFi, AC"
-        });
-        tableModel.addRow(new Object[]{
-            "Pamukkale Turizm", from + " → " + to, "18:30", "01:00", "6h 30m", 
-            "$50.00", "6 seats", "WiFi, AC, TV, Meal"
-        });
-        tableModel.addRow(new Object[]{
-            "Ulusoy", from + " → " + to, "22:00", "04:30", "6h 30m", 
-            "$42.00", "20 seats", "WiFi, AC"
-        });
+        // Search for trips from repository
+        List<Trip> foundTrips = tripService.searchTrips(from, to, searchDate);
+        
+        if (foundTrips.isEmpty()) {
+            // If no trips found, show message
+            PageComponents.showStyledMessage("No Results", 
+                "No bus trips found for the selected route and date.\nTry different cities or dates.", this);
+        } else {
+            // Populate table with found trips
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+            
+            for (Trip trip : foundTrips) {
+                if (trip instanceof BusTrip) {
+                    BusTrip busTrip = (BusTrip) trip;
+                    
+                    // Calculate available seats (assuming all seats are available for now)
+                    int availableSeats = trip.getTotalSeats() - 
+                        trip.getSeats().stream().mapToInt(seat -> seat.isAvailable() ? 0 : 1).sum();
+                    
+                    tableModel.addRow(new Object[]{
+                        trip.getTripNo(),
+                        trip.getCompany(),
+                        trip.getStartPoint() + " → " + trip.getEndPoint(),
+                        trip.getDepartureTime().format(timeFormatter),
+                        trip.getArrivalTime().format(timeFormatter),
+                        trip.getDuration(),
+                        String.format("$%.2f", trip.getBasePrice()),
+                        availableSeats + " seats",
+                        trip.getAmentities()
+                    });
+                }
+            }
+        }
     }
     
     private void clearForm() {
@@ -576,4 +718,5 @@ public class SearchBusTripPage extends BasePanel {
             ex.printStackTrace();
         }
     }
+
 }

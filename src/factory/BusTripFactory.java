@@ -4,11 +4,9 @@ import java.time.LocalDateTime;
 
 public class BusTripFactory extends TripFactory {
     @Override
-    public Trip createTrip(String id, String origin, String destination, 
-                          LocalDateTime departureTime, LocalDateTime arrivalTime, 
-                          double basePrice, int totalSeats, String vehicleNo) {
-        return new BusTrip(id, origin, destination, departureTime, arrivalTime, 
-                          basePrice, totalSeats, vehicleNo);
+    public Trip createTrip(String tripNo, String startPoint, String endPoint, LocalDateTime departureTime, LocalDateTime arrivalTime, double basePrice, int totalSeats, String company, String duration, String amentities, String busNo) {
+        return new BusTrip(tripNo, startPoint, endPoint, departureTime, arrivalTime, 
+                          basePrice, totalSeats, company, duration, amentities, busNo);
     }
     
     @Override

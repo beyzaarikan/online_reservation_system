@@ -9,6 +9,9 @@ import javax.swing.*;
 // Observer sınıflarınızı içe aktarıyoruz
 import observer.Observer;
 import observer.SeatManager;
+import repository.*;
+import models.*;
+import service.*;
 
 public class BusSeatSelectionPage extends BasePanel implements Observer {
     private String busCompany;

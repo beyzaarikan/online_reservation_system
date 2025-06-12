@@ -12,9 +12,11 @@ public class TripRepository {
     public TripRepository() {
         this.trips = new ArrayList<>();
     }
+
     public void save(Trip trip) {
         trips.add(trip);
     }
+
     public Trip findByTripNo(String tripNo) {
         for (Trip trip : trips) {
             if (trip.getTripNo().equals(tripNo)) {
@@ -22,7 +24,8 @@ public class TripRepository {
             }
         }
         return null;
-    }               
+    } 
+                  
     public void delete(Trip trip) {
         trips.remove(trip);
     }
