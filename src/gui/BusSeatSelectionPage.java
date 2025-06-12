@@ -325,27 +325,41 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         return legendPanel;
     }
 
-    private JPanel createModernLegendItem(String label, Color color, String seatText) {
-        JPanel item = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 0));
-        item.setOpaque(false);
+   private JPanel createModernLegendItem(String label, Color color, String seatText) {
+    JPanel item = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 0));
+    item.setOpaque(false);
 
-        JButton sampleSeat = new JButton(seatText);
-        sampleSeat.setBackground(color);
-        sampleSeat.setForeground(isLightColor(color) ? Color.BLACK : Color.WHITE);
-        sampleSeat.setEnabled(false);
-        sampleSeat.setFont(new Font("Segoe UI", Font.BOLD, 11));
-        sampleSeat.setPreferredSize(new Dimension(30, 30));
-        sampleSeat.setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255, 50), 1, true));
+    JButton sampleSeat = new JButton(seatText) {
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(color);
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+            g2.dispose();
+            super.paintComponent(g);
+        }
+    };
 
-        JLabel labelText = new JLabel(label);
-        labelText.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        labelText.setForeground(Color.WHITE);
+    sampleSeat.setForeground(isLightColor(color) ? Color.BLACK : Color.WHITE);
+    sampleSeat.setFont(new Font("Segoe UI", Font.BOLD, 11));
+    sampleSeat.setPreferredSize(new Dimension(30, 30));
+    sampleSeat.setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255, 50), 1, true));
+    sampleSeat.setContentAreaFilled(false);
+    sampleSeat.setBorderPainted(true);
+    sampleSeat.setFocusPainted(false);
+    sampleSeat.setOpaque(false);
+    sampleSeat.setEnabled(false);
 
-        item.add(sampleSeat);
-        item.add(labelText);
+    JLabel labelText = new JLabel(label);
+    labelText.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+    labelText.setForeground(Color.WHITE);
 
-        return item;
-    }
+    item.add(sampleSeat);
+    item.add(labelText);
+
+    return item;
+}
 
     private JPanel createModernSidebarPanel() {
         JPanel sidebar = new JPanel() {
@@ -565,15 +579,40 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
             setupModernButton();
         }
 
-        public void setSeatManager(SeatManager seatManager) {
-            this.seatManager = seatManager;
+
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+
+        // Arka plan rengi
+            if (isOccupied) {
+                g2.setColor(new Color(220, 53, 69)); // Kırmızı
+            } else if (isPremium) {
+                g2.setColor(new Color(255, 193, 7)); // Sarı
+            } else {
+                g2.setColor(new Color(75, 181, 67)); // Yeşil
+            }
+             g2.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
+            g2.dispose();
+
+            super.paintComponent(g); // Yazı ve ikonları çiz
         }
 
+
+
+         public void setSeatManager(SeatManager seatManager) {
+             this.seatManager = seatManager;
+         }
+
         private void setupModernButton() {
-            setPreferredSize(new Dimension(48, 48));
+            setPreferredSize(new Dimension(35, 35));
             setFont(new Font("Segoe UI", Font.BOLD, 11));
             setFocusPainted(false);
             setCursor(new Cursor(Cursor.HAND_CURSOR));
+            setContentAreaFilled(false); // Arka planı biz çizeceğiz
+            setBorderPainted(false);     // Kenarlık da bizde
+            setOpaque(false); 
 
             if (isOccupied) {
                 setText("X");
