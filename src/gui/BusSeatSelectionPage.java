@@ -657,21 +657,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
             
             // Show success message
             String successMessage = String.format(
-                "🎉 Reservation Confirmed!\n\n" +
-                "Reservation ID: %s\n" +
-                "Trip: %s → %s\n" +
-                "Date: %s\n" +
-                "Seats: %s\n" +
-                "Total Price: $%.2f\n\n" +
-                "Status: %s",
-                reservationId.substring(0, 8).toUpperCase(),
-                fromCity, toCity,
-                departureDate,
-                selectedSeats.stream()
-                    .map(seat -> String.valueOf(seat.getSeatNumber()))
-                    .reduce((a, b) -> a + ", " + b).orElse(""),
-                totalPrice,
-                reservationContext.getCurrentStateName()
+                "🎉 Reservation Confirmed!\n\n"
             );
             
             PageComponents.showStyledMessage("Reservation Successful!", successMessage, this);
