@@ -1,5 +1,4 @@
 package command;
-import models.*;
 import service.*;
 
 public class MakeReservationCommand implements Command {
@@ -20,8 +19,10 @@ public class MakeReservationCommand implements Command {
     @Override
     public void execute() {
         try {
-            reservationService.makeReservation(userId, tripId, seatId);
-            System.out.println("Reservation made successfully");
+            boolean success = reservationService.makeReservation(userId, tripId, seatId);
+            if (success) {
+                System.out.println("Reservation made successfully for user: " + userId);
+            }
         } catch (Exception e) {
             System.out.println("Failed to make reservation: " + e.getMessage());
         }
@@ -30,8 +31,16 @@ public class MakeReservationCommand implements Command {
     @Override
     public void undo() {
         if (reservationId != null) {
-            reservationService.cancelReservation(reservationId);
-            System.out.println("Reservation cancelled");
+            try {
+                reservationService.cancelReservation(reservationId);
+                System.out.println("Reservation cancelled: " + reservationId);
+            } catch (Exception e) {
+                System.out.println("Failed to cancel reservation: " + e.getMessage());
+            }
         }
+    }
+    
+    public void setReservationId(String reservationId) {
+        this.reservationId = reservationId;
     }
 }

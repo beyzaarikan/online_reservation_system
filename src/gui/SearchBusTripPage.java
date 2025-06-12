@@ -2,23 +2,161 @@ package gui;
 import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import models.BusTrip;
+import models.Trip;
+import repository.*;
+import service.*;
+import factory.*;
+import singleton.SessionManagerTrip;
 
 public class SearchBusTripPage extends BasePanel {
     private JTextField fromField;
     private JTextField toField;
     private JSpinner dateSpinner;
+    private JSpinner returnDateSpinner;
     private JComboBox<String> passengerCount;
     private JCheckBox roundTripCheckbox;
     private JTable busTable;
     private DefaultTableModel tableModel;
+    private JPanel returnDatePanel;
     
+    // Repository and Service
+    private TripRepository tripRepository;
+    private TripService tripService;
+    private TripFactoryManager factoryManager;
     
     public SearchBusTripPage() {
         super("Search Bus Trips - Travel System", 1200, 800);
+        // Initialize repository and service
+        this.tripRepository = new TripRepository();
+        this.tripService = new TripService(tripRepository);
+        this.factoryManager = new TripFactoryManager();
+        
+        // Initialize with sample data using Factory pattern
+        initializeSampleDataWithFactory();
+    }
+    
+    private void initializeSampleDataWithFactory() {
+        // Use Factory pattern to create trips
+        try {
+            TripFactory busFactory = factoryManager.getFactory("Bus");
+            
+            Trip trip1 = busFactory.createTrip(
+                "BT001",
+                "Istanbul",
+                "Ankara",
+                LocalDateTime.of(2025, 6, 15, 8, 0),
+                LocalDateTime.of(2025, 6, 15, 14, 30),
+                45.0,
+                40,
+                "Metro Turizm",
+                "6h 30m",
+                "WiFi, AC, TV",
+                "34-MT-001"
+            );
+            tripService.addTrip(trip1);
+            
+            Trip trip2 = busFactory.createTrip(
+                "BT002",
+                "Istanbul",
+                "Ankara",
+                LocalDateTime.of(2025, 6, 15, 10, 15),
+                LocalDateTime.of(2025, 6, 15, 16, 45),
+                52.0,
+                40,
+                "Varan Turizm",
+                "6h 30m",
+                "WiFi, AC, Refreshment",
+                "34-VR-002"
+            );
+            tripService.addTrip(trip2);
+            
+            Trip trip3 = busFactory.createTrip(
+                "BT003",
+                "Istanbul",
+                "Ankara",
+                LocalDateTime.of(2025, 6, 15, 14, 0),
+                LocalDateTime.of(2025, 6, 15, 20, 30),
+                48.0,
+                40,
+                "Kamil Koç",
+                "6h 30m",
+                "WiFi, AC",
+                "34-KK-003"
+            );
+            tripService.addTrip(trip3);
+            
+            Trip trip4 = busFactory.createTrip(
+                "BT004",
+                "Istanbul",
+                "Ankara",
+                LocalDateTime.of(2025, 6, 15, 18, 30),
+                LocalDateTime.of(2025, 6, 16, 1, 0),
+                50.0,
+                40,
+                "Pamukkale Turizm",
+                "6h 30m",
+                "WiFi, AC, TV, Meal",
+                "34-PK-004"
+            );
+            tripService.addTrip(trip4);
+            
+            Trip trip5 = busFactory.createTrip(
+                "BT005",
+                "Istanbul",
+                "Ankara",
+                LocalDateTime.of(2025, 6, 15, 22, 0),
+                LocalDateTime.of(2025, 6, 16, 4, 30),
+                42.0,
+                40,
+                "Ulusoy",
+                "6h 30m",
+                "WiFi, AC",
+                "34-UL-005"
+            );
+            tripService.addTrip(trip5);
+            
+            // Add trips for different routes
+            Trip trip6 = busFactory.createTrip(
+                "BT006",
+                "Ankara",
+                "Izmir",
+                LocalDateTime.of(2025, 6, 15, 9, 0),
+                LocalDateTime.of(2025, 6, 15, 16, 0),
+                55.0,
+                40,
+                "Metro Turizm",
+                "7h 0m",
+                "WiFi, AC, TV",
+                "06-MT-006"
+            );
+            tripService.addTrip(trip6);
+            
+            Trip trip7 = busFactory.createTrip(
+                "BT007",
+                "Izmir",
+                "Istanbul",
+                LocalDateTime.of(2025, 6, 15, 11, 30),
+                LocalDateTime.of(2025, 6, 15, 19, 0),
+                48.0,
+                40,
+                "Varan Turizm",
+                "7h 30m",
+                "WiFi, AC, Refreshment",
+                "35-VR-007"
+            );
+            tripService.addTrip(trip7);
+            
+        } catch (Exception e) {
+            System.err.println("Error initializing sample data: " + e.getMessage());
+        }
     }
     
     @Override
@@ -133,28 +271,34 @@ public class SearchBusTripPage extends BasePanel {
         gbc.gridx = 0; gbc.gridy = 0;
         fieldsPanel.add(createFieldPanel("From City", fromField = createModernTextField("Enter departure city")), gbc);
         
-        gbc.gridx = 1; gbc.gridy = 0;
+        gbc.gridx = 1;
         fieldsPanel.add(createFieldPanel("To City", toField = createModernTextField("Enter destination city")), gbc);
 
-        // Date and Passengers - same row
+        // Date and Round trip - same row
         gbc.gridx = 0; gbc.gridy = 1;
-        fieldsPanel.add(createFieldPanel("Departure Date", dateSpinner = createDateSpinner(), true), gbc);
+        fieldsPanel.add(createFieldPanel("Departure Date", dateSpinner = createDateSpinner()), gbc);
         
-        gbc.gridx = 1; gbc.gridy = 1;
-        passengerCount = new JComboBox<>(new String[]{"1", "2", "3", "4", "5", "6+"});
-        styleComboBox(passengerCount);
-        fieldsPanel.add(createFieldPanel("Passengers", passengerCount), gbc);
-
-        // Round trip checkbox - full width
-        gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 2;
-        JPanel roundTripPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        gbc.gridx = 1;
+        JPanel roundTripPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         roundTripPanel.setOpaque(false);
         roundTripCheckbox = new JCheckBox("Round Trip");
         roundTripCheckbox.setOpaque(false);
         roundTripCheckbox.setForeground(Color.WHITE);
         roundTripCheckbox.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        roundTripCheckbox.addActionListener(e -> toggleReturnDate());
         roundTripPanel.add(roundTripCheckbox);
-        fieldsPanel.add(roundTripPanel, gbc);
+        fieldsPanel.add(createFieldPanel("Trip Type", roundTripPanel), gbc);
+
+        // Return date and passengers - same row
+        gbc.gridx = 0; gbc.gridy = 2;
+        returnDatePanel = createFieldPanel("Return Date", returnDateSpinner = createDateSpinner());
+        returnDatePanel.setVisible(false);
+        fieldsPanel.add(returnDatePanel, gbc);
+        
+        gbc.gridx = 1;
+        passengerCount = new JComboBox<>(new String[]{"1", "2", "3", "4", "5", "6+"});
+        styleComboBox(passengerCount);
+        fieldsPanel.add(createFieldPanel("Passengers", passengerCount), gbc);
 
         // Buttons panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 0));
@@ -336,8 +480,7 @@ public class SearchBusTripPage extends BasePanel {
         return button;
     }
 
-    // Overloaded method with centerLabel parameter
-    private JPanel createFieldPanel(String labelText, JComponent field, boolean centerLabel) {
+    private JPanel createFieldPanel(String labelText, JComponent field) {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setOpaque(false);
@@ -345,23 +488,13 @@ public class SearchBusTripPage extends BasePanel {
         JLabel label = new JLabel(labelText);
         label.setForeground(new Color(189, 147, 249));
         label.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        
-        if (centerLabel) {
-            label.setAlignmentX(Component.CENTER_ALIGNMENT);
-        } else {
-            label.setAlignmentX(Component.LEFT_ALIGNMENT);
-        }
+        label.setAlignmentX(Component.LEFT_ALIGNMENT);
         
         panel.add(label);
         panel.add(Box.createVerticalStrut(8));
         panel.add(field);
         
         return panel;
-    }
-
-    // Original method without centerLabel parameter
-    private JPanel createFieldPanel(String labelText, JComponent field) {
-        return createFieldPanel(labelText, field, false);
     }
 
     private JSpinner createDateSpinner() {
@@ -403,14 +536,13 @@ public class SearchBusTripPage extends BasePanel {
         textField.setForeground(Color.WHITE);
         textField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         textField.setBorder(BorderFactory.createEmptyBorder(12, 15, 12, 15));
-        textField.setHorizontalAlignment(JTextField.CENTER);
         
         return spinner;
     }
 
     private void styleComboBox(JComboBox<String> comboBox) {
         comboBox.setBackground(new Color(255, 255, 255, 15));
-        comboBox.setForeground(Color.BLACK);
+        comboBox.setForeground(Color.WHITE);
         comboBox.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         comboBox.setPreferredSize(new Dimension(250, 45));
         comboBox.setMaximumSize(new Dimension(250, 45));
@@ -465,6 +597,11 @@ public class SearchBusTripPage extends BasePanel {
         scrollPane.getHorizontalScrollBar().setBackground(new Color(255, 255, 255, 20));
     }
 
+    private void toggleReturnDate() {
+        returnDatePanel.setVisible(roundTripCheckbox.isSelected());
+        revalidate();
+        repaint();
+    }
     
     private void searchBuses() {
         String from = fromField.getText();
@@ -479,35 +616,45 @@ public class SearchBusTripPage extends BasePanel {
             PageComponents.showStyledMessage("Error", "Please enter destination city!", this);
             return;
         }
+        Date selectedDate = (Date) dateSpinner.getValue();
+        LocalDateTime searchDate = LocalDateTime.ofInstant(selectedDate.toInstant(), 
+                                                           java.time.ZoneId.systemDefault());
         
         // Clear previous results
         tableModel.setRowCount(0);
         
-        // Add sample bus results
-        populateSampleBusData(from, to);
-    }
-    
-    private void populateSampleBusData(String from, String to) {
-        tableModel.addRow(new Object[]{
-            "Metro Turizm", from + " → " + to, "08:00", "14:30", "6h 30m", 
-            "$45.00", "12 seats", "WiFi, AC, TV"
-        });
-        tableModel.addRow(new Object[]{
-            "Varan Turizm", from + " → " + to, "10:15", "16:45", "6h 30m", 
-            "$52.00", "8 seats", "WiFi, AC, Refreshment"
-        });
-        tableModel.addRow(new Object[]{
-            "Kamil Koç", from + " → " + to, "14:00", "20:30", "6h 30m", 
-            "$48.00", "15 seats", "WiFi, AC"
-        });
-        tableModel.addRow(new Object[]{
-            "Pamukkale Turizm", from + " → " + to, "18:30", "01:00", "6h 30m", 
-            "$50.00", "6 seats", "WiFi, AC, TV, Meal"
-        });
-        tableModel.addRow(new Object[]{
-            "Ulusoy", from + " → " + to, "22:00", "04:30", "6h 30m", 
-            "$42.00", "20 seats", "WiFi, AC"
-        });
+        // Search for trips from repository using TripService
+        List<Trip> foundTrips = tripService.searchTrips(from, to, searchDate);
+        
+        if (foundTrips.isEmpty()) {
+            // If no trips found, show message
+            PageComponents.showStyledMessage("No Results", 
+                "No bus trips found for the selected route and date.\nTry different cities or dates.", this);
+        } else {
+            // Populate table with found trips
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+            
+            for (Trip trip : foundTrips) {
+                if (trip instanceof BusTrip) {
+                    BusTrip busTrip = (BusTrip) trip;
+                    
+                    // Calculate available seats using TripService
+                    List<models.Seat> availableSeats = tripService.findAvailableSeats(trip.getTripNo());
+                    int availableSeatsCount = availableSeats.size();
+                    
+                    tableModel.addRow(new Object[]{
+                        trip.getCompany(),
+                        trip.getStartPoint() + " → " + trip.getEndPoint(),
+                        trip.getDepartureTime().format(timeFormatter),
+                        trip.getArrivalTime().format(timeFormatter),
+                        trip.getDuration(),
+                        String.format("$%.2f", trip.getBasePrice()),
+                        availableSeatsCount + " seats",
+                        trip.getAmentities()
+                    });
+                }
+            }
+        }
     }
     
     private void clearForm() {
@@ -516,8 +663,10 @@ public class SearchBusTripPage extends BasePanel {
         toField.setText("Enter destination city");
         toField.setForeground(new Color(150, 150, 150));
         dateSpinner.setValue(java.sql.Date.valueOf(LocalDate.now()));
+        returnDateSpinner.setValue(java.sql.Date.valueOf(LocalDate.now()));
         passengerCount.setSelectedIndex(0);
         roundTripCheckbox.setSelected(false);
+        toggleReturnDate();
         tableModel.setRowCount(0);
         busTable.clearSelection();
     }
@@ -532,6 +681,7 @@ public class SearchBusTripPage extends BasePanel {
         
         // Seçilen satırdan tüm bilgileri al
         String busCompany = (String) tableModel.getValueAt(selectedRow, 0);
+        String route = (String) tableModel.getValueAt(selectedRow, 1);
         String departureTime = (String) tableModel.getValueAt(selectedRow, 2);
         String arrivalTime = (String) tableModel.getValueAt(selectedRow, 3);
         String price = (String) tableModel.getValueAt(selectedRow, 5);
@@ -545,9 +695,33 @@ public class SearchBusTripPage extends BasePanel {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         String departureDate = dateFormat.format((Date) dateSpinner.getValue());
         
+        String returnDate = null;
+        if (roundTripCheckbox.isSelected()) {
+            returnDate = dateFormat.format((Date) returnDateSpinner.getValue());
+        }
         
         String passengerCountStr = (String) passengerCount.getSelectedItem();
         int passengerCountInt = Integer.parseInt(passengerCountStr.replace("+", ""));
+        
+        // Find the selected trip and store it in SessionManagerTrip
+        Date selectedDate = (Date) dateSpinner.getValue();
+        LocalDateTime searchDate = LocalDateTime.ofInstant(selectedDate.toInstant(), 
+                                                           java.time.ZoneId.systemDefault());
+        
+        List<Trip> foundTrips = tripService.searchTrips(fromCity, toCity, searchDate);
+        Trip selectedTrip = null;
+        
+        for (Trip trip : foundTrips) {
+            if (trip.getCompany().equals(busCompany)) {
+                selectedTrip = trip;
+                break;
+            }
+        }
+        
+        if (selectedTrip != null) {
+            // Store selected trip in SessionManagerTrip
+            SessionManagerTrip.getInstance().setCurrentTrip(selectedTrip);
+        }
         
         // Proceed to BusSeatSelectionPage
         dispose();
@@ -556,7 +730,7 @@ public class SearchBusTripPage extends BasePanel {
                 busCompany, 
                 fromCity, 
                 toCity, 
-
+                returnDate, 
                 departureDate, 
                 arrivalTime, 
                 price, 

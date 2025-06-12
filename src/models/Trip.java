@@ -12,16 +12,21 @@ public abstract class Trip {
     protected double basePrice;
     protected List<Seat> seats;
     protected int totalSeats;
+    protected String company;
+    protected String duration;
+    protected String amentities;
 
-    public Trip(String id, String origin, String destination, LocalDateTime departureTime, 
-                LocalDateTime arrivalTime, double basePrice, int totalSeats) {
-        this.tripNo = id;
-        this.startPoint = origin;
-        this.endPoint = destination;
+    public Trip(String tripNo, String startPoint, String endPoint, LocalDateTime departureTime, LocalDateTime arrivalTime, double basePrice, int totalSeats, String company, String duration, String amentities) {
+        this.tripNo = tripNo;
+        this.startPoint = startPoint;
+        this.endPoint = endPoint;
         this.departureTime = departureTime;
         this.arrivalTime = arrivalTime;
         this.basePrice = basePrice;
-        this.totalSeats = totalSeats;
+        this.totalSeats = 29;
+        this.company = company;
+        this.duration = duration;
+        this.amentities = amentities;
         initializeSeats();
     }
 
@@ -37,4 +42,7 @@ public abstract class Trip {
     public double getBasePrice() { return basePrice; }
     public List<Seat> getSeats() { return seats; }
     public int getTotalSeats() { return totalSeats; }
+    public String getCompany() { return company; }
+    public String getDuration() { return duration; }
+    public String getAmentities() { return amentities; }
 }

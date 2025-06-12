@@ -4,16 +4,20 @@ import java.awt.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import repository.ReservationRepository;
+import models.Reservation;
+import java.util.Collection;
 
 public class AllReservationsPage extends BasePanel {
     private JTable reservationTable;
     private DefaultTableModel tableModel;
     private JTextField searchField;
-    private JComboBox<String> statusFilter;
     private JComboBox<String> typeFilter;
+    private ReservationRepository reservationRepository;
     
     public AllReservationsPage() {
         super("My Reservations ", 1200, 800);
+        this.reservationRepository = new ReservationRepository();
     }
     
     @Override
@@ -87,18 +91,21 @@ public class AllReservationsPage extends BasePanel {
 
         // Statistics Panel with glassmorphism
         JPanel statsPanel = createGlassmorphismPanel();
-        statsPanel.setLayout(new GridLayout(1, 4, 20, 0));
+        statsPanel.setLayout(new GridLayout(1, 3, 20, 0));
         statsPanel.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
         
-        JPanel totalCard = createStatCard("Total Reservations", "156", new Color(138, 43, 226));
-        JPanel confirmedCard = createStatCard("Confirmed", "142", new Color(46, 204, 113));
-        JPanel pendingCard = createStatCard("Pending", "8", new Color(241, 196, 15));
-        JPanel cancelledCard = createStatCard("Cancelled", "6", new Color(231, 76, 60));
+        Collection<Reservation> allReservations = reservationRepository.reservationMap.values();
+        int totalReservations = allReservations.size();
+        int busReservations = (int) allReservations.stream().filter(r -> "Bus".equals(getReservationType(r))).count();
+        int flightReservations = (int) allReservations.stream().filter(r -> "Flight".equals(getReservationType(r))).count();
+        
+        JPanel totalCard = createStatCard("Total Reservations", String.valueOf(totalReservations), new Color(138, 43, 226));
+        JPanel busCard = createStatCard("Bus Reservations", String.valueOf(busReservations), new Color(46, 204, 113));
+        JPanel flightCard = createStatCard("Flight Reservations", String.valueOf(flightReservations), new Color(52, 152, 219));
         
         statsPanel.add(totalCard);
-        statsPanel.add(confirmedCard);
-        statsPanel.add(pendingCard);
-        statsPanel.add(cancelledCard);
+        statsPanel.add(busCard);
+        statsPanel.add(flightCard);
 
         // Filter Panel with glassmorphism
         JPanel filterPanel = createGlassmorphismPanel();
@@ -109,7 +116,6 @@ public class AllReservationsPage extends BasePanel {
         searchField = createModernTextField("Search by customer name or ID...");
         searchField.setPreferredSize(new Dimension(250, 40));
         
-        statusFilter = createModernComboBox(new String[]{"All Status", "Confirmed", "Pending", "Cancelled"});
         typeFilter = createModernComboBox(new String[]{"All Types", "Bus", "Flight"});
         
         JButton searchButton = createModernButton("Search", new Color(138, 43, 226), true);
@@ -118,13 +124,10 @@ public class AllReservationsPage extends BasePanel {
         
         // Filter labels
         JLabel searchLabel = createFilterLabel("Search:");
-        JLabel statusLabel = createFilterLabel("Status:");
         JLabel typeLabel = createFilterLabel("Type:");
         
         filterPanel.add(searchLabel);
         filterPanel.add(searchField);
-        filterPanel.add(statusLabel);
-        filterPanel.add(statusFilter);
         filterPanel.add(typeLabel);
         filterPanel.add(typeFilter);
         filterPanel.add(searchButton);
@@ -138,7 +141,7 @@ public class AllReservationsPage extends BasePanel {
         
         // Table setup
         createTable();
-        populateSampleData();
+        loadReservationsFromRepository();
         
         JScrollPane scrollPane = new JScrollPane(reservationTable);
         scrollPane.setOpaque(false);
@@ -151,12 +154,10 @@ public class AllReservationsPage extends BasePanel {
         actionPanel.setOpaque(false);
         
         JButton viewDetailsButton = createModernButton("View Details", new Color(138, 43, 226), true);
-        JButton updateStatusButton = createModernButton("Update Status", new Color(52, 152, 219), true);
         JButton cancelReservationButton = createModernButton("Cancel Reservation", new Color(231, 76, 60), true);
         JButton sendEmailButton = createModernButton("Send Email", new Color(46, 204, 113), true);
         
         actionPanel.add(viewDetailsButton);
-        actionPanel.add(updateStatusButton);
         actionPanel.add(cancelReservationButton);
         actionPanel.add(sendEmailButton);
         
@@ -176,8 +177,7 @@ public class AllReservationsPage extends BasePanel {
         
         // Action listeners
         setupActionListeners(backButton, searchButton, refreshButton, exportButton,
-                           viewDetailsButton, updateStatusButton, cancelReservationButton,
-                           sendEmailButton);
+                           viewDetailsButton, cancelReservationButton, sendEmailButton);
     }
 
     private JPanel createGlassmorphismPanel() {
@@ -354,8 +354,7 @@ public class AllReservationsPage extends BasePanel {
 
     private void createTable() {
         String[] columnNames = {
-            "ID", "Customer", "Email", "Type", "Route", 
-            "Date", "Time", "Seat", "Price", "Status"
+            "ID", "Customer", "Trip", "Seats", "Price"
         };
         
         tableModel = new DefaultTableModel(columnNames, 0) {
@@ -405,22 +404,6 @@ public class AllReservationsPage extends BasePanel {
                 if (!isSelected) {
                     c.setBackground(new Color(255, 255, 255, 5));
                     c.setForeground(Color.WHITE);
-                    
-                    // Status column coloring
-                    if (column == 9 && value != null) {
-                        String status = value.toString();
-                        switch (status) {
-                            case "Confirmed":
-                                c.setForeground(new Color(46, 204, 113));
-                                break;
-                            case "Pending":
-                                c.setForeground(new Color(241, 196, 15));
-                                break;
-                            case "Cancelled":
-                                c.setForeground(new Color(231, 76, 60));
-                                break;
-                        }
-                    }
                 }
                 
                 setOpaque(false);
@@ -433,42 +416,34 @@ public class AllReservationsPage extends BasePanel {
         }
         
         // Set column widths
-        int[] columnWidths = {80, 120, 150, 60, 120, 80, 60, 50, 70, 80};
+        int[] columnWidths = {120, 200, 200, 150, 100};
         for (int i = 0; i < columnWidths.length; i++) {
             reservationTable.getColumnModel().getColumn(i).setPreferredWidth(columnWidths[i]);
         }
     }
     
-    private void populateSampleData() {
-        // Sample data
-        tableModel.addRow(new Object[]{
-            "RES001", "John Doe", "john@example.com", "Bus", "Istanbul → Ankara", 
-            "15/06/2025", "09:00", "A12", "$50.00", "Confirmed"
-        });
-        tableModel.addRow(new Object[]{
-            "RES002", "Jane Smith", "jane@example.com", "Flight", "Istanbul → London", 
-            "18/06/2025", "14:30", "12F", "$450.00", "Confirmed"
-        });
-        tableModel.addRow(new Object[]{
-            "RES003", "Mike Wilson", "mike@example.com", "Bus", "Ankara → Izmir", 
-            "20/06/2025", "22:00", "B05", "$65.00", "Pending"
-        });
-        tableModel.addRow(new Object[]{
-            "RES004", "Sarah Jones", "sarah@example.com", "Flight", "Izmir → Paris", 
-            "22/06/2025", "16:45", "8A", "$380.00", "Confirmed"
-        });
-        tableModel.addRow(new Object[]{
-            "RES005", "David Brown", "david@example.com", "Bus", "Istanbul → Izmir", 
-            "25/06/2025", "08:30", "C18", "$45.00", "Cancelled"
-        });
-        tableModel.addRow(new Object[]{
-            "RES006", "Emily Davis", "emily@example.com", "Flight", "Ankara → Berlin", 
-            "28/06/2025", "11:20", "15C", "$520.00", "Pending"
-        });
+    private void loadReservationsFromRepository() {
+        tableModel.setRowCount(0);
+        Collection<Reservation> reservations = reservationRepository.reservationMap.values();
+        
+        for (Reservation reservation : reservations) {
+            String seatList = reservation.getSeats().stream()
+                    .map(seat -> String.valueOf(seat.getSeatNo()))
+                    .reduce((s1, s2) -> s1 + ", " + s2)
+                    .orElse("N/A");
+            
+            tableModel.addRow(new Object[]{
+                reservation.getId(),
+                reservation.getUser().getName(),
+                reservation.getTrip().getStartPoint() + " → " + reservation.getTrip().getEndPoint(),
+                seatList,
+                String.format("$%.2f", reservation.getTrip().getBasePrice()) //totaL PRİCE gelmeli buraya
+            });
+        }
     }
 
     private void setupActionListeners(JButton backButton, JButton searchButton, JButton refreshButton,
-                                    JButton exportButton, JButton viewDetailsButton, JButton updateStatusButton,
+                                    JButton exportButton, JButton viewDetailsButton,
                                     JButton cancelReservationButton, JButton sendEmailButton) {
         
         backButton.addActionListener(e -> {
@@ -480,15 +455,12 @@ public class AllReservationsPage extends BasePanel {
         refreshButton.addActionListener(e -> refreshData());
         exportButton.addActionListener(e -> exportData());
         viewDetailsButton.addActionListener(e -> viewReservationDetails());
-        updateStatusButton.addActionListener(e -> updateReservationStatus());
         cancelReservationButton.addActionListener(e -> cancelReservation());
         sendEmailButton.addActionListener(e -> sendEmailToCustomer());
         
-        statusFilter.addActionListener(e -> filterByStatus());
         typeFilter.addActionListener(e -> filterByType());
     }
     
-    // Keep all the existing action methods unchanged
     private void searchReservations() {
         String searchTerm = searchField.getText();
         if (searchTerm.equals("Search by customer name or ID...") || searchTerm.trim().isEmpty()) {
@@ -496,12 +468,37 @@ public class AllReservationsPage extends BasePanel {
             return;
         }
         
-        PageComponents.showStyledMessage("Info", "Searching for: " + searchTerm + "\nFound 3 matching reservations.", this);
+        // Search in repository
+        Collection<Reservation> allReservations = reservationRepository.reservationMap.values();
+        tableModel.setRowCount(0);
+        int foundCount = 0;
+        
+        for (Reservation reservation : allReservations) {
+            if (reservation.getUser().getName().toLowerCase().contains(searchTerm.toLowerCase()) ||
+                reservation.getId().toLowerCase().contains(searchTerm.toLowerCase())) {
+                
+                String seatList = reservation.getSeats().stream()
+                        .map(seat -> String.valueOf(seat.getSeatNo()))
+                        .reduce((s1, s2) -> s1 + ", " + s2)
+                        .orElse("N/A");
+                
+                tableModel.addRow(new Object[]{
+                 reservation.getId(),
+                reservation.getUser().getName(),
+                reservation.getTrip().getStartPoint() + " → " + reservation.getTrip().getEndPoint(),
+                seatList,
+                String.format("$%.2f", reservation.getTrip().getBasePrice()) //totaL PRİCE gelmeli buraya
+                });
+                foundCount++;
+            }
+        }
+        
+        PageComponents.showStyledMessage("Search Results", 
+            "Found " + foundCount + " reservations matching: " + searchTerm, this);
     }
     
     private void refreshData() {
-        tableModel.setRowCount(0);
-        populateSampleData();
+        loadReservationsFromRepository();
         PageComponents.showStyledMessage("Success", "Reservation data refreshed successfully!", this);
     }
     
@@ -517,59 +514,38 @@ public class AllReservationsPage extends BasePanel {
         }
         
         String resId = (String) tableModel.getValueAt(selectedRow, 0);
-        String customerName = (String) tableModel.getValueAt(selectedRow, 1);
-        String email = (String) tableModel.getValueAt(selectedRow, 2);
-        String type = (String) tableModel.getValueAt(selectedRow, 3);
-        String route = (String) tableModel.getValueAt(selectedRow, 4);
-        String date = (String) tableModel.getValueAt(selectedRow, 5);
-        String time = (String) tableModel.getValueAt(selectedRow, 6);
-        String seat = (String) tableModel.getValueAt(selectedRow, 7);
-        String price = (String) tableModel.getValueAt(selectedRow, 8);
-        String status = (String) tableModel.getValueAt(selectedRow, 9);
+        Reservation reservation = reservationRepository.findById(resId);
         
-        String details = String.format(
-            "=== RESERVATION DETAILS ===\n\n" +
-            "Reservation ID: %s\n" +
-            "Customer: %s\n" +
-            "Email: %s\n" +
-            "Type: %s\n" +
-            "Route: %s\n" +
-            "Date & Time: %s %s\n" +
-            "Seat: %s\n" +
-            "Price: %s\n" +
-            "Status: %s\n\n" +
-            "Booking Date: 01/06/2025\n" +
-            "Payment Method: Credit Card\n" +
-            "Special Requests: None",
-            resId, customerName, email, type, route, date, time, seat, price, status
-        );
-        
-        PageComponents.showStyledMessage("Reservation Details", details, this);
-    }
-    
-    private void updateReservationStatus() {
-        int selectedRow = reservationTable.getSelectedRow();
-        if (selectedRow == -1) {
-            PageComponents.showStyledMessage("Error", "Please select a reservation to update!", this);
-            return;
-        }
-        
-        String[] statusOptions = {"Confirmed", "Pending", "Cancelled"};
-        String newStatus = (String) JOptionPane.showInputDialog(
-            this,
-            "Select new status:",
-            "Update Reservation Status",
-            JOptionPane.QUESTION_MESSAGE,
-            null,
-            statusOptions,
-            statusOptions[0]
-        );
-        
-        if (newStatus != null) {
-            tableModel.setValueAt(newStatus, selectedRow, 9);
-            String resId = (String) tableModel.getValueAt(selectedRow, 0);
-            PageComponents.showStyledMessage("Success", 
-                "Reservation " + resId + " status updated to: " + newStatus, this);
+        if (reservation != null) {
+            String seatList = reservation.getSeats().stream()
+                    .map(seat -> String.valueOf(seat.getSeatNo()))
+                    .reduce((s1, s2) -> s1 + ", " + s2)
+                    .orElse("N/A");
+            
+            String details = String.format(
+                "=== RESERVATION DETAILS ===\n\n" +
+                "Reservation ID: %s\n" +
+                "Customer: %s\n" +
+                "Email: %s\n" +
+                "Trip: %s\n" +
+                "Route: %s → %s\n" +
+                "Date & Time: %s\n" +
+                "Seats: %s\n" +
+                "Total Price: $%.2f\n\n" +
+                "Vehicle Type: %s\n" ,
+                reservation.getId(),
+                reservation.getUser().getName(),
+                reservation.getUser().getEmail(),
+                reservation.getTrip().getTripNo(),
+                reservation.getTrip().getStartPoint(),
+                reservation.getTrip().getEndPoint(),
+                reservation.getTrip().getDepartureTime(),
+                seatList,
+                reservation.getTrip().getBasePrice(), //totaL PRİCE gelmeli buraya
+                reservation.getTrip().getTripType()
+            );
+            
+            PageComponents.showStyledMessage("Reservation Details", details, this);
         }
     }
     
@@ -592,9 +568,17 @@ public class AllReservationsPage extends BasePanel {
         );
         
         if (confirm == JOptionPane.YES_OPTION) {
-            tableModel.setValueAt("Cancelled", selectedRow, 9);
-            PageComponents.showStyledMessage("Success", 
-                "Reservation " + resId + " has been cancelled!\nCancellation email sent to customer.", this);
+            // Remove from repository
+            boolean deleted = reservationRepository.deleteReservation(resId);
+            if (deleted) {
+                // Remove from table
+                tableModel.removeRow(selectedRow);
+                PageComponents.showStyledMessage("Success", 
+                    "Reservation " + resId + " has been cancelled and removed!\nCancellation email sent to customer.", this);
+            } else {
+                PageComponents.showStyledMessage("Error", 
+                    "Failed to cancel reservation " + resId, this);
+            }
         }
     }
     
@@ -605,40 +589,75 @@ public class AllReservationsPage extends BasePanel {
             return;
         }
         
-        String email = (String) tableModel.getValueAt(selectedRow, 2);
         String resId = (String) tableModel.getValueAt(selectedRow, 0);
+        Reservation reservation = reservationRepository.findById(resId);
         
-        String[] emailTemplates = {
-            "Confirmation Email", 
-            "Reminder Email", 
-            "Cancellation Notice", 
-            "Custom Message"
-        };
-        
-        String selectedTemplate = (String) JOptionPane.showInputDialog(
-            this,
-            "Select email template to send to: " + email,
-            "Send Email",
-            JOptionPane.QUESTION_MESSAGE,
-            null,
-            emailTemplates,
-            emailTemplates[0]
-        );
-        
-        if (selectedTemplate != null) {
-            PageComponents.showStyledMessage("Success", 
-                selectedTemplate + " sent successfully to: " + email + 
-                "\nReservation: " + resId, this);
+        if (reservation != null) {
+            String email = reservation.getUser().getEmail();
+            
+            String[] emailTemplates = {
+                "Confirmation Email", 
+                "Reminder Email", 
+                "Custom Message"
+            };
+            
+            String selectedTemplate = (String) JOptionPane.showInputDialog(
+                this,
+                "Select email template to send to: " + email,
+                "Send Email",
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                emailTemplates,
+                emailTemplates[0]
+            );
+            
+            if (selectedTemplate != null) {
+                PageComponents.showStyledMessage("Success", 
+                    selectedTemplate + " sent successfully to: " + email + 
+                    "\nReservation: " + resId, this);
+            }
         }
-    }
-    
-    private void filterByStatus() {
-        String selectedStatus = (String) statusFilter.getSelectedItem();
-        PageComponents.showStyledMessage("Info", "Filtering by status: " + selectedStatus, this);
     }
     
     private void filterByType() {
         String selectedType = (String) typeFilter.getSelectedItem();
+        
+        if ("All Types".equals(selectedType)) {
+            loadReservationsFromRepository();
+        } else {
+            Collection<Reservation> allReservations = reservationRepository.reservationMap.values();
+            tableModel.setRowCount(0);
+            
+            for (Reservation reservation : allReservations) {
+                String reservationType = getReservationType(reservation);
+                if (selectedType.equals(reservationType)) {
+                    String seatList = reservation.getSeats().stream()
+                            .map(seat -> String.valueOf(seat.getSeatNo()))
+                            .reduce((s1, s2) -> s1 + ", " + s2)
+                            .orElse("N/A");
+                    
+                    tableModel.addRow(new Object[]{
+                        reservation.getId(),
+                        reservation.getUser().getName(),
+                        reservation.getTrip().getStartPoint() + " → " + reservation.getTrip().getEndPoint(),
+                        seatList,
+                        String.format("$%.2f", reservation.getTrip().getBasePrice()) //totaL PRİCE gelmeli buraya
+                    });
+                }
+            }
+        }
+        
         PageComponents.showStyledMessage("Info", "Filtering by type: " + selectedType, this);
+    }
+    
+    // Helper method to determine reservation type based on vehicle
+    private String getReservationType(Reservation reservation) {
+        String vehicleType = reservation.getTrip().getTripType();
+        if (vehicleType.equalsIgnoreCase("Bus")) {
+            return "Bus";
+        } else if (vehicleType.equalsIgnoreCase("Plane") || vehicleType.equalsIgnoreCase("Aircraft")) {
+            return "Flight";
+        }
+        return "Other";
     }
 }
