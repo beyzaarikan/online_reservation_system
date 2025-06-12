@@ -1,22 +1,19 @@
 package gui;
 
+import command.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-
-// Observer sınıflarınızı içe aktarıyoruz
+import models.*;
 import observer.Observer;
 import observer.SeatManager;
 import repository.*;
-import models.*;
 import service.*;
+import singleton.SessionManager;
 import singleton.SessionManagerTrip;
+import state.*;
 
 public class BusSeatSelectionPage extends BasePanel implements Observer {
     private String busCompany;
@@ -41,6 +38,13 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
     private double basePriceValue;
 
     private SeatManager seatManager;
+    
+    // Services and repositories
+    private ReservationRepository reservationRepository;
+    private UserRepository userRepository;
+    private TripRepository tripRepository;
+    private ReservationService reservationService;
+    private CommandInvoker commandInvoker;
 
     public BusSeatSelectionPage(String busCompany, String fromCity, String toCity, 
                                String returnDate, String departureDate, String arrivalTime,
@@ -67,7 +71,19 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         } catch (NumberFormatException e) {
             this.basePriceValue = 45.0;
         }
+        
+        // Initialize services and repositories
+        initializeServices();
     }
+    
+    private void initializeServices() {
+        this.reservationRepository = new ReservationRepository();
+        this.userRepository = UserRepository.getInstance();
+        this.tripRepository = new TripRepository();
+        this.reservationService = new ReservationService(reservationRepository, userRepository, tripRepository);
+        this.commandInvoker = new CommandInvoker();
+    }
+    
     private String extractTime(String dateTimeString) {
         // If the string contains time, extract it, otherwise return a default
         if (dateTimeString != null && dateTimeString.contains(" ")) {
@@ -319,6 +335,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
 
                     BusSeatButton seat = new BusSeatButton(seatNumber++, isOccupied, isWindow, isPremium);
                     seat.setSeatManager(seatManager);
+                    allSeats.add(seat);
                     rowPanel.add(seat);
                 }
             }
@@ -451,9 +468,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
 
         // Button actions
         clearButton.addActionListener(e -> clearSelection());
-        confirmButton.addActionListener(e -> {
-            PageComponents.showStyledMessage("Success!", "Reservation successful!", this);
-        });
+        confirmButton.addActionListener(e -> confirmReservation());
 
         return sidebar;
     }
@@ -580,6 +595,97 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
             confirmButton.setEnabled(selectedSeats.size() == passengerCount);
         }
     }
+    
+    private void confirmReservation() {
+        if (selectedSeats.size() != passengerCount) {
+            PageComponents.showStyledMessage("Error", 
+                "Please select exactly " + passengerCount + " seat(s)!", this);
+            return;
+        }
+        
+        User currentUser = SessionManager.getInstance().getLoggedInUser();
+        if (currentUser == null) {
+            PageComponents.showStyledMessage("Error", "Please login first!", this);
+            return;
+        }
+        
+        Trip currentTrip = SessionManagerTrip.getInstance().getCurrentTrip();
+        if (currentTrip == null) {
+            PageComponents.showStyledMessage("Error", "Trip information not found!", this);
+            return;
+        }
+        
+        try {
+            // Create list of selected seats
+            List<Seat> reservedSeats = new ArrayList<>();
+            for (BusSeatButton seatButton : selectedSeats) {
+                // Find the corresponding seat in the trip
+                for (Seat seat : currentTrip.getSeats()) {
+                    if (seat.getSeatNo() == seatButton.getSeatNumber()) {
+                        reservedSeats.add(seat);
+                        break;
+                    }
+                }
+            }
+            
+            // Create reservation using Command pattern
+            String reservationId = java.util.UUID.randomUUID().toString();
+            Reservation reservation = new Reservation(reservationId, currentUser, currentTrip, reservedSeats);
+            
+            // Use Command pattern for reservation
+            MakeReservationCommand reservationCommand = new MakeReservationCommand(
+                reservationService, 
+                currentUser.getId(), 
+                currentTrip.getTripNo(), 
+                String.valueOf(selectedSeats.get(0).getSeatNumber())
+            );
+            
+            commandInvoker.executeCommand(reservationCommand);
+            
+            // Save reservation to repository
+            reservationRepository.save(reservation);
+            
+            // Create reservation state context
+            ReservationContext reservationContext = new ReservationContext(reservationId);
+            reservationContext.confirm(); // Confirm the reservation
+            
+            // Calculate total price
+            double totalPrice = 0;
+            for (BusSeatButton seat : selectedSeats) {
+                totalPrice += seat.getPrice();
+            }
+            
+            // Show success message
+            String successMessage = String.format(
+                "🎉 Reservation Confirmed!\n\n" +
+                "Reservation ID: %s\n" +
+                "Trip: %s → %s\n" +
+                "Date: %s\n" +
+                "Seats: %s\n" +
+                "Total Price: $%.2f\n\n" +
+                "Status: %s",
+                reservationId.substring(0, 8).toUpperCase(),
+                fromCity, toCity,
+                departureDate,
+                selectedSeats.stream()
+                    .map(seat -> String.valueOf(seat.getSeatNumber()))
+                    .reduce((a, b) -> a + ", " + b).orElse(""),
+                totalPrice,
+                reservationContext.getCurrentStateName()
+            );
+            
+            PageComponents.showStyledMessage("Reservation Successful!", successMessage, this);
+            
+            // Navigate back to main menu
+            dispose();
+            new MainMenuPage().display();
+            
+        } catch (Exception e) {
+            PageComponents.showStyledMessage("Error", 
+                "Failed to create reservation: " + e.getMessage(), this);
+            e.printStackTrace();
+        }
+    }
 
     // Modern bus seat button inner class
     private class BusSeatButton extends JButton {
@@ -602,8 +708,6 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
             setupModernButton();
         }
 
-
-
         @Override
         protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g.create();
@@ -621,8 +725,6 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
 
             super.paintComponent(g); // Yazı ve ikonları çiz
         }
-
-
 
          public void setSeatManager(SeatManager seatManager) {
              this.seatManager = seatManager;

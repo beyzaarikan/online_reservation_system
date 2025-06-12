@@ -1,14 +1,11 @@
 package repository;
 
 import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
 import models.Reservation;
-import models.Seat;
 
 public class ReservationRepository {
 
-    HashMap<String, Reservation> reservationMap;
+    public HashMap<String, Reservation> reservationMap;
 
     public ReservationRepository() {
         this.reservationMap = new HashMap<>();

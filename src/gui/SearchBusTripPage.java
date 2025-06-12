@@ -1,4 +1,5 @@
 package gui;
+import factory.*;
 import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -13,7 +14,7 @@ import models.BusTrip;
 import models.Trip;
 import repository.*;
 import service.*;
-
+import singleton.SessionManagerTrip;
 
 public class SearchBusTripPage extends BasePanel {
     private JTextField fromField;
@@ -29,21 +30,25 @@ public class SearchBusTripPage extends BasePanel {
     // Repository and Service
     private TripRepository tripRepository;
     private TripService tripService;
+    private TripFactoryManager factoryManager;
     
     public SearchBusTripPage() {
         super("Search Bus Trips - Travel System", 1200, 800);
         // Initialize repository and service
         this.tripRepository = new TripRepository();
         this.tripService = new TripService(tripRepository);
+        this.factoryManager = new TripFactoryManager();
         
-        // Initialize with sample data
-        initializeSampleData();
+        // Initialize with sample data using Factory pattern
+        initializeSampleDataWithFactory();
     }
     
-    private void initializeSampleData() {
-        // Add sample bus trips to repository
+    private void initializeSampleDataWithFactory() {
+        // Use Factory pattern to create trips
         try {
-            BusTrip trip1 = new BusTrip(
+            TripFactory busFactory = factoryManager.getFactory("Bus");
+            
+            Trip trip1 = busFactory.createTrip(
                 "BT001",
                 "Istanbul",
                 "Ankara",
@@ -58,7 +63,7 @@ public class SearchBusTripPage extends BasePanel {
             );
             tripService.addTrip(trip1);
             
-            BusTrip trip2 = new BusTrip(
+            Trip trip2 = busFactory.createTrip(
                 "BT002",
                 "Istanbul",
                 "Ankara",
@@ -73,7 +78,7 @@ public class SearchBusTripPage extends BasePanel {
             );
             tripService.addTrip(trip2);
             
-            BusTrip trip3 = new BusTrip(
+            Trip trip3 = busFactory.createTrip(
                 "BT003",
                 "Istanbul",
                 "Ankara",
@@ -88,7 +93,7 @@ public class SearchBusTripPage extends BasePanel {
             );
             tripService.addTrip(trip3);
             
-            BusTrip trip4 = new BusTrip(
+            Trip trip4 = busFactory.createTrip(
                 "BT004",
                 "Istanbul",
                 "Ankara",
@@ -103,7 +108,7 @@ public class SearchBusTripPage extends BasePanel {
             );
             tripService.addTrip(trip4);
             
-            BusTrip trip5 = new BusTrip(
+            Trip trip5 = busFactory.createTrip(
                 "BT005",
                 "Istanbul",
                 "Ankara",
@@ -119,7 +124,7 @@ public class SearchBusTripPage extends BasePanel {
             tripService.addTrip(trip5);
             
             // Add trips for different routes
-            BusTrip trip6 = new BusTrip(
+            Trip trip6 = busFactory.createTrip(
                 "BT006",
                 "Ankara",
                 "Izmir",
@@ -134,7 +139,7 @@ public class SearchBusTripPage extends BasePanel {
             );
             tripService.addTrip(trip6);
             
-            BusTrip trip7 = new BusTrip(
+            Trip trip7 = busFactory.createTrip(
                 "BT007",
                 "Izmir",
                 "Istanbul",
@@ -618,7 +623,7 @@ public class SearchBusTripPage extends BasePanel {
         // Clear previous results
         tableModel.setRowCount(0);
         
-        // Search for trips from repository
+        // Search for trips from repository using TripService
         List<Trip> foundTrips = tripService.searchTrips(from, to, searchDate);
         
         if (foundTrips.isEmpty()) {
@@ -633,9 +638,9 @@ public class SearchBusTripPage extends BasePanel {
                 if (trip instanceof BusTrip) {
                     BusTrip busTrip = (BusTrip) trip;
                     
-                    // Calculate available seats (assuming all seats are available for now)
-                    int availableSeats = trip.getTotalSeats() - 
-                        trip.getSeats().stream().mapToInt(seat -> seat.isAvailable() ? 0 : 1).sum();
+                    // Calculate available seats using TripService
+                    List<models.Seat> availableSeats = tripService.findAvailableSeats(trip.getTripNo());
+                    int availableSeatsCount = availableSeats.size();
                     
                     tableModel.addRow(new Object[]{
                         trip.getCompany(),
@@ -644,7 +649,7 @@ public class SearchBusTripPage extends BasePanel {
                         trip.getArrivalTime().format(timeFormatter),
                         trip.getDuration(),
                         String.format("$%.2f", trip.getBasePrice()),
-                        availableSeats + " seats",
+                        availableSeatsCount + " seats",
                         trip.getAmentities()
                     });
                 }
@@ -676,6 +681,7 @@ public class SearchBusTripPage extends BasePanel {
         
         // Seçilen satırdan tüm bilgileri al
         String busCompany = (String) tableModel.getValueAt(selectedRow, 0);
+        String route = (String) tableModel.getValueAt(selectedRow, 1);
         String departureTime = (String) tableModel.getValueAt(selectedRow, 2);
         String arrivalTime = (String) tableModel.getValueAt(selectedRow, 3);
         String price = (String) tableModel.getValueAt(selectedRow, 5);
@@ -696,6 +702,26 @@ public class SearchBusTripPage extends BasePanel {
         
         String passengerCountStr = (String) passengerCount.getSelectedItem();
         int passengerCountInt = Integer.parseInt(passengerCountStr.replace("+", ""));
+        
+        // Find the selected trip and store it in SessionManagerTrip
+        Date selectedDate = (Date) dateSpinner.getValue();
+        LocalDateTime searchDate = LocalDateTime.ofInstant(selectedDate.toInstant(), 
+                                                           java.time.ZoneId.systemDefault());
+        
+        List<Trip> foundTrips = tripService.searchTrips(fromCity, toCity, searchDate);
+        Trip selectedTrip = null;
+        
+        for (Trip trip : foundTrips) {
+            if (trip.getCompany().equals(busCompany)) {
+                selectedTrip = trip;
+                break;
+            }
+        }
+        
+        if (selectedTrip != null) {
+            // Store selected trip in SessionManagerTrip
+            SessionManagerTrip.getInstance().setCurrentTrip(selectedTrip);
+        }
         
         // Proceed to BusSeatSelectionPage
         dispose();
@@ -718,5 +744,4 @@ public class SearchBusTripPage extends BasePanel {
             ex.printStackTrace();
         }
     }
-
 }

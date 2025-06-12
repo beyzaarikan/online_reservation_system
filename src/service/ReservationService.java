@@ -1,16 +1,16 @@
 package service;
 
-import models.Reservation;
-import models.User;
-import models.Trip;
-import models.Seat;
-import repository.ReservationRepository;
-import repository.UserRepository;
-import repository.TripRepository;
-import java.util.Optional;
-import java.util.List;
-import java.util.UUID;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import models.Reservation;
+import models.Seat;
+import models.Trip;
+import models.User;
+import repository.ReservationRepository;
+import repository.TripRepository;
+import repository.UserRepository;
 
 public class ReservationService {
     private ReservationRepository reservationRepository;
@@ -66,6 +66,23 @@ public class ReservationService {
         
         reservationRepository.save(reservation);
         return true;
+    }
+    
+    public Reservation createReservation(User user, Trip trip, List<Seat> seats) {
+        String reservationId = UUID.randomUUID().toString();
+        
+        // Reserve all seats
+        for (Seat seat : seats) {
+            if (!seat.isAvailable()) {
+                throw new IllegalArgumentException("Seat " + seat.getSeatNo() + " is not available");
+            }
+            seat.reserve();
+        }
+        
+        Reservation reservation = new Reservation(reservationId, user, trip, seats);
+        reservationRepository.save(reservation);
+        
+        return reservation;
     }
     
     public boolean cancelReservation(String reservationId) {
@@ -127,5 +144,17 @@ public class ReservationService {
     
     public void setTripRepository(TripRepository tripRepository) {
         this.tripRepository = tripRepository;
+    }
+    
+    public List<Reservation> getUserReservations(String userId) {
+        return reservationRepository.reservationMap.values().stream()
+                .filter(reservation -> reservation.getUser().getId().equals(userId))
+                .collect(java.util.stream.Collectors.toList());
+    }
+    
+    public double calculateTotalPrice(Reservation reservation) {
+        return reservation.getSeats().stream()
+                .mapToDouble(seat -> reservation.getTrip().getBasePrice())
+                .sum();
     }
 }
