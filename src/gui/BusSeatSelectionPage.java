@@ -1,6 +1,7 @@
 package gui;
 
 import command.*;
+import factory.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +13,6 @@ import observer.SeatManager;
 import repository.*;
 import service.*;
 import singleton.SessionManager;
-import singleton.SessionManagerTrip;
 import state.*;
 
 public class BusSeatSelectionPage extends BasePanel implements Observer {
@@ -609,18 +609,34 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
             return;
         }
         
-        Trip currentTrip = SessionManagerTrip.getInstance().getCurrentTrip();
-        if (currentTrip == null) {
-            PageComponents.showStyledMessage("Error", "Trip information not found!", this);
-            return;
-        }
-        
         try {
-            // Create list of selected seats from the trip
+            // Create a proper BusTrip using the factory pattern
+            TripFactoryManager factoryManager = new TripFactoryManager();
+            TripFactory busFactory = factoryManager.getFactory("Bus");
+            
+            // Generate unique trip ID for this reservation
+            String tripId = "BUS_" + java.util.UUID.randomUUID().toString().substring(0, 8);
+            
+            // Create the bus trip with proper details
+            Trip busTrip = busFactory.createTrip(
+                tripId,
+                fromCity,
+                toCity,
+                java.time.LocalDateTime.now().plusDays(1), // departure time
+                java.time.LocalDateTime.now().plusDays(1).plusHours(6), // arrival time
+                basePriceValue,
+                40, // total seats for bus
+                busCompany,
+                "6h 30m", // duration
+                amenities,
+                "BUS-" + tripId // bus number
+            );
+            
+            // Create list of selected seats from the bus trip
             List<Seat> reservedSeats = new ArrayList<>();
             for (BusSeatButton seatButton : selectedSeats) {
                 // Find the corresponding seat in the trip
-                for (Seat seat : currentTrip.getSeats()) {
+                for (Seat seat : busTrip.getSeats()) {
                     if (seat.getSeatNo() == seatButton.getSeatNumber()) {
                         seat.reserve(); // Reserve the seat
                         reservedSeats.add(seat);
@@ -632,8 +648,8 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
             // Generate unique reservation ID
             String reservationId = java.util.UUID.randomUUID().toString();
             
-            // Create reservation
-            Reservation reservation = new Reservation(reservationId, currentUser, currentTrip, reservedSeats);
+            // Create reservation with the BusTrip
+            Reservation reservation = new Reservation(reservationId, currentUser, busTrip, reservedSeats);
             
             // Get the global reservation repository instance
             ReservationRepository globalReservationRepo = getGlobalReservationRepository();
@@ -653,15 +669,18 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
             
             // Show success message
             String successMessage = String.format(
-                "🎉 Reservation Confirmed!\n\n" +
+                "🎉 Bus Reservation Confirmed!\n\n" +
                 "Reservation ID: %s\n" +
-                "Trip: %s → %s\n" +
+                "Trip Type: Bus\n" +
+                "Route: %s → %s\n" +
+                "Company: %s\n" +
                 "Seats: %s\n" +
                 "Total Price: $%.2f\n\n" +
-                "Your reservation has been saved successfully!",
+                "Your bus reservation has been saved successfully!",
                 reservationId,
-                currentTrip.getStartPoint(),
-                currentTrip.getEndPoint(),
+                busTrip.getStartPoint(),
+                busTrip.getEndPoint(),
+                busCompany,
                 selectedSeats.stream()
                     .map(seat -> String.valueOf(seat.getSeatNumber()))
                     .reduce((s1, s2) -> s1 + ", " + s2)
@@ -669,7 +688,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
                 totalPrice
             );
             
-            PageComponents.showStyledMessage("Reservation Successful!", successMessage, this);
+            PageComponents.showStyledMessage("Bus Reservation Successful!", successMessage, this);
             
             // Navigate back to main menu
             dispose();
@@ -677,7 +696,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
             
         } catch (Exception e) {
             PageComponents.showStyledMessage("Error", 
-                "Failed to create reservation: " + e.getMessage(), this);
+                "Failed to create bus reservation: " + e.getMessage(), this);
             e.printStackTrace();
         }
     }
@@ -685,7 +704,6 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
     // Method to get the global reservation repository instance
     private ReservationRepository getGlobalReservationRepository() {
         // This should return the same instance used by AllReservationsPage
-        // For now, we'll use a static approach or singleton pattern
         return GlobalRepositoryManager.getInstance().getReservationRepository();
     }
 

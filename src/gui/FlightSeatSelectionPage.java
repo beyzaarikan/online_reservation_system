@@ -1,16 +1,15 @@
 package gui;
 
+import command.CommandInvoker;
+import factory.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import javax.swing.*;
-
-import command.CommandInvoker;
-// Observer sınıflarınızı içe aktarıyoruz
+import models.*;
 import observer.Observer;
 import observer.SeatManager;
-import models.*;
 import repository.*;
 import service.*;
 import singleton.*;
@@ -711,14 +710,30 @@ private class ModernScrollBarUI extends javax.swing.plaf.basic.BasicScrollBarUI 
             return;
         }
         
-        Trip currentTrip = SessionManagerTrip.getInstance().getCurrentTrip();
-        if (currentTrip == null) {
-            PageComponents.showStyledMessage("Error", "Trip information not found!", this);
-            return;
-        }
-        
         try {
-            // Create list of selected seats from the trip
+            // Create a proper FlightTrip using the factory pattern
+            TripFactoryManager factoryManager = new TripFactoryManager();
+            TripFactory flightFactory = factoryManager.getFactory("Flight");
+            
+            // Generate unique trip ID for this reservation
+            String tripId = "FLIGHT_" + java.util.UUID.randomUUID().toString().substring(0, 8);
+            
+            // Create the flight trip with proper details
+            Trip flightTrip = flightFactory.createTrip(
+                tripId,
+                fromAirport,
+                toAirport,
+                java.time.LocalDateTime.now().plusDays(1), // departure time
+                java.time.LocalDateTime.now().plusDays(1).plusHours(2), // arrival time
+                basePriceValue,
+                150, // total seats for flight
+                airline,
+                "2h 0m", // duration
+                "In-flight entertainment, Meal service",
+                aircraft // flight number/aircraft
+            );
+            
+            // Create list of selected seats from the flight trip
             List<Seat> reservedSeats = new ArrayList<>();
             for (FlightSeatButton seatButton : selectedSeats) {
                 // For flights, we need to create seats based on seat labels
@@ -729,7 +744,7 @@ private class ModernScrollBarUI extends javax.swing.plaf.basic.BasicScrollBarUI 
                 
                 // Find or create the corresponding seat in the trip
                 Seat seat = null;
-                for (Seat tripSeat : currentTrip.getSeats()) {
+                for (Seat tripSeat : flightTrip.getSeats()) {
                     if (tripSeat.getSeatNo() == seatNo) {
                         seat = tripSeat;
                         break;
@@ -748,8 +763,8 @@ private class ModernScrollBarUI extends javax.swing.plaf.basic.BasicScrollBarUI 
             // Generate unique reservation ID
             String reservationId = java.util.UUID.randomUUID().toString();
             
-            // Create reservation
-            Reservation reservation = new Reservation(reservationId, currentUser, currentTrip, reservedSeats);
+            // Create reservation with the FlightTrip
+            Reservation reservation = new Reservation(reservationId, currentUser, flightTrip, reservedSeats);
             
             // Get the global reservation repository instance
             ReservationRepository globalReservationRepo = getGlobalReservationRepository();
@@ -771,13 +786,18 @@ private class ModernScrollBarUI extends javax.swing.plaf.basic.BasicScrollBarUI 
             String successMessage = String.format(
                 "🎉 Flight Reservation Confirmed!\n\n" +
                 "Reservation ID: %s\n" +
+                "Trip Type: Flight\n" +
                 "Flight: %s → %s\n" +
+                "Airline: %s\n" +
+                "Aircraft: %s\n" +
                 "Seats: %s\n" +
                 "Total Price: $%.2f\n\n" +
                 "Your flight reservation has been saved successfully!",
                 reservationId,
-                currentTrip.getStartPoint(),
-                currentTrip.getEndPoint(),
+                flightTrip.getStartPoint(),
+                flightTrip.getEndPoint(),
+                airline,
+                aircraft,
                 selectedSeats.stream()
                     .map(seat -> seat.getSeatLabel())
                     .reduce((s1, s2) -> s1 + ", " + s2)

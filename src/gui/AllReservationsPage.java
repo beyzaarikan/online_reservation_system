@@ -644,18 +644,27 @@ public class AllReservationsPage extends BasePanel {
     }
     
     private String getReservationType(Reservation reservation) {
-        // Determine reservation type based on trip type or other criteria
+        // Get the trip type directly from the trip object
         String tripType = reservation.getTrip().getTripType();
+        
+        // Debug output to see what we're getting
+        System.out.println("Trip Type for reservation " + reservation.getId() + ": " + tripType);
+        System.out.println("Trip Class: " + reservation.getTrip().getClass().getSimpleName());
+        
+        // Return the trip type directly since it should be "Bus" or "Flight"
         if (tripType != null) {
-            if (tripType.toLowerCase().contains("bus")) {
-                return "Bus";
-            } else if (tripType.toLowerCase().contains("flight")) {
-                return "Flight";
-            }
+            return tripType;
         }
         
-        // Default fallback - could be enhanced based on your business logic
-        return reservation.getTrip().getStartPoint().length() > 10 ? "Flight" : "Bus";
+        // Fallback: check the class type
+        if (reservation.getTrip() instanceof models.BusTrip) {
+            return "Bus";
+        } else if (reservation.getTrip() instanceof models.FlightTrip) {
+            return "Flight";
+        }
+        
+        // Default fallback
+        return "Unknown";
     }
         
     // Method to handle table row selection events

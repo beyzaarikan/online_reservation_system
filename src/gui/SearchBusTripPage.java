@@ -1,4 +1,5 @@
 package gui;
+import factory.*;
 import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -13,7 +14,6 @@ import models.BusTrip;
 import models.Trip;
 import repository.*;
 import service.*;
-import factory.*;
 import singleton.SessionManagerTrip;
 
 public class SearchBusTripPage extends BasePanel {
@@ -281,7 +281,13 @@ public class SearchBusTripPage extends BasePanel {
         gbc.gridx = 1;
         JPanel roundTripPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         roundTripPanel.setOpaque(false);
+        roundTripCheckbox = new JCheckBox("Round Trip");
+        roundTripCheckbox.setOpaque(false);
+        roundTripCheckbox.setForeground(Color.WHITE);
+        roundTripCheckbox.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 
+        roundTripPanel.add(roundTripCheckbox);
+        fieldsPanel.add(createFieldPanel("Trip Type", roundTripPanel), gbc);
 
         // Return date and passengers - same row
         gbc.gridx = 0; gbc.gridy = 2;
