@@ -17,7 +17,8 @@ public class AllReservationsPage extends BasePanel {
     
     public AllReservationsPage() {
         super("My Reservations ", 1200, 800);
-        this.reservationRepository = new ReservationRepository();
+        // Use the global repository instance
+        this.reservationRepository = GlobalRepositoryManager.getInstance().getReservationRepository();
     }
     
     @Override
@@ -432,12 +433,15 @@ public class AllReservationsPage extends BasePanel {
                     .reduce((s1, s2) -> s1 + ", " + s2)
                     .orElse("N/A");
             
+            // Calculate total price based on number of seats
+            double totalPrice = reservation.getTrip().getBasePrice() * reservation.getSeats().size();
+            
             tableModel.addRow(new Object[]{
                 reservation.getId(),
                 reservation.getUser().getName(),
                 reservation.getTrip().getStartPoint() + " → " + reservation.getTrip().getEndPoint(),
                 seatList,
-                String.format("$%.2f", reservation.getTrip().getBasePrice()) //totaL PRİCE gelmeli buraya
+                String.format("$%.2f", totalPrice)
             });
         }
     }
@@ -482,12 +486,14 @@ public class AllReservationsPage extends BasePanel {
                         .reduce((s1, s2) -> s1 + ", " + s2)
                         .orElse("N/A");
                 
+                double totalPrice = reservation.getTrip().getBasePrice() * reservation.getSeats().size();
+                
                 tableModel.addRow(new Object[]{
                  reservation.getId(),
                 reservation.getUser().getName(),
                 reservation.getTrip().getStartPoint() + " → " + reservation.getTrip().getEndPoint(),
                 seatList,
-                String.format("$%.2f", reservation.getTrip().getBasePrice()) //totaL PRİCE gelmeli buraya
+                String.format("$%.2f", totalPrice)
                 });
                 foundCount++;
             }
@@ -522,6 +528,8 @@ public class AllReservationsPage extends BasePanel {
                     .reduce((s1, s2) -> s1 + ", " + s2)
                     .orElse("N/A");
             
+            double totalPrice = reservation.getTrip().getBasePrice() * reservation.getSeats().size();
+            
             String details = String.format(
                 "=== RESERVATION DETAILS ===\n\n" +
                 "Reservation ID: %s\n" +
@@ -541,7 +549,7 @@ public class AllReservationsPage extends BasePanel {
                 reservation.getTrip().getEndPoint(),
                 reservation.getTrip().getDepartureTime(),
                 seatList,
-                reservation.getTrip().getBasePrice(), //totaL PRİCE gelmeli buraya
+                totalPrice,
                 reservation.getTrip().getTripType()
             );
             
@@ -636,12 +644,14 @@ public class AllReservationsPage extends BasePanel {
                             .reduce((s1, s2) -> s1 + ", " + s2)
                             .orElse("N/A");
                     
+                    double totalPrice = reservation.getTrip().getBasePrice() * reservation.getSeats().size();
+                    
                     tableModel.addRow(new Object[]{
                         reservation.getId(),
                         reservation.getUser().getName(),
                         reservation.getTrip().getStartPoint() + " → " + reservation.getTrip().getEndPoint(),
                         seatList,
-                        String.format("$%.2f", reservation.getTrip().getBasePrice()) //totaL PRİCE gelmeli buraya
+                        String.format("$%.2f", totalPrice)
                     });
                 }
             }
@@ -655,7 +665,7 @@ public class AllReservationsPage extends BasePanel {
         String vehicleType = reservation.getTrip().getTripType();
         if (vehicleType.equalsIgnoreCase("Bus")) {
             return "Bus";
-        } else if (vehicleType.equalsIgnoreCase("Plane") || vehicleType.equalsIgnoreCase("Aircraft")) {
+        } else if (vehicleType.equalsIgnoreCase("Flight") || vehicleType.equalsIgnoreCase("Aircraft")) {
             return "Flight";
         }
         return "Other";

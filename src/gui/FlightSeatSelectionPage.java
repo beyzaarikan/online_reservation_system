@@ -14,7 +14,7 @@ import models.*;
 import repository.*;
 import service.*;
 import singleton.*;
-import state.*;;
+import state.*;
 
 public class FlightSeatSelectionPage extends BasePanel implements Observer {
     private String airline;
@@ -570,9 +570,7 @@ private class ModernScrollBarUI extends javax.swing.plaf.basic.BasicScrollBarUI 
 
         // Button actions
         clearButton.addActionListener(e -> clearSelection());
-        confirmButton.addActionListener(e -> {
-            PageComponents.showStyledMessage("Success!", "Flight booking successful!", this);
-        });
+        confirmButton.addActionListener(e -> confirmReservation());
 
         return sidebar;
     }
@@ -698,6 +696,112 @@ private class ModernScrollBarUI extends javax.swing.plaf.basic.BasicScrollBarUI 
 
             confirmButton.setEnabled(selectedSeats.size() == passengerCount);
         }
+    }
+    
+    private void confirmReservation() {
+        if (selectedSeats.size() != passengerCount) {
+            PageComponents.showStyledMessage("Error", 
+                "Please select exactly " + passengerCount + " seat(s)!", this);
+            return;
+        }
+        
+        User currentUser = SessionManager.getInstance().getLoggedInUser();
+        if (currentUser == null) {
+            PageComponents.showStyledMessage("Error", "Please login first!", this);
+            return;
+        }
+        
+        Trip currentTrip = SessionManagerTrip.getInstance().getCurrentTrip();
+        if (currentTrip == null) {
+            PageComponents.showStyledMessage("Error", "Trip information not found!", this);
+            return;
+        }
+        
+        try {
+            // Create list of selected seats from the trip
+            List<Seat> reservedSeats = new ArrayList<>();
+            for (FlightSeatButton seatButton : selectedSeats) {
+                // For flights, we need to create seats based on seat labels
+                // Since flight seats use labels like "1A", "2B", etc.
+                String seatLabel = seatButton.getSeatLabel();
+                // Extract seat number from label (e.g., "1A" -> 1)
+                int seatNo = Integer.parseInt(seatLabel.replaceAll("[^0-9]", ""));
+                
+                // Find or create the corresponding seat in the trip
+                Seat seat = null;
+                for (Seat tripSeat : currentTrip.getSeats()) {
+                    if (tripSeat.getSeatNo() == seatNo) {
+                        seat = tripSeat;
+                        break;
+                    }
+                }
+                
+                if (seat == null) {
+                    // Create new seat if not found
+                    seat = new Seat(seatNo);
+                }
+                
+                seat.reserve(); // Reserve the seat
+                reservedSeats.add(seat);
+            }
+            
+            // Generate unique reservation ID
+            String reservationId = java.util.UUID.randomUUID().toString();
+            
+            // Create reservation
+            Reservation reservation = new Reservation(reservationId, currentUser, currentTrip, reservedSeats);
+            
+            // Get the global reservation repository instance
+            ReservationRepository globalReservationRepo = getGlobalReservationRepository();
+            
+            // Save reservation to the global repository
+            globalReservationRepo.save(reservation);
+            
+            // Create reservation state context
+            ReservationContext reservationContext = new ReservationContext(reservationId);
+            reservationContext.confirm(); // Confirm the reservation
+            
+            // Calculate total price
+            double totalPrice = 0;
+            for (FlightSeatButton seat : selectedSeats) {
+                totalPrice += seat.getPrice();
+            }
+            
+            // Show success message
+            String successMessage = String.format(
+                "🎉 Flight Reservation Confirmed!\n\n" +
+                "Reservation ID: %s\n" +
+                "Flight: %s → %s\n" +
+                "Seats: %s\n" +
+                "Total Price: $%.2f\n\n" +
+                "Your flight reservation has been saved successfully!",
+                reservationId,
+                currentTrip.getStartPoint(),
+                currentTrip.getEndPoint(),
+                selectedSeats.stream()
+                    .map(seat -> seat.getSeatLabel())
+                    .reduce((s1, s2) -> s1 + ", " + s2)
+                    .orElse(""),
+                totalPrice
+            );
+            
+            PageComponents.showStyledMessage("Flight Reservation Successful!", successMessage, this);
+            
+            // Navigate back to main menu
+            dispose();
+            new MainMenuPage().display();
+            
+        } catch (Exception e) {
+            PageComponents.showStyledMessage("Error", 
+                "Failed to create flight reservation: " + e.getMessage(), this);
+            e.printStackTrace();
+        }
+    }
+    
+    // Method to get the global reservation repository instance
+    private ReservationRepository getGlobalReservationRepository() {
+        // This should return the same instance used by AllReservationsPage
+        return GlobalRepositoryManager.getInstance().getReservationRepository();
     }
 
     // Modern flight seat button inner class
@@ -831,5 +935,3 @@ private class ModernScrollBarUI extends javax.swing.plaf.basic.BasicScrollBarUI 
         }
     }
 }
-
-

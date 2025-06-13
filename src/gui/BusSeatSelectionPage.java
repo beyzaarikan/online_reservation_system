@@ -616,34 +616,30 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         }
         
         try {
-            // Create list of selected seats
+            // Create list of selected seats from the trip
             List<Seat> reservedSeats = new ArrayList<>();
             for (BusSeatButton seatButton : selectedSeats) {
                 // Find the corresponding seat in the trip
                 for (Seat seat : currentTrip.getSeats()) {
                     if (seat.getSeatNo() == seatButton.getSeatNumber()) {
+                        seat.reserve(); // Reserve the seat
                         reservedSeats.add(seat);
                         break;
                     }
                 }
             }
             
-            // Create reservation using Command pattern
+            // Generate unique reservation ID
             String reservationId = java.util.UUID.randomUUID().toString();
+            
+            // Create reservation
             Reservation reservation = new Reservation(reservationId, currentUser, currentTrip, reservedSeats);
             
-            // Use Command pattern for reservation
-            MakeReservationCommand reservationCommand = new MakeReservationCommand(
-                reservationService, 
-                currentUser.getId(), 
-                currentTrip.getTripNo(), 
-                String.valueOf(selectedSeats.get(0).getSeatNumber())
-            );
+            // Get the global reservation repository instance
+            ReservationRepository globalReservationRepo = getGlobalReservationRepository();
             
-            commandInvoker.executeCommand(reservationCommand);
-            
-            // Save reservation to repository
-            reservationRepository.save(reservation);
+            // Save reservation to the global repository
+            globalReservationRepo.save(reservation);
             
             // Create reservation state context
             ReservationContext reservationContext = new ReservationContext(reservationId);
@@ -657,7 +653,20 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
             
             // Show success message
             String successMessage = String.format(
-                "🎉 Reservation Confirmed!\n\n"
+                "🎉 Reservation Confirmed!\n\n" +
+                "Reservation ID: %s\n" +
+                "Trip: %s → %s\n" +
+                "Seats: %s\n" +
+                "Total Price: $%.2f\n\n" +
+                "Your reservation has been saved successfully!",
+                reservationId,
+                currentTrip.getStartPoint(),
+                currentTrip.getEndPoint(),
+                selectedSeats.stream()
+                    .map(seat -> String.valueOf(seat.getSeatNumber()))
+                    .reduce((s1, s2) -> s1 + ", " + s2)
+                    .orElse(""),
+                totalPrice
             );
             
             PageComponents.showStyledMessage("Reservation Successful!", successMessage, this);
@@ -671,6 +680,13 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
                 "Failed to create reservation: " + e.getMessage(), this);
             e.printStackTrace();
         }
+    }
+    
+    // Method to get the global reservation repository instance
+    private ReservationRepository getGlobalReservationRepository() {
+        // This should return the same instance used by AllReservationsPage
+        // For now, we'll use a static approach or singleton pattern
+        return GlobalRepositoryManager.getInstance().getReservationRepository();
     }
 
     // Modern bus seat button inner class
