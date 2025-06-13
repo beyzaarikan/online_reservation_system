@@ -7,6 +7,7 @@ public class FlightTrip extends Trip {
     public FlightTrip(String tripNo, String startPoint, String endPoint, LocalDateTime departureTime, LocalDateTime arrivalTime, double basePrice, int totalSeats, String company, String duration, String amentities, String flightNo) {
         super(tripNo, startPoint, endPoint, departureTime, arrivalTime, basePrice, totalSeats, company, duration, amentities);
         this.flightNo = flightNo;
+        totalSeats=150;
     }
     public String getFlightNo() {
         return flightNo;

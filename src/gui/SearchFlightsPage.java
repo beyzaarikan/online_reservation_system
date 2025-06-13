@@ -2,10 +2,18 @@ package gui;
 import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import models.*;
+import repository.*;
+import service.*;
+import factory.*;
+import singleton.*;
+import java.util.List;
 
 public class SearchFlightsPage extends BasePanel {
     private JTextField fromField;
@@ -16,12 +24,79 @@ public class SearchFlightsPage extends BasePanel {
     private JCheckBox roundTripCheckbox;
     private JTable flightTable;
     private DefaultTableModel tableModel;
+
+    private TripRepository tripRepository;
+    private TripService tripService;
+    private TripFactoryManager tripFactoryManager;
+
     
     
     public SearchFlightsPage() {
         super("Search Flights - Travel System", 1200, 800);
+        this.tripRepository = new TripRepository();
+        this.tripService = new TripService(tripRepository);
+        this.tripFactoryManager = new TripFactoryManager();
+        initializeSampleDataWithFactory();
     }
-    
+
+    private void initializeSampleDataWithFactory() {
+        try{
+            TripFactory flightFactory = tripFactoryManager.getFactory("Flight");
+
+            Trip flight1= flightFactory.createTrip(
+                "TK123", "Istanbul", "Ankara", 
+                LocalDate.of(2025, 10, 1).atTime(8, 30), 
+                LocalDate.of(2025, 10, 1).atTime(9, 45), 
+                150.0, 150, "THY " , "1 h" ,
+                "WiFi , Meal Service",
+                "Boeing 737"
+            );
+            tripService.addTrip(flight1);
+
+            Trip flight2 = flightFactory.createTrip(
+                "PC456", "Istanbul", "Izmir", 
+                LocalDate.of(2023, 10, 1).atTime(10, 15), 
+                LocalDate.of(2023, 10, 1).atTime(11, 30), 
+                120.0, 150, "Pegasus", "1 h 15 m",
+                "WiFi , Meal Service",
+                "Airbus A320"
+            );
+            tripService.addTrip(flight2);
+
+            Trip flight3 = flightFactory.createTrip(
+                "XQ789", "Istanbul", "Antalya", 
+                LocalDate.of(2023, 10, 1).atTime(14, 0), 
+                LocalDate.of(2023, 10, 1).atTime(15, 15), 
+                180.0, 150, "SunExpress", "1 h 15 m",
+                "WiFi , Meal Service",
+                "Boeing 7377"
+            );
+            tripService.addTrip(flight3);
+            Trip flight4 = flightFactory.createTrip(
+                "TK321", "Ankara", "Bodrum", 
+                LocalDate.of(2023, 10, 1).atTime(16, 30), 
+                LocalDate.of(2023, 10, 1).atTime(17, 45), 
+                200.0, 150, "THY", "1 h 15 m",
+                "WiFi , Meal Service",
+                "Airbus A321"
+            );
+            tripService.addTrip(flight4);
+            Trip flight5 = flightFactory.createTrip(
+                "PC654", "izmir", "Trabzon", 
+                LocalDate.of(2023, 10, 1).atTime(19, 0), 
+                LocalDate.of(2023, 10, 1).atTime(20, 15), 
+                160.0, 150, "Pegasus", "1 h 15 m",
+                "WiFi , Meal Service",
+                "Boeing 737"
+            );
+            tripService.addTrip(flight5);
+        }catch (Exception e) {
+            System.err.println("Error: Failed to initialize sample flight data: " + e.getMessage());
+        }
+        
+        
+    }
+
     @Override
     public void setupUI() {
         setLayout(new BorderLayout());
@@ -486,44 +561,40 @@ public class SearchFlightsPage extends BasePanel {
             return;
         }
         
-        // Clear previous results
-        tableModel.setRowCount(0);
-        
-        // Add sample flight results
-        populateSampleFlightData(from, to);
-    }
-    
-    private void populateSampleFlightData(String from, String to) {
-        String selectedClass = (String) classType.getSelectedItem();
-        
-        // Adjust prices based on class
-        double baseMultiplier = 1.0;
-        if ("Business".equals(selectedClass)) {
-            baseMultiplier = 3.0;
-        } else if ("First Class".equals(selectedClass)) {
-            baseMultiplier = 6.0;
+        Date selectedDate = (Date) dateSpinner.getValue();
+        LocalDateTime searchDate = LocalDateTime.ofInstant(selectedDate.toInstant(),java.time.ZoneId.systemDefault()); 
+
+        tableModel.setRowCount(0); //clear
+        List<Trip> foundTrips=tripService.searchTrips(from, to, searchDate);
+
+        if (foundTrips.isEmpty()) {
+            PageComponents.showStyledMessage("No Results", "No flights found for the given criteria.", this);
+            return;
+        }else{
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+
+            for(Trip trip:foundTrips){
+                if(trip instanceof FlightTrip){
+                    FlightTrip flightTrip = (FlightTrip) trip;
+
+                    List<models.Seat> availableSeats = tripService.findAvailableSeats(trip.getTripNo());
+                    int availableCount = (availableSeats != null) ? availableSeats.size() : 0;
+
+                    tableModel.addRow(new Object[]{
+                        flightTrip.getCompany(),
+                        flightTrip.getStartPoint() + " - " + flightTrip.getEndPoint(),
+                        flightTrip.getDepartureTime().format(timeFormatter),
+                        flightTrip.getArrivalTime().format(timeFormatter),
+                        flightTrip.getDuration(),
+                        flightTrip.getBasePrice() + " TL",
+                        availableCount + " seats",
+                        flightTrip.getAmentities(),
+                    });
+                }
+            }
         }
-        
-        tableModel.addRow(new Object[]{
-            "Turkish Airlines", from + " → " + to, "08:30", "11:45", "3h 15m", 
-            String.format("$%.0f", 280 * baseMultiplier), "18 seats", "Boeing 737"
-        });
-        tableModel.addRow(new Object[]{
-            "Pegasus Airlines", from + " → " + to, "10:15", "13:30", "3h 15m", 
-            String.format("$%.0f", 220 * baseMultiplier), "12 seats", "Airbus A320"
-        });
-        tableModel.addRow(new Object[]{
-            "SunExpress", from + " → " + to, "14:00", "17:15", "3h 15m", 
-            String.format("$%.0f", 250 * baseMultiplier), "25 seats", "Boeing 737"
-        });
-        tableModel.addRow(new Object[]{
-            "AtlasGlobal", from + " → " + to, "16:30", "19:45", "3h 15m", 
-            String.format("$%.0f", 290 * baseMultiplier), "8 seats", "Airbus A321"
-        });
-        tableModel.addRow(new Object[]{
-            "Onur Air", from + " → " + to, "19:00", "22:15", "3h 15m", 
-            String.format("$%.0f", 200 * baseMultiplier), "30 seats", "Boeing 737"
-        });
+
+         
     }
     
     private void clearForm() {

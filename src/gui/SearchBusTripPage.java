@@ -285,7 +285,7 @@ public class SearchBusTripPage extends BasePanel {
         roundTripCheckbox.setOpaque(false);
         roundTripCheckbox.setForeground(Color.WHITE);
         roundTripCheckbox.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        roundTripCheckbox.addActionListener(e -> toggleReturnDate());
+
         roundTripPanel.add(roundTripCheckbox);
         fieldsPanel.add(createFieldPanel("Trip Type", roundTripPanel), gbc);
 
@@ -596,12 +596,6 @@ public class SearchBusTripPage extends BasePanel {
         scrollPane.getVerticalScrollBar().setBackground(new Color(255, 255, 255, 20));
         scrollPane.getHorizontalScrollBar().setBackground(new Color(255, 255, 255, 20));
     }
-
-    private void toggleReturnDate() {
-        returnDatePanel.setVisible(roundTripCheckbox.isSelected());
-        revalidate();
-        repaint();
-    }
     
     private void searchBuses() {
         String from = fromField.getText();
@@ -666,7 +660,7 @@ public class SearchBusTripPage extends BasePanel {
         returnDateSpinner.setValue(java.sql.Date.valueOf(LocalDate.now()));
         passengerCount.setSelectedIndex(0);
         roundTripCheckbox.setSelected(false);
-        toggleReturnDate();
+
         tableModel.setRowCount(0);
         busTable.clearSelection();
     }

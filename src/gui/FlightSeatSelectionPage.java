@@ -6,9 +6,15 @@ import java.util.List;
 import java.util.Random;
 import javax.swing.*;
 
+import command.CommandInvoker;
 // Observer sınıflarınızı içe aktarıyoruz
 import observer.Observer;
 import observer.SeatManager;
+import models.*;
+import repository.*;
+import service.*;
+import singleton.*;
+import state.*;;
 
 public class FlightSeatSelectionPage extends BasePanel implements Observer {
     private String airline;
@@ -28,9 +34,17 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
     private JButton backButton;
 
     private List<FlightSeatButton> selectedSeats;
+    
     private double basePriceValue;
 
     private SeatManager seatManager;
+
+    private ReservationRepository reservationRepository;
+    private UserRepository userRepository;
+    private TripRepository flightRepository;
+    private ReservationService reservationService;
+    private CommandInvoker commandInvoker;
+
 
     public FlightSeatSelectionPage(String airline, String fromAirport, String toAirport,
                                  String departureTime, String arrivalTime, String basePrice,
@@ -55,6 +69,16 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         } catch (NumberFormatException e) {
             this.basePriceValue = 280.0;
         }
+
+        initializeServices();
+    }
+
+    private void initializeServices(){
+        this.reservationRepository = new ReservationRepository();
+        this.userRepository = UserRepository.getInstance();
+        this.flightRepository = new TripRepository();
+        this.reservationService = new ReservationService(reservationRepository, userRepository, flightRepository);
+        this.commandInvoker = new CommandInvoker(); 
     }
 
     @Override
@@ -248,7 +272,7 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         JPanel aircraftHeader = new JPanel(new BorderLayout());
         aircraftHeader.setOpaque(false);
 
-        JLabel aircraftLabel = new JLabel(aircraft.toUpperCase() + " - " + flightClass.toUpperCase(), SwingConstants.CENTER);
+        JLabel aircraftLabel = new JLabel(airline.toUpperCase() + " - " + flightClass.toUpperCase(), SwingConstants.CENTER);
         aircraftLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
         aircraftLabel.setForeground(Color.WHITE);
 
@@ -268,57 +292,57 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
     }
 
     private JPanel createModernSeatLayout() {
-    JPanel mainPanel = new JPanel(new BorderLayout());
-    mainPanel.setOpaque(false);
-    mainPanel.setBorder(BorderFactory.createEmptyBorder(30, 0, 0, 0));
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setOpaque(false);
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(30, 0, 0, 0));
 
-    JPanel aircraftLayout = new JPanel();
-    aircraftLayout.setLayout(new BoxLayout(aircraftLayout, BoxLayout.Y_AXIS));
-    aircraftLayout.setOpaque(false);
+        JPanel aircraftLayout = new JPanel();
+        aircraftLayout.setLayout(new BoxLayout(aircraftLayout, BoxLayout.Y_AXIS));
+        aircraftLayout.setOpaque(false);
 
-    Random random = new Random(42);
-    int seatNumber = 1;
-    char rowLetter = 'A';
+        Random random = new Random(42);
+        int seatNumber = 1;
+        char rowLetter = 'A';
 
-    // Different layouts based on class
-    int seatsPerRow = getSeatsPerRow();
-    int totalRows = getTotalRows();
+        // Different layouts based on class
+        int seatsPerRow = getSeatsPerRow();
+        int totalRows = getTotalRows();
 
-    for (int row = 0; row < totalRows; row++) {
-        JPanel rowPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 8));
-        rowPanel.setOpaque(false);
+        for (int row = 0; row < totalRows; row++) {
+            JPanel rowPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 8));
+            rowPanel.setOpaque(false);
 
-        // Row number label
-        JLabel rowLabel = new JLabel(String.valueOf(row + 1));
-        rowLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        rowLabel.setForeground(new Color(189, 147, 249));
-        rowLabel.setPreferredSize(new Dimension(25, 35));
-        rowLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        rowPanel.add(rowLabel);
+            // Row number label
+            JLabel rowLabel = new JLabel(String.valueOf(row + 1));
+            rowLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
+            rowLabel.setForeground(new Color(189, 147, 249));
+            rowLabel.setPreferredSize(new Dimension(25, 35));
+            rowLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            rowPanel.add(rowLabel);
 
-        char currentLetter = 'A';
-        for (int col = 0; col < seatsPerRow; col++) {
-            // Add aisle space for wide-body aircraft
-            if (seatsPerRow == 6 && (col == 2 || col == 4)) {
-                JLabel aisleLabel = new JLabel("  ");
-                aisleLabel.setPreferredSize(new Dimension(20, 35));
-                rowPanel.add(aisleLabel);
+            char currentLetter = 'A';
+            for (int col = 0; col < seatsPerRow; col++) {
+                // Add aisle space for wide-body aircraft
+                if (seatsPerRow == 6 && (col == 2 || col == 4)) {
+                    JLabel aisleLabel = new JLabel("  ");
+                    aisleLabel.setPreferredSize(new Dimension(20, 35));
+                    rowPanel.add(aisleLabel);
+                }
+
+                boolean isWindow = (col == 0 || col == seatsPerRow - 1);
+                boolean isAisle = !isWindow && (seatsPerRow == 6 ? (col == 1 || col == 4) : (col == 1 || col == 2));
+                boolean isOccupied = random.nextDouble() > 0.70;
+                boolean isPremium = row < 3 || "Business".equals(flightClass) || "First Class".equals(flightClass);
+
+                String seatLabel = (row + 1) + String.valueOf(currentLetter);
+                FlightSeatButton seat = new FlightSeatButton(seatLabel, isOccupied, isWindow, isAisle, isPremium);
+                seat.setSeatManager(seatManager);
+                rowPanel.add(seat);
+
+                currentLetter++;
             }
 
-            boolean isWindow = (col == 0 || col == seatsPerRow - 1);
-            boolean isAisle = !isWindow && (seatsPerRow == 6 ? (col == 1 || col == 4) : (col == 1 || col == 2));
-            boolean isOccupied = random.nextDouble() > 0.70;
-            boolean isPremium = row < 3 || "Business".equals(flightClass) || "First Class".equals(flightClass);
-
-            String seatLabel = (row + 1) + String.valueOf(currentLetter);
-            FlightSeatButton seat = new FlightSeatButton(seatLabel, isOccupied, isWindow, isAisle, isPremium);
-            seat.setSeatManager(seatManager);
-            rowPanel.add(seat);
-
-            currentLetter++;
-        }
-
-        aircraftLayout.add(rowPanel);
+            aircraftLayout.add(rowPanel);
     }
 
     // Create a modern styled scroll pane
