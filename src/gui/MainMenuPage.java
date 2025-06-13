@@ -1,3 +1,4 @@
+// online_reservation_system/src/gui/MainMenuPage.java
 package gui;
 
 import java.awt.*;
@@ -16,7 +17,7 @@ public class MainMenuPage extends JFrame {
     }
     
     public MainMenuPage(boolean isAdmin) {
-        this.isAdmin = isAdmin;
+        this.isAdmin = isAdmin; // isAdmin özelliğini ayarla
         setupWindow();
         setupUI();
     }
@@ -29,6 +30,7 @@ public class MainMenuPage extends JFrame {
         setResizable(false);
     }
     
+   // BasePanel'den gelmediği için bu annotasyon burada olmaz.
     public void setupUI() {
         // Ana panel - gradient arkaplan
         JPanel mainPanel = new JPanel() {
@@ -147,7 +149,7 @@ public class MainMenuPage extends JFrame {
         
         User currentUser = SessionManager.getInstance().getLoggedInUser(); 
         
-        JLabel welcomeLabel = new JLabel("Welcome, " + (isAdmin ? "Admin" : currentUser.getName()) + "!");
+        JLabel welcomeLabel = new JLabel("Welcome, " + (isAdmin ? "Admin" : (currentUser != null ? currentUser.getName() : "Guest")) + "!"); // Added null check for currentUser
         welcomeLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
         welcomeLabel.setForeground(Color.WHITE);
         
@@ -169,9 +171,10 @@ public class MainMenuPage extends JFrame {
         JButton logoutButton = createModernButton("Logout", new Color(220, 38, 127), false);
         logoutButton.setPreferredSize(new Dimension(100, 40));
         logoutButton.addActionListener(e -> {
+            // Clear the logged-in user when logging out
+            SessionManager.getInstance().logout();
             dispose();
-            WelcomePage welcomePage = new WelcomePage();
-            welcomePage.display();
+            new WelcomePage().display(); // Correctly navigate to WelcomePage
         });
         
         headerPanel.add(userInfoPanel, BorderLayout.WEST);
@@ -342,7 +345,7 @@ public class MainMenuPage extends JFrame {
                 g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
                 
                 // Border
-                g2d.setColor(new Color(255, 255, 255, 30));
+                g2d.setColor(new Color(255, 255, 255, 25));
                 g2d.setStroke(new BasicStroke(1));
                 g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 15, 15);
             }
@@ -461,27 +464,6 @@ public class MainMenuPage extends JFrame {
                 action.run();
             }
         });
-    }
-    
-    private void handleLogout() {
-        int confirm = JOptionPane.showConfirmDialog(
-            this,
-            "Are you sure you want to logout?",
-            "Confirm Logout",
-            JOptionPane.YES_NO_OPTION
-        );
-        
-        if (confirm == JOptionPane.YES_OPTION) {
-            dispose();
-            // Return to welcome page
-            try {
-                Class<?> welcomeClass = Class.forName("WelcomePage");
-                Object welcomePage = welcomeClass.getDeclaredConstructor().newInstance();
-                welcomeClass.getMethod("display").invoke(welcomePage);
-            } catch (Exception ex) {
-                System.exit(0);
-            }
-        }
     }
     
     private void showEnhancedFeatureDialog(String title, String message) {
