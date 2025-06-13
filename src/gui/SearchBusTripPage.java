@@ -274,6 +274,15 @@ public class SearchBusTripPage extends BasePanel {
         gbc.gridx = 1;
         fieldsPanel.add(createFieldPanel("To City", toField = createModernTextField("Enter destination city")), gbc);
 
+        // Date and Round trip - same row
+        gbc.gridx = 0; gbc.gridy = 1;
+        fieldsPanel.add(createFieldPanel("Departure Date", dateSpinner = createDateSpinner()), gbc);
+        
+        gbc.gridx = 1;
+        JPanel roundTripPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        roundTripPanel.setOpaque(false);
+
+
         // Return date and passengers - same row
         gbc.gridx = 0; gbc.gridy = 2;
         returnDatePanel = createFieldPanel("Return Date", returnDateSpinner = createDateSpinner());
