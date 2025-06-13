@@ -5,24 +5,23 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import singleton.*;
 import models.*;
+import singleton.*;
+import models.*;
+import repository.*;
 
 public class MyProfilePage extends BasePanel {
     private JTextField nameField;
     private JTextField emailField;
-    private JTextField phoneField;
-    private JTextField addressField;
-    private JTextField cityField;
-    private JTextField countryField;
+    private JComboBox<String> genderCombo;
     private JPasswordField currentPasswordField;
     private JPasswordField newPasswordField;
     private JPasswordField confirmPasswordField;
-    private JComboBox<String> genderCombo;
-    private JCheckBox emailNotifications;
-    private JCheckBox smsNotifications;
-    private JCheckBox promotionalEmails;
     private JPanel currentContentPanel;
     private String currentTab = "personal";
-    
+    private JLabel errorMessageLabel; 
+    User user = SessionManager.getInstance().getLoggedInUser();
+    UserRepository userRepository = new UserRepository();
+
     public MyProfilePage() {
         super("My Profile", 1200, 800);
     }
@@ -145,25 +144,17 @@ public class MyProfilePage extends BasePanel {
         sidebar.setPreferredSize(new Dimension(250, 0));
         sidebar.setBorder(new EmptyBorder(0, 0, 0, 30));
         
-        // Tab buttons
+        // Tab buttons - only Personal Info and Security
         JButton personalInfoTab = createTabButton(" Personal Info", true);
         JButton securityTab = createTabButton(" Security", false);
-        JButton preferencesTab = createTabButton(" Preferences", false);
-        JButton statisticsTab = createTabButton("Statistics", false);
         
         // Add action listeners for tab switching
         personalInfoTab.addActionListener(e -> switchTab(personalInfoTab, "personal"));
         securityTab.addActionListener(e -> switchTab(securityTab, "security"));
-        preferencesTab.addActionListener(e -> switchTab(preferencesTab, "preferences"));
-        statisticsTab.addActionListener(e -> switchTab(statisticsTab, "statistics"));
         
         sidebar.add(personalInfoTab);
         sidebar.add(Box.createVerticalStrut(10));
         sidebar.add(securityTab);
-        sidebar.add(Box.createVerticalStrut(10));
-        sidebar.add(preferencesTab);
-        sidebar.add(Box.createVerticalStrut(10));
-        sidebar.add(statisticsTab);
         sidebar.add(Box.createVerticalGlue());
         
         return sidebar;
@@ -201,39 +192,38 @@ public class MyProfilePage extends BasePanel {
     }
 
     private JPanel createContentPanel() {
-    JPanel contentPanel = new JPanel() {
-        @Override
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            Graphics2D g2d = (Graphics2D) g;
-            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            
-            // Glassmorphism background
-            g2d.setColor(new Color(255, 255, 255, 10));
-            g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 24, 24);
-            
-            // Border
-            g2d.setColor(new Color(255, 255, 255, 20));
-            g2d.setStroke(new BasicStroke(1));
-            g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 24, 24);
-        }
-    };
-    contentPanel.setLayout(new BorderLayout());
-    contentPanel.setOpaque(false);
-    contentPanel.setBorder(new EmptyBorder(40, 40, 40, 40));
-    
-    // Store reference for switching content - YENİ SATIR
-    this.currentContentPanel = contentPanel;
-    
-    // Default content - Personal Info
-    JPanel personalInfoContent = createPersonalInfoContent();
-    contentPanel.add(personalInfoContent, BorderLayout.CENTER);
-    
-    return contentPanel;
-}
+        JPanel contentPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                // Glassmorphism background
+                g2d.setColor(new Color(255, 255, 255, 10));
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 24, 24);
+                
+                // Border
+                g2d.setColor(new Color(255, 255, 255, 20));
+                g2d.setStroke(new BasicStroke(1));
+                g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 24, 24);
+            }
+        };
+        contentPanel.setLayout(new BorderLayout());
+        contentPanel.setOpaque(false);
+        contentPanel.setBorder(new EmptyBorder(40, 40, 40, 40));
+        
+        // Store reference for switching content
+        this.currentContentPanel = contentPanel;
+        
+        // Default content - Personal Info
+        JPanel personalInfoContent = createPersonalInfoContent();
+        contentPanel.add(personalInfoContent, BorderLayout.CENTER);
+        
+        return contentPanel;
+    }
 
     private JPanel createPersonalInfoContent() {
-        User user = SessionManager.getInstance().getLoggedInUser();
         JPanel panel = new JPanel(new BorderLayout());
         panel.setOpaque(false);
         
@@ -276,13 +266,8 @@ public class MyProfilePage extends BasePanel {
         nameLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
         nameLabel.setForeground(Color.WHITE);
         
-        JLabel memberLabel = new JLabel("Member since: January 2023");
-        memberLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        memberLabel.setForeground(new Color(196, 181, 253));
-        
         userInfo.add(nameLabel);
         userInfo.add(Box.createVerticalStrut(5));
-        userInfo.add(memberLabel);
         
         welcomeSection.add(profilePic);
         welcomeSection.add(userInfo);
@@ -413,50 +398,6 @@ public class MyProfilePage extends BasePanel {
         return combo;
     }
 
-    private JTextField createModernDateField() {
-        JTextField dateField = new JTextField("01.01.1990") {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2d = (Graphics2D) g;
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                
-                // Background
-                g2d.setColor(new Color(255, 255, 255, 10));
-                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
-                
-                // Border
-                if (isFocusOwner()) {
-                    g2d.setColor(new Color(139, 92, 246));
-                    g2d.setStroke(new BasicStroke(2));
-                } else {
-                    g2d.setColor(new Color(255, 255, 255, 30));
-                    g2d.setStroke(new BasicStroke(1));
-                }
-                g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 8, 8);
-                
-                super.paintComponent(g);
-            }
-        };
-        
-        dateField.setOpaque(false);
-        dateField.setForeground(Color.WHITE);
-        dateField.setCaretColor(Color.WHITE);
-        dateField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        dateField.setBorder(BorderFactory.createEmptyBorder(12, 16, 12, 16));
-        dateField.setPreferredSize(new Dimension(300, 45));
-        
-        // Add calendar icon at the end
-        JPanel datePanel = new JPanel(new BorderLayout());
-        datePanel.setOpaque(false);
-        datePanel.add(dateField, BorderLayout.CENTER);
-        
-        JLabel calendarIcon = new JLabel("📅");
-        calendarIcon.setBorder(new EmptyBorder(0, 0, 0, 10));
-        datePanel.add(calendarIcon, BorderLayout.EAST);
-        
-        return dateField;
-    }
-
     private JButton createModernButton(String text, Color backgroundColor, boolean isPrimary) {
         JButton button = new JButton(text) {
             @Override
@@ -499,52 +440,46 @@ public class MyProfilePage extends BasePanel {
     }
 
     // Tab switching functionality
-   private void switchTab(JButton activeTab, String tabType) {
-    // Reset all tab buttons
-    Component[] components = activeTab.getParent().getComponents();
-    for (Component comp : components) {
-        if (comp instanceof JButton) {
-            JButton btn = (JButton) comp;
-            btn.setSelected(false);
-            btn.setForeground(new Color(196, 181, 253));
+    private void switchTab(JButton activeTab, String tabType) {
+        // Reset all tab buttons
+        Component[] components = activeTab.getParent().getComponents();
+        for (Component comp : components) {
+            if (comp instanceof JButton) {
+                JButton btn = (JButton) comp;
+                btn.setSelected(false);
+                btn.setForeground(new Color(196, 181, 253));
+            }
         }
+        
+        // Set active tab
+        activeTab.setSelected(true);
+        activeTab.setForeground(Color.WHITE);
+        
+        // Remove current content
+        currentContentPanel.removeAll();
+        
+        // Add new content based on tab type
+        JPanel newContent = null;
+        switch (tabType) {
+            case "personal":
+                newContent = createPersonalInfoContent();
+                break;
+            case "security":
+                newContent = createSecurityContent();
+                break;
+        }
+        
+        if (newContent != null) {
+            currentContentPanel.add(newContent, BorderLayout.CENTER);
+            currentTab = tabType;
+        }
+        
+        // Refresh the panel
+        currentContentPanel.revalidate();
+        currentContentPanel.repaint();
     }
-    
-    // Set active tab
-    activeTab.setSelected(true);
-    activeTab.setForeground(Color.WHITE);
-    
-    // Remove current content
-    currentContentPanel.removeAll();
-    
-    // Add new content based on tab type
-    JPanel newContent = null;
-    switch (tabType) {
-        case "personal":
-            newContent = createPersonalInfoContent();
-            break;
-        case "security":
-            newContent = createSecurityContent();
-            break;
-        case "preferences":
-            newContent = createPreferencesContent();
-            break;
-        case "statistics":
-            newContent = createStatisticsContent();
-            break;
-    }
-    
-    if (newContent != null) {
-        currentContentPanel.add(newContent, BorderLayout.CENTER);
-        currentTab = tabType;
-    }
-    
-    // Refresh the panel
-    currentContentPanel.revalidate();
-    currentContentPanel.repaint();
-}
 
-    // Action Methods (keeping your original methods)
+    // Action Methods
     private void savePersonalInfo() {
         try {
             User user = SessionManager.getInstance().getLoggedInUser();
@@ -587,80 +522,9 @@ public class MyProfilePage extends BasePanel {
 
     private void showErrorMessage(String message) {
         JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
-    }private JPanel createSecurityContent() {
-    JPanel panel = new JPanel(new BorderLayout());
-    panel.setOpaque(false);
+    }
     
-    // Title section
-    JPanel titleSection = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-    titleSection.setOpaque(false);
-    titleSection.setBorder(new EmptyBorder(0, 0, 40, 0));
-    
-    JLabel titleLabel = new JLabel("🔐 Security Settings");
-    titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
-    titleLabel.setForeground(Color.WHITE);
-    
-    JLabel subtitleLabel = new JLabel("Manage your password and security preferences");
-    subtitleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-    subtitleLabel.setForeground(new Color(196, 181, 253));
-    
-    JPanel titleInfo = new JPanel();
-    titleInfo.setLayout(new BoxLayout(titleInfo, BoxLayout.Y_AXIS));
-    titleInfo.setOpaque(false);
-    titleInfo.add(titleLabel);
-    titleInfo.add(Box.createVerticalStrut(5));
-    titleInfo.add(subtitleLabel);
-    
-    titleSection.add(titleInfo);
-    
-    // Form section
-    JPanel formSection = new JPanel(new GridBagLayout());
-    formSection.setOpaque(false);
-    GridBagConstraints gbc = new GridBagConstraints();
-    gbc.insets = new Insets(15, 0, 15, 40);
-    gbc.anchor = GridBagConstraints.WEST;
-    
-    // Current Password
-    gbc.gridx = 0; gbc.gridy = 0;
-    formSection.add(createFieldLabel("Current Password"), gbc);
-    gbc.gridx = 1;
-    currentPasswordField = createModernPasswordField();
-    formSection.add(currentPasswordField, gbc);
-    
-    // New Password
-    gbc.gridx = 0; gbc.gridy = 1;
-    formSection.add(createFieldLabel("New Password"), gbc);
-    gbc.gridx = 1;
-    newPasswordField = createModernPasswordField();
-    formSection.add(newPasswordField, gbc);
-    
-    // Confirm Password
-    gbc.gridx = 0; gbc.gridy = 2;
-    formSection.add(createFieldLabel("Confirm Password"), gbc);
-    gbc.gridx = 1;
-    confirmPasswordField = createModernPasswordField();
-    formSection.add(confirmPasswordField, gbc);
-    
-    // Buttons
-    JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 30));
-    buttonPanel.setOpaque(false);
-    
-    JButton updatePasswordButton = createModernButton("🔑 Update Password", new Color(139, 92, 246), true);
-    JButton cancelButton = createModernButton("Cancel", new Color(138, 92, 246), false);
-    
-    updatePasswordButton.addActionListener(e -> updatePassword());
-    cancelButton.addActionListener(e -> resetSecurityFields());
-    
-    buttonPanel.add(updatePasswordButton);
-    buttonPanel.add(Box.createHorizontalStrut(15));
-    buttonPanel.add(cancelButton);
-    
-    panel.add(titleSection, BorderLayout.NORTH);
-    panel.add(formSection, BorderLayout.CENTER);
-    panel.add(buttonPanel, BorderLayout.SOUTH);
-    
-    return panel;
-    }private JPanel createPreferencesContent() {
+    private JPanel createSecurityContent() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setOpaque(false);
         
@@ -669,11 +533,11 @@ public class MyProfilePage extends BasePanel {
         titleSection.setOpaque(false);
         titleSection.setBorder(new EmptyBorder(0, 0, 40, 0));
         
-        JLabel titleLabel = new JLabel("⚙️ Preferences");
+        JLabel titleLabel = new JLabel("🔐 Security Settings");
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
         titleLabel.setForeground(Color.WHITE);
         
-        JLabel subtitleLabel = new JLabel("Customize your experience and notification settings");
+        JLabel subtitleLabel = new JLabel("Manage your password and security preferences");
         subtitleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         subtitleLabel.setForeground(new Color(196, 181, 253));
         
@@ -686,93 +550,65 @@ public class MyProfilePage extends BasePanel {
         
         titleSection.add(titleInfo);
         
-        // Preferences section
-        JPanel preferencesSection = new JPanel();
-        preferencesSection.setLayout(new BoxLayout(preferencesSection, BoxLayout.Y_AXIS));
-        preferencesSection.setOpaque(false);
+        // Form section
+        JPanel formSection = new JPanel(new GridBagLayout());
+        formSection.setOpaque(false);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(15, 0, 15, 40);
+        gbc.anchor = GridBagConstraints.WEST;
         
-        // Notification Settings
-        JLabel notificationLabel = new JLabel("📱 Notification Settings");
-        notificationLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        notificationLabel.setForeground(Color.WHITE);
-        notificationLabel.setBorder(new EmptyBorder(0, 0, 20, 0));
+        // Current Password
+        gbc.gridx = 0; gbc.gridy = 0;
+        formSection.add(createFieldLabel("Current Password"), gbc);
+        gbc.gridx = 1;
+        currentPasswordField = createModernPasswordField();
+        formSection.add(currentPasswordField, gbc);
         
-        emailNotifications = createModernCheckBox("📧 Email Notifications", true);
-        smsNotifications = createModernCheckBox("📱 SMS Notifications", false);
-        promotionalEmails = createModernCheckBox("🎯 Promotional Emails", true);
+        // New Password
+        gbc.gridx = 0; gbc.gridy = 1;
+        formSection.add(createFieldLabel("New Password"), gbc);
+        gbc.gridx = 1;
+        newPasswordField = createModernPasswordField();
+        formSection.add(newPasswordField, gbc);
         
-        preferencesSection.add(notificationLabel);
-        preferencesSection.add(emailNotifications);
-        preferencesSection.add(Box.createVerticalStrut(15));
-        preferencesSection.add(smsNotifications);
-        preferencesSection.add(Box.createVerticalStrut(15));
-        preferencesSection.add(promotionalEmails);
-        
+        // Confirm Password
+        gbc.gridx = 0; gbc.gridy = 2;
+        formSection.add(createFieldLabel("Confirm Password"), gbc);
+        gbc.gridx = 1;
+        confirmPasswordField = createModernPasswordField();
+        formSection.add(confirmPasswordField, gbc);
+
+        // Error message label
+        gbc.gridx = 0; gbc.gridy = 3;
+        gbc.gridwidth = 2;
+        errorMessageLabel = new JLabel("");
+        errorMessageLabel.setForeground(Color.RED);
+        errorMessageLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        formSection.add(errorMessageLabel, gbc);
+        gbc.gridwidth = 1; // Reset
+
         // Buttons
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 30));
         buttonPanel.setOpaque(false);
-        
-        JButton savePreferencesButton = createModernButton("💾 Save Preferences", new Color(139, 92, 246), true);
-        JButton resetButton = createModernButton("Reset", new Color(138, 92, 246), false);
-        
-        savePreferencesButton.addActionListener(e -> savePreferences());
-        resetButton.addActionListener(e -> resetPreferences());
-        
-        buttonPanel.add(savePreferencesButton);
+
+        JButton updatePasswordButton = createModernButton("🔑 Update Password", new Color(139, 92, 246), true);
+        JButton cancelButton = createModernButton("Cancel", new Color(138, 92, 246), false);
+
+        updatePasswordButton.addActionListener(e -> updatePassword());
+        cancelButton.addActionListener(e -> resetSecurityFields());
+
+        buttonPanel.add(updatePasswordButton);
         buttonPanel.add(Box.createHorizontalStrut(15));
-        buttonPanel.add(resetButton);
-        
+        buttonPanel.add(cancelButton);
+
         panel.add(titleSection, BorderLayout.NORTH);
-        panel.add(preferencesSection, BorderLayout.CENTER);
+        panel.add(formSection, BorderLayout.CENTER);
         panel.add(buttonPanel, BorderLayout.SOUTH);
-        
+
         return panel;
-    }private JPanel createStatisticsContent() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setOpaque(false);
-        
-        // Title section
-        JPanel titleSection = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        titleSection.setOpaque(false);
-        titleSection.setBorder(new EmptyBorder(0, 0, 40, 0));
-        
-        JLabel titleLabel = new JLabel("📊 Account Statistics");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        titleLabel.setForeground(Color.WHITE);
-        
-        JLabel subtitleLabel = new JLabel("View your account activity and usage statistics");
-        subtitleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        subtitleLabel.setForeground(new Color(196, 181, 253));
-        
-        JPanel titleInfo = new JPanel();
-        titleInfo.setLayout(new BoxLayout(titleInfo, BoxLayout.Y_AXIS));
-        titleInfo.setOpaque(false);
-        titleInfo.add(titleLabel);
-        titleInfo.add(Box.createVerticalStrut(5));
-        titleInfo.add(subtitleLabel);
-        
-        titleSection.add(titleInfo);
-        
-        // Statistics cards
-        JPanel statsSection = new JPanel(new GridLayout(2, 2, 20, 20));
-        statsSection.setOpaque(false);
-        
-        // Create statistic cards
-        JPanel totalLoginsCard = createStatCard("🔐 Total Logins", "156", "times");
-        JPanel lastLoginCard = createStatCard("⏰ Last Login", "2 hours", "ago");
-        JPanel accountAgeCard = createStatCard("📅 Account Age", "2 years", "3 months");
-        JPanel settingsChangedCard = createStatCard("⚙️ Settings Changed", "12", "times");
-        
-        statsSection.add(totalLoginsCard);
-        statsSection.add(lastLoginCard);
-        statsSection.add(accountAgeCard);
-        statsSection.add(settingsChangedCard);
-        
-        panel.add(titleSection, BorderLayout.NORTH);
-        panel.add(statsSection, BorderLayout.CENTER);
-        
-        return panel;
-    }private JPasswordField createModernPasswordField() {
+    }
+
+    private JPasswordField createModernPasswordField() {
         JPasswordField field = new JPasswordField() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -807,116 +643,47 @@ public class MyProfilePage extends BasePanel {
         return field;
     }
     
-    private JCheckBox createModernCheckBox(String text, boolean selected) {
-        JCheckBox checkBox = new JCheckBox(text, selected) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2d = (Graphics2D) g;
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                
-                super.paintComponent(g);
-            }
-        };
-        
-        checkBox.setOpaque(false);
-        checkBox.setForeground(Color.WHITE);
-        checkBox.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        checkBox.setFocusPainted(false);
-        
-        return checkBox;
-    }
-    
-    private JPanel createStatCard(String title, String value, String unit) {
-        JPanel card = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                Graphics2D g2d = (Graphics2D) g;
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                
-                // Card background
-                g2d.setColor(new Color(255, 255, 255, 15));
-                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 16, 16);
-                
-                // Border
-                g2d.setColor(new Color(255, 255, 255, 25));
-                g2d.setStroke(new BasicStroke(1));
-                g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 16, 16);
-            }
-        };
-        
-        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-        card.setOpaque(false);
-        card.setBorder(new EmptyBorder(20, 20, 20, 20));
-        
-        JLabel titleLabel = new JLabel(title);
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        titleLabel.setForeground(new Color(196, 181, 253));
-        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        
-        JLabel valueLabel = new JLabel(value);
-        valueLabel.setFont(new Font("Segoe UI", Font.BOLD, 28));
-        valueLabel.setForeground(Color.WHITE);
-        valueLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        
-        JLabel unitLabel = new JLabel(unit);
-        unitLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        unitLabel.setForeground(new Color(196, 181, 253));
-        unitLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        
-        card.add(titleLabel);
-        card.add(Box.createVerticalStrut(10));
-        card.add(valueLabel);
-        card.add(Box.createVerticalStrut(5));
-        card.add(unitLabel);
-        
-        return card;
-    }
-    
     private void updatePassword() {
         String currentPassword = new String(currentPasswordField.getPassword());
         String newPassword = new String(newPasswordField.getPassword());
         String confirmPassword = new String(confirmPasswordField.getPassword());
-        
+
         if (currentPassword.isEmpty()) {
             showErrorMessage("Please enter your current password!");
             return;
         }
-        
+
+        // Check current password
+        if (!currentPassword.equals(user.getPassword())) {
+            showErrorMessage("Current password is incorrect!");
+            return;
+        }
+
         if (newPassword.isEmpty()) {
             showErrorMessage("Please enter a new password!");
             return;
         }
-        
+
         if (newPassword.length() < 6) {
             showErrorMessage("New password must be at least 6 characters long!");
             return;
         }
-        
+
         if (!newPassword.equals(confirmPassword)) {
             showErrorMessage("New password and confirmation do not match!");
             return;
         }
-        
+
+        // Save new password
+        user.setPassword(newPassword);
+
         showSuccessMessage("Password updated successfully!");
         resetSecurityFields();
     }
-    
+
     private void resetSecurityFields() {
         currentPasswordField.setText("");
         newPasswordField.setText("");
         confirmPasswordField.setText("");
     }
-    
-    private void savePreferences() {
-        showSuccessMessage("Preferences saved successfully!");
-    }
-    
-    private void resetPreferences() {
-        emailNotifications.setSelected(true);
-        smsNotifications.setSelected(false);
-        promotionalEmails.setSelected(true);
-    }
-    
-    
-    }
+}

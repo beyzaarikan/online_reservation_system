@@ -8,7 +8,7 @@ public class UserRepository {
     private static UserRepository instance; // Singleton örneği
     HashMap<String, User> userMap;
 
-    private UserRepository() { // Private constructor
+    public UserRepository() { // Private constructor
         this.userMap = new HashMap<>();
     }
 
@@ -53,5 +53,12 @@ public class UserRepository {
     }
     public boolean containsKey(String id) {
         return userMap.containsKey(id);
+    }
+    public void update(User user) {
+        if (userMap.containsKey(user.getId())) {
+            userMap.put(user.getId(), user);
+        } else {
+            throw new IllegalArgumentException("User with id " + user.getId() + " does not exist.");
+        }
     }
 }

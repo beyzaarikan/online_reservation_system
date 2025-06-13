@@ -168,7 +168,11 @@ public class MainMenuPage extends JFrame {
         // Logout button - modern style
         JButton logoutButton = createModernButton("Logout", new Color(220, 38, 127), false);
         logoutButton.setPreferredSize(new Dimension(100, 40));
-        logoutButton.addActionListener(e -> handleLogout());
+        logoutButton.addActionListener(e -> {
+            dispose();
+            WelcomePage welcomePage = new WelcomePage();
+            welcomePage.display();
+        });
         
         headerPanel.add(userInfoPanel, BorderLayout.WEST);
         headerPanel.add(logoutButton, BorderLayout.EAST);
@@ -243,7 +247,7 @@ public class MainMenuPage extends JFrame {
         JPanel busTripsCard = createModernMenuCard("Search Bus Trips", 
             "Find and book bus journeys", new Color(138, 43, 226), "🚌");
         JPanel flightTripsCard = createModernMenuCard("Search Flights", 
-            "Discover flight options", new Color(56, 189, 248), "✈️");
+            "Discover flight options", new Color(56, 189, 248), "   ✈️");
         JPanel reservationCard = createModernMenuCard("My Reservations", 
             "View your bookings", new Color(52, 211, 153), "🎫");
         JPanel profileCard = createModernMenuCard("My Profile", 
