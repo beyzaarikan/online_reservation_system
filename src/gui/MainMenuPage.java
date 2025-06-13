@@ -292,6 +292,7 @@ public class MainMenuPage extends JFrame {
             "System reports and stats", new Color(56, 189, 248), "📊");
         JPanel consoleCard = createModernMenuCard("System Console", 
             "Advanced system tools", new Color(220, 38, 127), "⚙️");
+            
         
         // Event listeners
         addClickListener(userManagementCard, () -> {

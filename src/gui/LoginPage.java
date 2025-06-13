@@ -397,7 +397,7 @@ public class LoginPage extends BasePanel {
 
         // Admin login validation
         if (isAdminLogin) {
-            if (email.equals("admin@travel.com") && password.equals("admin123")) {
+            if (email.equals("admin@travel.com") && password.equals("admin@travel.com")) {
                 PageComponents.showStyledMessage("Welcome!", "Admin login successful!", this);
                 dispose();
                 new MainMenuPage(true).display();

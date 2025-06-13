@@ -12,6 +12,7 @@ public abstract class User {
         this.password = password;
         this.email = email;
     }
+    
     public String getId() { return id; }
     
     public String getName() {

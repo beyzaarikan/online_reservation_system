@@ -2,6 +2,7 @@ package gui;
 
 import java.awt.*;
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 public class TripManagementPage extends BasePanel {
@@ -12,70 +13,160 @@ public class TripManagementPage extends BasePanel {
     private JComboBox<String> statusCombo;
     
     public TripManagementPage() {
-        super("Trip Management - Admin Panel", 900, 700);
+        super("Trip Management - Admin Panel", 1000, 700);
     }
     
     @Override
     public void setupUI() {
-        JPanel mainPanel = createMainPanel();
+        setLayout(new BorderLayout());
+        getContentPane().setBackground(new Color(15, 15, 35));
+
+        // Main panel with gradient background (same as AdminPage)
+        JPanel mainPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+                
+                // Gradient background
+                GradientPaint gradient = new GradientPaint(
+                    0, 0, new Color(15, 15, 35),
+                    getWidth(), getHeight(), new Color(25, 25, 55)
+                );
+                g2d.setPaint(gradient);
+                g2d.fillRect(0, 0, getWidth(), getHeight());
+                
+                // Decorative circles
+                g2d.setColor(new Color(138, 43, 226, 30));
+                g2d.fillOval(-50, -50, 200, 200);
+                g2d.fillOval(getWidth()-150, getHeight()-150, 200, 200);
+                
+                g2d.setColor(new Color(75, 0, 130, 20));
+                g2d.fillOval(getWidth()-100, -50, 150, 150);
+                g2d.fillOval(-100, getHeight()-100, 150, 150);
+            }
+        };
+        mainPanel.setLayout(new BorderLayout());
+        mainPanel.setOpaque(false);
+
+        // Back button panel
+        JPanel backPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        backPanel.setOpaque(false);
+        JButton backButton = createModernButton("← Back", new Color(108, 92, 231), false);
+        backButton.setPreferredSize(new Dimension(100, 35));
+        backButton.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        backPanel.add(backButton);
+
+        // Center panel
+        JPanel centerPanel = new JPanel();
+        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
+        centerPanel.setOpaque(false);
+
+        // Title section
+        JPanel titlePanel = new JPanel();
+        titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.Y_AXIS));
+        titlePanel.setOpaque(false);
+        titlePanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
+
+        JLabel titleLabel = new JLabel("Trip Management", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 32));
+        titleLabel.setForeground(Color.WHITE);
+        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel subtitleLabel = new JLabel("Manage All Travel Services", SwingConstants.CENTER);
+        subtitleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        subtitleLabel.setForeground(new Color(189, 147, 249));
+        subtitleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        titlePanel.add(titleLabel);
+        titlePanel.add(Box.createVerticalStrut(8));
+        titlePanel.add(subtitleLabel);
+
+        // Main content panel with glassmorphism effect
+        JPanel contentPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                // Glassmorphism background
+                g2d.setColor(new Color(255, 255, 255, 10));
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
+                
+                // Border
+                g2d.setColor(new Color(255, 255, 255, 30));
+                g2d.setStroke(new BasicStroke(1));
+                g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 20, 20);
+            }
+        };
+        contentPanel.setLayout(new BorderLayout());
+        contentPanel.setOpaque(false);
+        contentPanel.setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
+        contentPanel.setMaximumSize(new Dimension(950, 600));
+
+        // Filter Panel with glassmorphism
+        JPanel filterPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                // Glassmorphism background
+                g2d.setColor(new Color(255, 255, 255, 8));
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
+                
+                // Border
+                g2d.setColor(new Color(255, 255, 255, 20));
+                g2d.setStroke(new BasicStroke(1));
+                g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 15, 15);
+            }
+        };
+        filterPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+        filterPanel.setOpaque(false);
+        filterPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        // Filter title
+        JLabel filterTitle = new JLabel("Filters");
+        filterTitle.setForeground(new Color(189, 147, 249));
+        filterTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
+
+        searchField = createModernTextField("Search trips...");
+        tripTypeCombo = createModernComboBox(new String[]{"All Types", "Bus", "Flight"});
+        statusCombo = createModernComboBox(new String[]{"All Status", "Active", "Inactive", "Cancelled"});
+
+        JButton searchButton = createModernButton("Search", new Color(138, 43, 226), true);
+        JButton resetButton = createModernButton("Reset", new Color(108, 92, 231), false);
+
+        JPanel filterContent = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
+        filterContent.setOpaque(false);
         
-        // Title Panel
-        JPanel titlePanel = createTitlePanel("Trip Management");
+        filterContent.add(createFilterLabel("Search:"));
+        filterContent.add(searchField);
+        filterContent.add(createFilterLabel("Type:"));
+        filterContent.add(tripTypeCombo);
+        filterContent.add(createFilterLabel("Status:"));
+        filterContent.add(statusCombo);
+        filterContent.add(searchButton);
+        filterContent.add(resetButton);
+
+        JPanel filterMainPanel = new JPanel();
+        filterMainPanel.setLayout(new BoxLayout(filterMainPanel, BoxLayout.Y_AXIS));
+        filterMainPanel.setOpaque(false);
+        filterTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+        filterMainPanel.add(filterTitle);
+        filterMainPanel.add(Box.createVerticalStrut(10));
+        filterMainPanel.add(filterContent);
         
-        // Filter Panel
-        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        filterPanel.setBackground(PageComponents.BACKGROUND_COLOR);
-        filterPanel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(PageComponents.PRIMARY_COLOR, 1),
-                "Filters",
-                0, 0,
-                new Font("Segoe UI", Font.BOLD, 14),
-                PageComponents.TEXT_COLOR
-            ),
-            new javax.swing.border.EmptyBorder(10, 15, 10, 15)
-        ));
-        
-        searchField = PageComponents.createStyledTextField("Search trips...");
-        searchField.setPreferredSize(new Dimension(200, 35));
-        
-        tripTypeCombo = new JComboBox<>(new String[]{"All Types", "Bus", "Flight"});
-        styleComboBox(tripTypeCombo);
-        
-        statusCombo = new JComboBox<>(new String[]{"All Status", "Active", "Inactive", "Cancelled"});
-        styleComboBox(statusCombo);
-        
-        JButton searchButton = PageComponents.createStyledButton("Search", PageComponents.PRIMARY_COLOR, true);
-        JButton resetButton = PageComponents.createStyledButton("Reset", PageComponents.SECONDARY_COLOR, false);
-        
-        filterPanel.add(new JLabel("Search: ") {{ 
-            setForeground(PageComponents.TEXT_COLOR); 
-            setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        }});
-        filterPanel.add(searchField);
-        filterPanel.add(Box.createHorizontalStrut(15));
-        filterPanel.add(new JLabel("Type: ") {{ 
-            setForeground(PageComponents.TEXT_COLOR); 
-            setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        }});
-        filterPanel.add(tripTypeCombo);
-        filterPanel.add(Box.createHorizontalStrut(15));
-        filterPanel.add(new JLabel("Status: ") {{ 
-            setForeground(PageComponents.TEXT_COLOR); 
-            setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        }});
-        filterPanel.add(statusCombo);
-        filterPanel.add(Box.createHorizontalStrut(15));
-        filterPanel.add(searchButton);
-        filterPanel.add(resetButton);
-        
+        filterPanel.add(filterMainPanel);
+
         // Table Panel
-        JPanel tablePanel = createCardPanel();
-        tablePanel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(PageComponents.PRIMARY_COLOR, 2, true),
-            new javax.swing.border.EmptyBorder(20, 20, 20, 20)
-        ));
-        
+        JPanel tablePanel = new JPanel(new BorderLayout());
+        tablePanel.setOpaque(false);
+        tablePanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
+
         // Create table with enhanced columns
         String[] columnNames = {"ID", "Type", "Route", "Date", "Time", "Price", "Available Seats", "Status"};
         tableModel = new DefaultTableModel(columnNames, 0) {
@@ -86,13 +177,196 @@ public class TripManagementPage extends BasePanel {
         };
         
         tripTable = new JTable(tableModel);
-        tripTable.setBackground(PageComponents.INPUT_COLOR);
-        tripTable.setForeground(PageComponents.TEXT_COLOR);
+        setupTable();
+        
+        JScrollPane scrollPane = new JScrollPane(tripTable);
+        scrollPane.setPreferredSize(new Dimension(850, 250));
+        scrollPane.setOpaque(false);
+        scrollPane.getViewport().setOpaque(false);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        
+        // Style the scrollpane
+        scrollPane.getVerticalScrollBar().setBackground(new Color(255, 255, 255, 20));
+        scrollPane.getHorizontalScrollBar().setBackground(new Color(255, 255, 255, 20));
+
+        // Action Buttons Panel
+        JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        actionPanel.setOpaque(false);
+        actionPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
+        
+        JButton addTripButton = createModernButton("Add New Trip", new Color(138, 43, 226), true);
+        JButton editTripButton = createModernButton("Edit Trip", new Color(108, 92, 231), true);
+        JButton viewDetailsButton = createModernButton("View Details", new Color(189, 147, 249), false);
+        JButton cancelTripButton = createModernButton("Cancel Trip", new Color(255, 121, 121), true);
+        JButton refreshButton = createModernButton("Refresh", new Color(138, 43, 226), true);
+
+        actionPanel.add(addTripButton);
+        actionPanel.add(Box.createHorizontalStrut(10));
+        actionPanel.add(editTripButton);
+        actionPanel.add(Box.createHorizontalStrut(10));
+        actionPanel.add(viewDetailsButton);
+        actionPanel.add(Box.createHorizontalStrut(10));
+        actionPanel.add(cancelTripButton);
+        actionPanel.add(Box.createHorizontalStrut(10));
+        actionPanel.add(refreshButton);
+
+        tablePanel.add(scrollPane, BorderLayout.CENTER);
+        tablePanel.add(actionPanel, BorderLayout.SOUTH);
+
+        contentPanel.add(filterPanel, BorderLayout.NORTH);
+        contentPanel.add(tablePanel, BorderLayout.CENTER);
+        
+        centerPanel.add(titlePanel);
+        centerPanel.add(contentPanel);
+
+        mainPanel.add(backPanel, BorderLayout.NORTH);
+        mainPanel.add(centerPanel, BorderLayout.CENTER);
+        add(mainPanel, BorderLayout.CENTER);
+
+        // Populate sample data
+        populateSampleTripData();
+
+        // Action listeners
+        backButton.addActionListener(e -> {
+            dispose();
+            new AdminPage().display();
+        });
+        
+        searchButton.addActionListener(e -> searchTrips());
+        resetButton.addActionListener(e -> resetFilters());
+        addTripButton.addActionListener(e -> addNewTrip());
+        editTripButton.addActionListener(e -> editTrip());
+        viewDetailsButton.addActionListener(e -> viewTripDetails());
+        cancelTripButton.addActionListener(e -> cancelTrip());
+        refreshButton.addActionListener(e -> refreshTripData());
+    }
+
+    private JLabel createFilterLabel(String text) {
+        JLabel label = new JLabel(text);
+        label.setForeground(new Color(189, 147, 249));
+        label.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        return label;
+    }
+
+    private JTextField createModernTextField(String placeholder) {
+        JTextField field = new JTextField() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                // Background
+                g2d.setColor(new Color(255, 255, 255, 15));
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+                
+                // Border
+                if (isFocusOwner()) {
+                    g2d.setColor(new Color(138, 43, 226));
+                } else {
+                    g2d.setColor(new Color(255, 255, 255, 30));
+                }
+                g2d.setStroke(new BasicStroke(1));
+                g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 10, 10);
+                
+                super.paintComponent(g);
+            }
+        };
+        field.setOpaque(false);
+        field.setForeground(Color.WHITE);
+        field.setCaretColor(Color.WHITE);
+        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        field.setBorder(BorderFactory.createEmptyBorder(12, 15, 12, 15));
+        field.setPreferredSize(new Dimension(200, 35));
+        field.setText(placeholder);
+        field.setForeground(new Color(150, 150, 150));
+        
+        field.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                if (field.getText().equals(placeholder)) {
+                    field.setText("");
+                    field.setForeground(Color.WHITE);
+                }
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                if (field.getText().isEmpty()) {
+                    field.setText(placeholder);
+                    field.setForeground(new Color(150, 150, 150));
+                }
+            }
+        });
+        
+        return field;
+    }
+
+    private JComboBox<String> createModernComboBox(String[] items) {
+        JComboBox<String> comboBox = new JComboBox<String>(items) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                // Background
+                g2d.setColor(new Color(255, 255, 255, 15));
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+                
+                // Border
+                g2d.setColor(new Color(255, 255, 255, 30));
+                g2d.setStroke(new BasicStroke(1));
+                g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 10, 10);
+                
+                super.paintComponent(g);
+            }
+        };
+        comboBox.setOpaque(false);
+        comboBox.setForeground(Color.WHITE);
+        comboBox.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        comboBox.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
+        comboBox.setPreferredSize(new Dimension(120, 35));
+        comboBox.setFocusable(false);
+        return comboBox;
+    }
+
+    private JButton createModernButton(String text, Color baseColor, boolean isPrimary) {
+        JButton button = new JButton(text) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                if (getModel().isPressed()) {
+                    g2d.setColor(baseColor.darker());
+                } else if (getModel().isRollover()) {
+                    g2d.setColor(baseColor.brighter());
+                } else {
+                    g2d.setColor(baseColor);
+                }
+                
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+                super.paintComponent(g);
+            }
+        };
+        
+        button.setForeground(Color.WHITE);
+        button.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        button.setFocusPainted(false);
+        button.setBorderPainted(false);
+        button.setContentAreaFilled(false);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        button.setPreferredSize(new Dimension(120, 35));
+        
+        return button;
+    }
+
+    private void setupTable() {
+        tripTable.setBackground(new Color(255, 255, 255, 10));
+        tripTable.setForeground(Color.WHITE);
         tripTable.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        tripTable.setGridColor(PageComponents.SECONDARY_COLOR);
-        tripTable.setSelectionBackground(PageComponents.PRIMARY_COLOR);
+        tripTable.setGridColor(new Color(255, 255, 255, 30));
+        tripTable.setSelectionBackground(new Color(138, 43, 226, 100));
         tripTable.setSelectionForeground(Color.WHITE);
-        tripTable.setRowHeight(25);
+        tripTable.setRowHeight(30);
+        tripTable.setShowGrid(true);
+        tripTable.setIntercellSpacing(new Dimension(1, 1));
         
         // Set column widths
         tripTable.getColumnModel().getColumn(0).setPreferredWidth(50);  // ID
@@ -104,65 +378,40 @@ public class TripManagementPage extends BasePanel {
         tripTable.getColumnModel().getColumn(6).setPreferredWidth(100); // Available Seats
         tripTable.getColumnModel().getColumn(7).setPreferredWidth(80);  // Status
         
-        // Populate sample data
-        populateSampleTripData();
-        
-        JScrollPane scrollPane = new JScrollPane(tripTable);
-        scrollPane.setPreferredSize(new Dimension(800, 300));
-        scrollPane.getViewport().setBackground(PageComponents.INPUT_COLOR);
-        
-        // Action Buttons Panel
-        JPanel actionPanel = new JPanel(new FlowLayout());
-        actionPanel.setBackground(PageComponents.CARD_COLOR);
-        
-        JButton addTripButton = PageComponents.createStyledButton("Add New Trip", PageComponents.ACCENT_COLOR, true);
-        JButton editTripButton = PageComponents.createStyledButton("Edit Trip", PageComponents.PRIMARY_COLOR, true);
-        JButton viewDetailsButton = PageComponents.createStyledButton("View Details", PageComponents.SECONDARY_COLOR, false);
-        JButton cancelTripButton = PageComponents.createStyledButton("Cancel Trip", new Color(255, 121, 121), true);
-        JButton refreshButton = PageComponents.createStyledButton("Refresh", PageComponents.PRIMARY_COLOR, true);
-        JButton backButton = PageComponents.createStyledButton("Back to Admin", PageComponents.SECONDARY_COLOR, false);
-        
-        actionPanel.add(addTripButton);
-        actionPanel.add(editTripButton);
-        actionPanel.add(viewDetailsButton);
-        actionPanel.add(cancelTripButton);
-        actionPanel.add(refreshButton);
-        actionPanel.add(backButton);
-        
-        tablePanel.add(new JLabel("Trip List") {{
-            setFont(new Font("Segoe UI", Font.BOLD, 16));
-            setForeground(PageComponents.TEXT_COLOR);
-        }});
-        tablePanel.add(Box.createVerticalStrut(15));
-        tablePanel.add(scrollPane);
-        tablePanel.add(Box.createVerticalStrut(15));
-        tablePanel.add(actionPanel);
-        
-        mainPanel.add(titlePanel, BorderLayout.NORTH);
-        mainPanel.add(filterPanel, BorderLayout.CENTER);
-        mainPanel.add(tablePanel, BorderLayout.SOUTH);
-        add(mainPanel);
-        
-        // Action listeners
-        searchButton.addActionListener(e -> searchTrips());
-        resetButton.addActionListener(e -> resetFilters());
-        addTripButton.addActionListener(e -> addNewTrip());
-        editTripButton.addActionListener(e -> editTrip());
-        viewDetailsButton.addActionListener(e -> viewTripDetails());
-        cancelTripButton.addActionListener(e -> cancelTrip());
-        refreshButton.addActionListener(e -> refreshTripData());
-        backButton.addActionListener(e -> {
-            dispose();
-            new AdminPage().display();
+        // Custom header renderer
+        tripTable.getTableHeader().setDefaultRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                c.setBackground(new Color(138, 43, 226, 150));
+                c.setForeground(Color.WHITE);
+                c.setFont(new Font("Segoe UI", Font.BOLD, 12));
+                setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+                return c;
+            }
         });
-    }
-    
-    private void styleComboBox(JComboBox<String> comboBox) {
-        comboBox.setBackground(PageComponents.INPUT_COLOR);
-        comboBox.setForeground(PageComponents.TEXT_COLOR);
-        comboBox.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        comboBox.setBorder(BorderFactory.createLineBorder(PageComponents.PRIMARY_COLOR, 1));
-        comboBox.setPreferredSize(new Dimension(120, 35));
+        
+        // Custom cell renderer
+        tripTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                
+                if (isSelected) {
+                    c.setBackground(new Color(138, 43, 226, 100));
+                    c.setForeground(Color.WHITE);
+                } else {
+                    c.setBackground(new Color(255, 255, 255, 5));
+                    c.setForeground(Color.WHITE);
+                }
+                
+                c.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+                setBorder(BorderFactory.createEmptyBorder(5, 8, 5, 8));
+                return c;
+            }
+        });
     }
     
     private void populateSampleTripData() {
@@ -197,7 +446,7 @@ public class TripManagementPage extends BasePanel {
                            "Type: " + selectedType + "\n" +
                            "Status: " + selectedStatus;
         
-        PageComponents.showStyledMessage("Search Applied", filterInfo, this);
+        showStyledMessage("Search Applied", filterInfo);
         
         // Here you would implement actual filtering logic
         // For now, we'll just show the message
@@ -205,7 +454,7 @@ public class TripManagementPage extends BasePanel {
     
     private void resetFilters() {
         searchField.setText("Search trips...");
-        searchField.setForeground(Color.GRAY);
+        searchField.setForeground(new Color(150, 150, 150));
         tripTypeCombo.setSelectedIndex(0);
         statusCombo.setSelectedIndex(0);
         
@@ -213,33 +462,33 @@ public class TripManagementPage extends BasePanel {
         tableModel.setRowCount(0);
         populateSampleTripData();
         
-        PageComponents.showStyledMessage("Success", "Filters reset successfully!", this);
+        showStyledMessage("Success", "Filters reset successfully!");
     }
     
     private void addNewTrip() {
         // This would open a trip creation dialog
-        PageComponents.showStyledMessage("Info", "Trip creation dialog would open here.\nIntegration with your Trip models needed.", this);
+        showStyledMessage("Info", "Trip creation dialog would open here.\nIntegration with your Trip models needed.");
     }
     
     private void editTrip() {
         int selectedRow = tripTable.getSelectedRow();
         if (selectedRow == -1) {
-            PageComponents.showStyledMessage("Error", "Please select a trip to edit!", this);
+            showStyledMessage("Error", "Please select a trip to edit!");
             return;
         }
         
         String tripId = (String) tableModel.getValueAt(selectedRow, 0);
         String tripType = (String) tableModel.getValueAt(selectedRow, 1);
         
-        PageComponents.showStyledMessage("Info", 
+        showStyledMessage("Info", 
             "Edit dialog would open for:\nTrip ID: " + tripId + "\nType: " + tripType + 
-            "\n\nIntegration with your Trip models needed.", this);
+            "\n\nIntegration with your Trip models needed.");
     }
     
     private void viewTripDetails() {
         int selectedRow = tripTable.getSelectedRow();
         if (selectedRow == -1) {
-            PageComponents.showStyledMessage("Error", "Please select a trip to view details!", this);
+            showStyledMessage("Error", "Please select a trip to view details!");
             return;
         }
         
@@ -262,13 +511,13 @@ public class TripManagementPage extends BasePanel {
                         "Available Seats: " + seats + "\n" +
                         "Status: " + status;
         
-        PageComponents.showStyledMessage("Trip Details", details, this);
+        showStyledMessage("Trip Details", details);
     }
     
     private void cancelTrip() {
         int selectedRow = tripTable.getSelectedRow();
         if (selectedRow == -1) {
-            PageComponents.showStyledMessage("Error", "Please select a trip to cancel!", this);
+            showStyledMessage("Error", "Please select a trip to cancel!");
             return;
         }
         
@@ -289,9 +538,9 @@ public class TripManagementPage extends BasePanel {
         if (confirm == JOptionPane.YES_OPTION) {
             tableModel.setValueAt("Cancelled", selectedRow, 7);
             tableModel.setValueAt("0/" + tableModel.getValueAt(selectedRow, 6).toString().split("/")[1], selectedRow, 6);
-            PageComponents.showStyledMessage("Success", 
+            showStyledMessage("Success", 
                 "Trip " + tripId + " has been cancelled!\n" +
-                "All affected passengers will be notified.", this);
+                "All affected passengers will be notified.");
         }
     }
     
@@ -301,10 +550,37 @@ public class TripManagementPage extends BasePanel {
         
         // Reset filters
         searchField.setText("Search trips...");
-        searchField.setForeground(Color.GRAY);
+        searchField.setForeground(new Color(150, 150, 150));
         tripTypeCombo.setSelectedIndex(0);
         statusCombo.setSelectedIndex(0);
         
-        PageComponents.showStyledMessage("Success", "Trip data refreshed successfully!", this);
+        showStyledMessage("Success", "Trip data refreshed successfully!");
+    }
+
+    private void showStyledMessage(String title, String message) {
+        // Create a styled message dialog that matches the theme
+        JDialog dialog = new JDialog(this, title, true);
+        dialog.setSize(400, 200);
+        dialog.setLocationRelativeTo(this);
+        dialog.getContentPane().setBackground(new Color(15, 15, 35));
+        
+        JPanel panel = new JPanel();
+        panel.setBackground(new Color(25, 25, 55));
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        
+        JLabel messageLabel = new JLabel("<html><div style='text-align: center;'>" + message.replace("\n", "<br>") + "</div></html>");
+        messageLabel.setForeground(Color.WHITE);
+        messageLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        messageLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        
+        JButton okButton = createModernButton("OK", new Color(138, 43, 226), true);
+        okButton.addActionListener(e -> dialog.dispose());
+        
+        panel.setLayout(new BorderLayout());
+        panel.add(messageLabel, BorderLayout.CENTER);
+        panel.add(okButton, BorderLayout.SOUTH);
+        
+        dialog.add(panel);
+        dialog.setVisible(true);
     }
 }

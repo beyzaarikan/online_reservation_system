@@ -1,9 +1,9 @@
 package repository;
 
-import java.util.HashMap;
-import models.User;
-import java.util.Optional;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Optional;
+import models.User;
 public class UserRepository {
     private static UserRepository instance; // Singleton örneği
     HashMap<String, User> userMap;
@@ -11,6 +11,7 @@ public class UserRepository {
     public UserRepository() { // Private constructor
         this.userMap = new HashMap<>();
     }
+    
 
     public static synchronized UserRepository getInstance() { // Singleton erişim metodu
         if (instance == null) {
