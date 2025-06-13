@@ -274,21 +274,6 @@ public class SearchBusTripPage extends BasePanel {
         gbc.gridx = 1;
         fieldsPanel.add(createFieldPanel("To City", toField = createModernTextField("Enter destination city")), gbc);
 
-        // Date and Round trip - same row
-        gbc.gridx = 0; gbc.gridy = 1;
-        fieldsPanel.add(createFieldPanel("Departure Date", dateSpinner = createDateSpinner()), gbc);
-        
-        gbc.gridx = 1;
-        JPanel roundTripPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        roundTripPanel.setOpaque(false);
-        roundTripCheckbox = new JCheckBox("Round Trip");
-        roundTripCheckbox.setOpaque(false);
-        roundTripCheckbox.setForeground(Color.WHITE);
-        roundTripCheckbox.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-
-        roundTripPanel.add(roundTripCheckbox);
-        fieldsPanel.add(createFieldPanel("Trip Type", roundTripPanel), gbc);
-
         // Return date and passengers - same row
         gbc.gridx = 0; gbc.gridy = 2;
         returnDatePanel = createFieldPanel("Return Date", returnDateSpinner = createDateSpinner());
