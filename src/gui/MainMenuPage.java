@@ -269,7 +269,7 @@ public class MainMenuPage extends JFrame {
         
         addClickListener(reservationCard, () -> {
             dispose();
-            new AllReservationsPage().display();
+            new AllReservationsPage(SessionManager.getInstance().getLoggedInUser()).display();
         });
         
         addClickListener(profileCard, () -> {
@@ -310,7 +310,7 @@ public class MainMenuPage extends JFrame {
         
         addClickListener(reservationManagementCard, () -> {
             dispose();
-            new AllReservationsPage().display();
+            new AllReservationsPage(SessionManager.getInstance().getLoggedInUser()).display();
         });
         
         addClickListener(reportsCard, () -> {
