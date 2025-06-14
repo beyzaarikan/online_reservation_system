@@ -7,9 +7,9 @@ public class Seat {
     private int seatNo;
     private boolean reserved;
 
-    public Seat(int seatNo) {
+    public Seat(int seatNo, boolean reserved) {
         this.seatNo = seatNo;
-        this.reserved = false;
+        this.reserved = reserved;
     }
     
     public boolean isReserved() {
@@ -45,7 +45,7 @@ public class Seat {
     public static List<Seat> createSeats(int totalSeats) {
         List<Seat> seatList = new ArrayList<>();
         for (int i = 1; i <= totalSeats; i++) {
-            seatList.add(new Seat(i));
+            seatList.add(new Seat(i,false));
         }
         return seatList;
     }

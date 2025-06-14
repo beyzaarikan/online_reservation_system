@@ -42,7 +42,7 @@ public class SearchFlightsPage extends BasePanel {
     private void initializeSampleDataWithFactory() {
         try{
             TripFactory flightFactory = tripFactoryManager.getFactory("Flight");
-
+ 
             Trip flight1= flightFactory.createTrip(
                 "TK123", "Istanbul", "Ankara", 
                 LocalDate.of(2025, 10, 1).atTime(8, 30), 

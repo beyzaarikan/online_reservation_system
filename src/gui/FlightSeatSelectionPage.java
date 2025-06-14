@@ -753,7 +753,7 @@ private class ModernScrollBarUI extends javax.swing.plaf.basic.BasicScrollBarUI 
                 
                 if (seat == null) {
                     // Create new seat if not found
-                    seat = new Seat(seatNo);
+                    seat = new Seat(seatNo,false);
                 }
                 
                 seat.reserve(); // Reserve the seat

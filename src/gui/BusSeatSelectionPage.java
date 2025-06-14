@@ -6,13 +6,15 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
+
 import javax.swing.*;
 import models.*;
 import observer.Observer;
 import observer.SeatManager;
 import repository.*;
 import service.*;
-import singleton.SessionManager;
+import singleton.*;
 import state.*;
 
 public class BusSeatSelectionPage extends BasePanel implements Observer {
@@ -46,6 +48,8 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
     private ReservationService reservationService;
     private CommandInvoker commandInvoker;
 
+    private List<Integer> preReservedSeats;
+
     public BusSeatSelectionPage(String busCompany, String fromCity, String toCity, 
                                String returnDate, String departureDate, String arrivalTime,
                                String basePrice, int passengerCount, String amenities) {
@@ -71,7 +75,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         } catch (NumberFormatException e) {
             this.basePriceValue = 45.0;
         }
-        
+        initializePreReservedSeats();
         // Initialize services and repositories
         initializeServices();
     }
@@ -82,6 +86,25 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         this.tripRepository = new TripRepository();
         this.reservationService = new ReservationService(reservationRepository, userRepository, tripRepository);
         this.commandInvoker = new CommandInvoker();
+    }
+    
+    private void initializePreReservedSeats() {
+        SeatStatusManager seatStatusManager = SeatStatusManager.getInstance();
+        Set<Integer> occupiedSeatsSet = seatStatusManager.getOccupiedSeats(busCompany);
+        
+        preReservedSeats = new ArrayList<>(occupiedSeatsSet);
+        
+        // Eğer hiç occupied seat yoksa, demo için birkaç tane ekle
+        if (preReservedSeats.isEmpty()) {
+            preReservedSeats.add(3);
+            preReservedSeats.add(7);
+            preReservedSeats.add(12);
+            preReservedSeats.add(18);
+            preReservedSeats.add(23);
+
+            // Bu demo seat'leri de kaydet
+            seatStatusManager.markSeatsAsOccupied(busCompany, preReservedSeats);
+        }
     }
     
     private String extractTime(String dateTimeString) {
@@ -313,7 +336,6 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         busLayout.setLayout(new BoxLayout(busLayout, BoxLayout.Y_AXIS));
         busLayout.setOpaque(false);
 
-        Random random = new Random(42);
         int seatNumber = 1;
 
         for (int row = 0; row < 4; row++) {
@@ -330,14 +352,14 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
                     rowPanel.add(aisleLabel);
                 } else {
                     boolean isWindow = (row == 0 || row == 3);
-                    boolean isOccupied = random.nextDouble() > 0.75;
+                    boolean isOccupied = preReservedSeats.contains(seatNumber);
                     boolean isPremium = col < 3;
 
                     BusSeatButton seat = new BusSeatButton(seatNumber++, isOccupied, isWindow, isPremium);
                     seat.setSeatManager(seatManager);
                     allSeats.add(seat);
                     rowPanel.add(seat);
-                }
+                } 
             }
 
             busLayout.add(rowPanel);
@@ -436,7 +458,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         needSeatsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         // Price display
-        totalPriceLabel = new JLabel("Total: $0.00");
+        totalPriceLabel = new JLabel("Total: 0.00 TL");
         totalPriceLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
         totalPriceLabel.setForeground(new Color(138, 43, 226));
         totalPriceLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -577,7 +599,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
     private void updateSelectionInfo() {
         if (selectedSeats.isEmpty()) {
             selectedSeatsLabel.setText("No seat selected");
-            totalPriceLabel.setText("Total: $0.00");
+            totalPriceLabel.setText("Total: 0.00 TL");
             confirmButton.setEnabled(false);
         } else {
             StringBuilder seatNumbers = new StringBuilder();
@@ -590,33 +612,43 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
             }
 
             selectedSeatsLabel.setText("Seats: " + seatNumbers.toString());
-            totalPriceLabel.setText(String.format("Total: $%.2f", totalPrice));
+            totalPriceLabel.setText(String.format("Total: %.1f TL", totalPrice));
 
             confirmButton.setEnabled(selectedSeats.size() == passengerCount);
         }
     }
     
-    private void confirmReservation() {
+   private void confirmReservation() {
         if (selectedSeats.size() != passengerCount) {
             PageComponents.showStyledMessage("Error", 
                 "Please select exactly " + passengerCount + " seat(s)!", this);
             return;
         }
-        
+
         User currentUser = SessionManager.getInstance().getLoggedInUser();
         if (currentUser == null) {
             PageComponents.showStyledMessage("Error", "Please login first!", this);
             return;
         }
-        
+
         try {
+            // Seçilen seat numaralarını topla
+            List<Integer> selectedSeatNumbers = new ArrayList<>();
+            for (BusSeatButton seat : selectedSeats) {
+                selectedSeatNumbers.add(seat.getSeatNumber());
+            }
+
+            // Seat'leri occupied olarak işaretle
+            SeatStatusManager seatStatusManager = SeatStatusManager.getInstance();
+            seatStatusManager.markSeatsAsOccupied(busCompany, selectedSeatNumbers);
+
             // Create a proper BusTrip using the factory pattern
             TripFactoryManager factoryManager = new TripFactoryManager();
             TripFactory busFactory = factoryManager.getFactory("Bus");
-            
+
             // Generate unique trip ID for this reservation
             String tripId = "BUS_" + java.util.UUID.randomUUID().toString().substring(0, 8);
-            
+
             // Create the bus trip with proper details
             Trip busTrip = busFactory.createTrip(
                 tripId,
@@ -631,7 +663,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
                 amenities,
                 "BUS-" + tripId // bus number
             );
-            
+
             // Create list of selected seats from the bus trip
             List<Seat> reservedSeats = new ArrayList<>();
             for (BusSeatButton seatButton : selectedSeats) {
@@ -644,29 +676,29 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
                     }
                 }
             }
-            
+
             // Generate unique reservation ID
             String reservationId = java.util.UUID.randomUUID().toString();
-            
+
             // Create reservation with the BusTrip
             Reservation reservation = new Reservation(reservationId, currentUser, busTrip, reservedSeats);
-            
+
             // Get the global reservation repository instance
             ReservationRepository globalReservationRepo = getGlobalReservationRepository();
-            
+
             // Save reservation to the global repository
             globalReservationRepo.save(reservation);
-            
+
             // Create reservation state context
             ReservationContext reservationContext = new ReservationContext(reservationId);
             reservationContext.confirm(); // Confirm the reservation
-            
+
             // Calculate total price
             double totalPrice = 0;
             for (BusSeatButton seat : selectedSeats) {
                 totalPrice += seat.getPrice();
             }
-            
+
             // Show success message
             String successMessage = String.format(
                 "🎉 Bus Reservation Confirmed!\n\n" +
@@ -675,8 +707,9 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
                 "Route: %s → %s\n" +
                 "Company: %s\n" +
                 "Seats: %s\n" +
-                "Total Price: $%.2f\n\n" +
-                "Your bus reservation has been saved successfully!",
+                "Total Price: %.1f TL\n\n" +
+                "Your bus reservation has been saved successfully!\n" +
+                "Selected seats are now marked as occupied.",
                 reservationId,
                 busTrip.getStartPoint(),
                 busTrip.getEndPoint(),
@@ -687,24 +720,42 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
                     .orElse(""),
                 totalPrice
             );
-            
+
             PageComponents.showStyledMessage("Bus Reservation Successful!", successMessage, this);
-            
+
             // Navigate back to main menu
             dispose();
             new MainMenuPage().display();
-            
+
         } catch (Exception e) {
             PageComponents.showStyledMessage("Error", 
                 "Failed to create bus reservation: " + e.getMessage(), this);
             e.printStackTrace();
         }
-    }
-    
+    } 
+   
     // Method to get the global reservation repository instance
     private ReservationRepository getGlobalReservationRepository() {
         // This should return the same instance used by AllReservationsPage
         return GlobalRepositoryManager.getInstance().getReservationRepository();
+    }
+
+    public void refreshSeatStatus() {
+        // Mevcut seat'leri temizle
+        allSeats.clear();
+        selectedSeats.clear();
+        
+        // Occupied seat'leri yeniden yükle
+        initializePreReservedSeats();
+        
+        // UI'yi yeniden oluştur
+        seatMapPanel.removeAll();
+        createModernBusSeatMapPanel();
+        
+        // UI'yi güncelle
+        updateSelectionInfo();
+        revalidate();
+        repaint();
     }
 
     // Modern bus seat button inner class
