@@ -269,7 +269,7 @@ public class MainMenuPage extends JFrame {
         
         addClickListener(reservationCard, () -> {
             dispose();
-            new AllReservationsPage(SessionManager.getInstance().getLoggedInUser()).display();
+            new AllReservationsPage().display();
         });
         
         addClickListener(profileCard, () -> {
@@ -310,7 +310,7 @@ public class MainMenuPage extends JFrame {
         
         addClickListener(reservationManagementCard, () -> {
             dispose();
-            new AllReservationsPage(SessionManager.getInstance().getLoggedInUser()).display();
+            new AllReservationsPage().display();
         });
         
         addClickListener(reportsCard, () -> {
@@ -329,7 +329,7 @@ public class MainMenuPage extends JFrame {
         menuGrid.add(reservationManagementCard);
         menuGrid.add(reportsCard);
         menuGrid.add(consoleCard);
-        menuGrid.add(new JPanel()); // Empty panel for spacing
+        menuGrid.add(new JPanel()); // Empty panel for spacingd
     }
     
     private JPanel createModernMenuCard(String title, String description, Color accentColor, String emoji) {

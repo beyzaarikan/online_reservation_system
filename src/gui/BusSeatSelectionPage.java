@@ -5,9 +5,7 @@ import factory.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
-
 import javax.swing.*;
 import models.*;
 import observer.Observer;
@@ -667,14 +665,10 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
             // Create list of selected seats from the bus trip
             List<Seat> reservedSeats = new ArrayList<>();
             for (BusSeatButton seatButton : selectedSeats) {
-                // Find the corresponding seat in the trip
-                for (Seat seat : busTrip.getSeats()) {
-                    if (seat.getSeatNo() == seatButton.getSeatNumber()) {
-                        seat.reserve(); // Reserve the seat
-                        reservedSeats.add(seat);
-                        break;
-                    }
-                }
+                // Create new seat
+                Seat seat = new Seat(seatButton.getSeatNumber(), false);
+                seat.reserve(); // Reserve the seat
+                reservedSeats.add(seat);
             }
 
             // Generate unique reservation ID
@@ -708,7 +702,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
                 "Company: %s\n" +
                 "Seats: %s\n" +
                 "Total Price: %.1f TL\n\n" +
-                "Your bus reservation has been saved successfully!\n" +
+                "Your bus reservation has been saved successfully!",
                 reservationId,
                 busTrip.getStartPoint(),
                 busTrip.getEndPoint(),

@@ -2,27 +2,37 @@ package gui;
 
 import java.awt.*;
 import java.util.Collection;
-import java.util.stream.Collectors;
 import javax.swing.*;
 import models.Reservation;
 import models.User;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import repository.ReservationRepository;
-
+import singleton.SessionManager;
+import service.UserService;
+import repository.UserRepository;
 
 public class AllReservationsPage extends BasePanel {
     private JTable reservationTable;
     private DefaultTableModel tableModel;
     private JComboBox<String> typeFilter;
     private ReservationRepository reservationRepository;
-    private User currentUser; // Mevcut kullanıcı bilgisi
+    private boolean isAdminView;
     
-    // Constructor - kullanıcı bilgisini parametre olarak alır
-    public AllReservationsPage(User user) {
+    public AllReservationsPage() {
         super("My Reservations", 1200, 800);
-        this.currentUser = user;
+        // Check if current user is admin
+        User currentUser = SessionManager.getInstance().getLoggedInUser();
+        UserService userService = new UserService(UserRepository.getInstance());
+        this.isAdminView = (currentUser != null && userService.isAdmin(currentUser));
+        
+        // Use the global repository instance
         this.reservationRepository = GlobalRepositoryManager.getInstance().getReservationRepository();
+        
+        // Update title based on user type
+        if (isAdminView) {
+            setTitle("All Reservations - Admin Panel");
+        }
     }
     
     @Override
@@ -46,7 +56,7 @@ public class AllReservationsPage extends BasePanel {
                 g2d.setPaint(gradient);
                 g2d.fillRect(0, 0, getWidth(), getHeight());
                 
-                // Dekoratif yumuşak ışık efektleri
+               // Dekoratif yumuşak ışık efektleri
                 g2d.setColor(new Color(147, 112, 219, 25));
                 g2d.fillOval(-100, -100, 300, 300);
                 g2d.fillOval(getWidth()-200, getHeight()-200, 300, 300);
@@ -60,6 +70,33 @@ public class AllReservationsPage extends BasePanel {
         mainPanel.setOpaque(false);
 
         // Header panel
+        JPanel headerPanel = createHeaderPanel();
+        
+        // Main Content Panel
+        JPanel contentPanel = new JPanel();
+        contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
+        contentPanel.setOpaque(false);
+        contentPanel.setBorder(BorderFactory.createEmptyBorder(20, 60, 40, 60));
+        
+        // Title Panel
+        JPanel titlePanel = createTitlePanel();
+        titlePanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        // Menu Grid Panel
+        JPanel menuPanel = createMenuPanel();
+        menuPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        contentPanel.add(titlePanel);
+        contentPanel.add(Box.createVerticalStrut(30));
+        contentPanel.add(menuPanel);
+        
+        mainPanel.add(headerPanel, BorderLayout.NORTH);
+        mainPanel.add(contentPanel, BorderLayout.CENTER);
+        
+        add(mainPanel);
+    }
+
+    private JPanel createHeaderPanel() {
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setOpaque(false);
         headerPanel.setBorder(BorderFactory.createEmptyBorder(25, 40, 25, 40));
@@ -70,18 +107,17 @@ public class AllReservationsPage extends BasePanel {
         JButton backButton = createBackButton("← Back to Menu");
         backPanel.add(backButton);
 
-        // Title section - kullanıcı adı eklendi
+        // Title section
         JPanel titlePanel = new JPanel();
         titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.Y_AXIS));
         titlePanel.setOpaque(false);
 
-        JLabel titleLabel = new JLabel("My Reservations", SwingConstants.CENTER);
+        JLabel titleLabel = new JLabel(isAdminView ? "All Reservations" : "My Reservations", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 32));
         titleLabel.setForeground(Color.WHITE);
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // Kullanıcı adını gösteren subtitle
-        JLabel subtitleLabel = new JLabel("Welcome " + currentUser.getName() + " - Manage your reservations", SwingConstants.CENTER);
+        JLabel subtitleLabel = new JLabel(isAdminView ? "Manage all system reservations" : "Manage your account settings and preferences", SwingConstants.CENTER);
         subtitleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         subtitleLabel.setForeground(new Color(189, 147, 249));
         subtitleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -93,26 +129,78 @@ public class AllReservationsPage extends BasePanel {
         headerPanel.add(backPanel, BorderLayout.WEST);
         headerPanel.add(titlePanel, BorderLayout.CENTER);
         
-        // Tab benzeri navigasyon
-        JPanel tabPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
-        tabPanel.setOpaque(false);
-        tabPanel.setBorder(BorderFactory.createEmptyBorder(0, 40, 20, 40));
+        // Action listeners
+        backButton.addActionListener(e -> {
+            dispose();
+            if (isAdminView) {
+                new MainMenuPage(true).display();
+            } else {
+                new MainMenuPage().display();
+            }
+        });
         
-        // Ana içerik kartı - tek büyük kart
-        JPanel contentCard = createMainCard();
-        contentCard.setLayout(new BorderLayout());
-        contentCard.setBorder(BorderFactory.createEmptyBorder(30, 40, 30, 40));
+        return headerPanel;
+    }
+    
+    private JPanel createTitlePanel() {
+        JPanel titlePanel = new JPanel();
+        titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.Y_AXIS));
+        titlePanel.setOpaque(false);
+        titlePanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
 
-        // Statistics row - kullanıcıya özel istatistikler
+        return titlePanel;
+    }
+    
+    private JPanel createMenuPanel() {
+        JPanel menuContainer = new JPanel();
+        menuContainer.setLayout(new BoxLayout(menuContainer, BoxLayout.Y_AXIS));
+        menuContainer.setOpaque(false);
+        
+        // Glassmorphism container for menu cards
+        JPanel menuPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                // Glassmorphism background
+                g2d.setColor(new Color(255, 255, 255, 8));
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
+                
+                // Border
+                g2d.setColor(new Color(255, 255, 255, 25));
+                g2d.setStroke(new BasicStroke(1));
+                g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 20, 20);
+            }
+        };
+        
+        menuPanel.setLayout(new BorderLayout());
+        menuPanel.setOpaque(false);
+        menuPanel.setBorder(BorderFactory.createEmptyBorder(40, 40, 40, 40));
+        menuPanel.setPreferredSize(new Dimension(1000, 600));
+
+        // Statistics row
         JPanel statsRow = new JPanel(new GridLayout(1, 3, 20, 0));
         statsRow.setOpaque(false);
         statsRow.setBorder(BorderFactory.createEmptyBorder(0, 0, 30, 0));
         
-        // Sadece bu kullanıcının rezervasyonlarını al
-        Collection<Reservation> userReservations = getUserReservations();
-        int totalReservations = userReservations.size();
-        int busReservations = (int) userReservations.stream().filter(r -> "Bus".equals(getReservationType(r))).count();
-        int flightReservations = (int) userReservations.stream().filter(r -> "Flight".equals(getReservationType(r))).count();
+        Collection<Reservation> allReservations = reservationRepository.reservationMap.values();
+        
+        // Filter reservations based on user type
+        Collection<Reservation> displayReservations;
+        if (isAdminView) {
+            displayReservations = allReservations; // Admin sees all reservations
+        } else {
+            User currentUser = SessionManager.getInstance().getLoggedInUser();
+            displayReservations = allReservations.stream()
+                .filter(r -> r.getUser().getId().equals(currentUser.getId()))
+                .collect(java.util.stream.Collectors.toList());
+        }
+        
+        int totalReservations = displayReservations.size();
+        int busReservations = (int) displayReservations.stream().filter(r -> "Bus".equals(getReservationType(r))).count();
+        int flightReservations = (int) displayReservations.stream().filter(r -> "Flight".equals(getReservationType(r))).count();
         
         JPanel totalCard = createStatCard("Total Reservations", String.valueOf(totalReservations), new Color(138, 43, 226));
         JPanel busCard = createStatCard("Bus Reservations", String.valueOf(busReservations), new Color(46, 204, 113));
@@ -133,11 +221,10 @@ public class AllReservationsPage extends BasePanel {
         filterSection.add(typeFilter);
         filterSection.add(Box.createHorizontalStrut(15));
         filterSection.add(refreshButton);
-        filterSection.add(Box.createHorizontalStrut(10));
 
         // Table section
         createTable();
-        loadUserReservations(); // Kullanıcıya özel rezervasyonları yükle
+        loadReservationsFromRepository();
         
         JScrollPane scrollPane = new JScrollPane(reservationTable);
         scrollPane.setOpaque(false);
@@ -154,63 +241,23 @@ public class AllReservationsPage extends BasePanel {
         
         actionPanel.add(viewDetailsButton);
         actionPanel.add(cancelReservationButton);
-        contentCard.add(statsRow, BorderLayout.NORTH);
+        
+        menuPanel.add(statsRow, BorderLayout.NORTH);
         
         JPanel middlePanel = new JPanel(new BorderLayout());
         middlePanel.setOpaque(false);
         middlePanel.add(filterSection, BorderLayout.NORTH);
         middlePanel.add(scrollPane, BorderLayout.CENTER);
         
-        contentCard.add(middlePanel, BorderLayout.CENTER);
-        contentCard.add(actionPanel, BorderLayout.SOUTH);
+        menuPanel.add(middlePanel, BorderLayout.CENTER);
+        menuPanel.add(actionPanel, BorderLayout.SOUTH);
         
-        // Layout assembly
-        JPanel centerPanel = new JPanel(new BorderLayout());
-        centerPanel.setOpaque(false);
-        centerPanel.add(tabPanel, BorderLayout.NORTH);
-        centerPanel.add(contentCard, BorderLayout.CENTER);
-
-        mainPanel.add(headerPanel, BorderLayout.NORTH);
-        mainPanel.add(centerPanel, BorderLayout.CENTER);
-        add(mainPanel);
+        menuContainer.add(menuPanel);
         
-        // Action listeners
-        setupActionListeners(backButton, refreshButton, viewDetailsButton, cancelReservationButton);
-    }
-
-    // Kullanıcıya özel rezervasyonları getiren method
-    private Collection<Reservation> getUserReservations() {
-        return reservationRepository.reservationMap.values().stream()
-                .filter(reservation -> reservation.getUser().getId().equals(currentUser.getId()))
-                .collect(Collectors.toList());
-    }
-
-    // Kullanıcıya özel rezervasyonları tabloya yükleyen method
-    private void loadUserReservations() {
-        tableModel.setRowCount(0);
-        Collection<Reservation> userReservations = getUserReservations();
+        // Setup action listeners
+        setupActionListeners(refreshButton, viewDetailsButton, cancelReservationButton);
         
-        for (Reservation reservation : userReservations) {
-            String seatList = reservation.getSeats().stream()
-                    .map(seat -> String.valueOf(seat.getSeatNo()))
-                    .reduce((s1, s2) -> s1 + ", " + s2)
-                    .orElse("N/A");
-            
-            tableModel.addRow(new Object[]{
-                reservation.getId(), // Rezervasyon ID'si göster
-                reservation.getTrip().getStartPoint() + " → " + reservation.getTrip().getEndPoint(),
-                reservation.getTrip().getDepartureTime(),
-                seatList,
-                reservation.getTrip().getArrivalTime()
-            });
-        }
-        
-        // Eğer kullanıcının hiç rezervasyonu yoksa bilgilendirici mesaj
-        if (userReservations.isEmpty()) {
-            tableModel.addRow(new Object[]{
-                "No reservations found", "", "", "", ""
-            });
-        }
+        return menuContainer;
     }
 
     private JButton createBackButton(String text) {
@@ -249,57 +296,6 @@ public class AllReservationsPage extends BasePanel {
         return button;
     }
 
-    private JButton createTabButton(String text, boolean active) {
-        JButton button = new JButton(text) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2d = (Graphics2D) g;
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                
-                if (active) {
-                    g2d.setColor(new Color(138, 43, 226));
-                    g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
-                } else {
-                    if (getModel().isRollover()) {
-                        g2d.setColor(new Color(255, 255, 255, 15));
-                        g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
-                    }
-                }
-                
-                super.paintComponent(g);
-            }
-        };
-        
-        button.setForeground(active ? Color.WHITE : new Color(189, 147, 249));
-        button.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        button.setFocusPainted(false);
-        button.setBorderPainted(false);
-        button.setContentAreaFilled(false);
-        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        button.setPreferredSize(new Dimension(160, 45));
-        button.setMargin(new Insets(10, 20, 10, 20));
-        
-        return button;
-    }
-
-    private JPanel createMainCard() {
-        return new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                Graphics2D g2d = (Graphics2D) g;
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                
-                GradientPaint gradient = new GradientPaint(
-                    0, 0, new Color(25, 0, 51),
-                    getWidth(), getHeight(), new Color(124, 58, 237));
-                
-                g2d.setPaint(gradient);
-                g2d.fillRect(0, 0, getWidth(), getHeight());
-            }
-        };
-    }
-
     private JPanel createStatCard(String title, String value, Color accentColor) {
         JPanel card = new JPanel() {
             @Override
@@ -308,12 +304,15 @@ public class AllReservationsPage extends BasePanel {
                 Graphics2D g2d = (Graphics2D) g;
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 
+                // Kart arka planı - daha belirgin
                 g2d.setColor(new Color(255, 255, 255, 8));
                 g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
                 
+                // Accent border
                 g2d.setColor(accentColor);
                 g2d.fillRoundRect(0, 0, 4, getHeight(), 2, 2);
                 
+                // Kenar çizgisi
                 g2d.setColor(new Color(255, 255, 255, 20));
                 g2d.setStroke(new BasicStroke(1));
                 g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 15, 15);
@@ -347,9 +346,11 @@ public class AllReservationsPage extends BasePanel {
                 Graphics2D g2d = (Graphics2D) g;
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 
+                // Background
                 g2d.setColor(new Color(255, 255, 255, 8));
                 g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
                 
+                // Border
                 g2d.setColor(new Color(255, 255, 255, 25));
                 g2d.setStroke(new BasicStroke(1));
                 g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 12, 12);
@@ -395,9 +396,12 @@ public class AllReservationsPage extends BasePanel {
     }
 
     private void createTable() {
-        String[] columnNames = {
-            "Reservation ID", "Trip", "Departure Date", "Seats", "Departure Time"
-        };
+        String[] columnNames;
+        if (isAdminView) {
+            columnNames = new String[]{"Customer", "Trip Type", "Route", "Departure Date", "Departure Time", "Arrival Time", "Seats"};
+        } else {
+            columnNames = new String[]{"Trip Type", "Route", "Departure Date", "Departure Time", "Arrival Time", "Seats"};
+        }
         
         tableModel = new DefaultTableModel(columnNames, 0) {
             @Override
@@ -412,6 +416,7 @@ public class AllReservationsPage extends BasePanel {
                 Graphics2D g2d = (Graphics2D) g;
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 
+                // Tablo arka planı
                 g2d.setColor(new Color(255, 255, 255, 3));
                 g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
                 
@@ -430,12 +435,14 @@ public class AllReservationsPage extends BasePanel {
         reservationTable.setShowGrid(true);
         reservationTable.setIntercellSpacing(new Dimension(1, 1));
         
+        // Header styling
         reservationTable.getTableHeader().setOpaque(false);
         reservationTable.getTableHeader().setBackground(new Color(138, 43, 226, 100));
         reservationTable.getTableHeader().setForeground(Color.WHITE);
         reservationTable.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
         reservationTable.getTableHeader().setPreferredSize(new Dimension(0, 50));
         
+        // Custom cell renderer
         DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, 
@@ -461,20 +468,72 @@ public class AllReservationsPage extends BasePanel {
             reservationTable.getColumnModel().getColumn(i).setCellRenderer(cellRenderer);
         }
         
-        int[] columnWidths = {120, 200, 200, 150, 100};
-        for (int i = 0; i < columnWidths.length; i++) {
-            reservationTable.getColumnModel().getColumn(i).setPreferredWidth(columnWidths[i]);
+        // Set column widths based on admin view
+        if (isAdminView) {
+            int[] columnWidths = {150, 100, 200, 120, 100, 100, 150};
+            for (int i = 0; i < columnWidths.length; i++) {
+                reservationTable.getColumnModel().getColumn(i).setPreferredWidth(columnWidths[i]);
+            }
+        } else {
+            int[] columnWidths = {100, 200, 120, 100, 100, 150};
+            for (int i = 0; i < columnWidths.length; i++) {
+                reservationTable.getColumnModel().getColumn(i).setPreferredWidth(columnWidths[i]);
+            }
+        }
+    }
+    
+    private void loadReservationsFromRepository() {
+        tableModel.setRowCount(0);
+        Collection<Reservation> reservations = reservationRepository.reservationMap.values();
+        
+        // Filter reservations based on user type
+        Collection<Reservation> displayReservations;
+        if (isAdminView) {
+            displayReservations = reservations; // Admin sees all reservations
+        } else {
+            User currentUser = SessionManager.getInstance().getLoggedInUser();
+            displayReservations = reservations.stream()
+                .filter(r -> r.getUser().getId().equals(currentUser.getId()))
+                .collect(java.util.stream.Collectors.toList());
+        }
+        
+        for (Reservation reservation : displayReservations) {
+            String seatList = reservation.getSeats().stream()
+                    .map(seat -> String.valueOf(seat.getSeatNo()))
+                    .reduce((s1, s2) -> s1 + ", " + s2)
+                    .orElse("N/A");
+            
+            java.time.format.DateTimeFormatter dateFormatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            java.time.format.DateTimeFormatter timeFormatter = java.time.format.DateTimeFormatter.ofPattern("HH:mm");
+            
+            String departureDate = reservation.getTrip().getDepartureTime().format(dateFormatter);
+            String departureTime = reservation.getTrip().getDepartureTime().format(timeFormatter);
+            String arrivalTime = reservation.getTrip().getArrivalTime().format(timeFormatter);
+            
+            if (isAdminView) {
+                tableModel.addRow(new Object[]{
+                    reservation.getUser().getName(),
+                    reservation.getTrip().getTripType(),
+                    reservation.getTrip().getStartPoint() + " → " + reservation.getTrip().getEndPoint(),
+                    departureDate,
+                    departureTime,
+                    arrivalTime,
+                    seatList
+                });
+            } else {
+                tableModel.addRow(new Object[]{
+                    reservation.getTrip().getTripType(),
+                    reservation.getTrip().getStartPoint() + " → " + reservation.getTrip().getEndPoint(),
+                    departureDate,
+                    departureTime,
+                    arrivalTime,
+                    seatList
+                });
+            }
         }
     }
 
-    private void setupActionListeners(JButton backButton, JButton refreshButton,
-                                     JButton viewDetailsButton, JButton cancelReservationButton) {
-        
-        backButton.addActionListener(e -> {
-            dispose();
-            new MainMenuPage().display();
-        });
-        
+    private void setupActionListeners(JButton refreshButton, JButton viewDetailsButton, JButton cancelReservationButton) {
         refreshButton.addActionListener(e -> refreshData());
         viewDetailsButton.addActionListener(e -> viewReservationDetails());
         cancelReservationButton.addActionListener(e -> cancelReservation());
@@ -482,8 +541,8 @@ public class AllReservationsPage extends BasePanel {
     }
     
     private void refreshData() {
-        loadUserReservations();
-        PageComponents.showStyledMessage("Success", "Your reservation data refreshed successfully!", this);
+        loadReservationsFromRepository();
+        PageComponents.showStyledMessage("Success", "Reservation data refreshed successfully!", this);
     }
     
     private void viewReservationDetails() {
@@ -493,10 +552,28 @@ public class AllReservationsPage extends BasePanel {
             return;
         }
         
-        String reservationId = (String) tableModel.getValueAt(selectedRow, 0);
-        Reservation reservation = reservationRepository.reservationMap.get(reservationId);
+        String customerName;
+        if (isAdminView) {
+            customerName = (String) tableModel.getValueAt(selectedRow, 0);
+        } else {
+            User currentUser = SessionManager.getInstance().getLoggedInUser();
+            customerName = currentUser.getName();
+        }
         
-        if (reservation != null && reservation.getUser().getId().equals(currentUser.getId())) {
+        // Find reservation by customer name
+        Reservation reservation = null;
+        for (Reservation r : reservationRepository.reservationMap.values()) {
+            if (r.getUser().getName().equals(customerName)) {
+                // If admin view, get the first matching reservation
+                // If user view, ensure it's the user's reservation
+                if (isAdminView || r.getUser().getId().equals(SessionManager.getInstance().getLoggedInUser().getId())) {
+                    reservation = r;
+                    break;
+                }
+            }
+        }
+        
+        if (reservation != null) {
             String seatList = reservation.getSeats().stream()
                     .map(seat -> String.valueOf(seat.getSeatNo()))
                     .reduce((s1, s2) -> s1 + ", " + s2)
@@ -514,7 +591,7 @@ public class AllReservationsPage extends BasePanel {
                 "Date & Time: %s\n" +
                 "Seats: %s\n" +
                 "Total Price: $%.2f\n\n" +
-                "Vehicle Type: %s\n",
+                "Vehicle Type: %s",
                 reservation.getId(),
                 reservation.getUser().getName(),
                 reservation.getUser().getEmail(),
@@ -538,31 +615,40 @@ public class AllReservationsPage extends BasePanel {
             return;
         }
         
-        String reservationId = (String) tableModel.getValueAt(selectedRow, 0);
-        Reservation reservation = reservationRepository.reservationMap.get(reservationId);
-        
-        if (reservation != null && reservation.getUser().getId().equals(currentUser.getId())) {
-            int result = JOptionPane.showConfirmDialog(
-                this,
-                "Are you sure you want to cancel this reservation?\nThis action cannot be undone.",
-                "Cancel Reservation",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.WARNING_MESSAGE
-            );
-            
-            if (result == JOptionPane.YES_OPTION) {
-                // Koltukları serbest bırak
-                reservation.getSeats().forEach(seat -> seat.unreserve());
-                
-                // Rezervasyonu repository'den kaldır
-                reservationRepository.reservationMap.remove(reservationId);
-                
-                PageComponents.showStyledMessage("Success", 
-                    "Your reservation has been cancelled successfully!", this);
-                refreshData();
-            }
+        String customerName;
+        if (isAdminView) {
+            customerName = (String) tableModel.getValueAt(selectedRow, 0);
         } else {
-            PageComponents.showStyledMessage("Error", "Invalid reservation or unauthorized access!", this);
+            User currentUser = SessionManager.getInstance().getLoggedInUser();
+            customerName = currentUser.getName();
+        }
+        
+        int result = JOptionPane.showConfirmDialog(
+            this,
+            "Are you sure you want to cancel this reservation?\nThis action cannot be undone.",
+            "Cancel Reservation",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE
+        );
+        
+        if (result == JOptionPane.YES_OPTION) {
+            // Find and remove the reservation
+            Reservation toRemove = null;
+            for (Reservation r : reservationRepository.reservationMap.values()) {
+                if (r.getUser().getName().equals(customerName)) {
+                    if (isAdminView || r.getUser().getId().equals(SessionManager.getInstance().getLoggedInUser().getId())) {
+                        toRemove = r;
+                        break;
+                    }
+                }
+            }
+            
+            if (toRemove != null) {
+                reservationRepository.deleteById(toRemove.getId());
+                PageComponents.showStyledMessage("Success",
+                    "Reservation for " + customerName + " has been cancelled successfully!", this);
+                refreshData(); // Refresh the table after cancellation
+            }
         }
     }
     
@@ -570,10 +656,22 @@ public class AllReservationsPage extends BasePanel {
         String selectedType = (String) typeFilter.getSelectedItem();
         tableModel.setRowCount(0);
         
-        Collection<Reservation> userReservations = getUserReservations();
+        Collection<Reservation> allReservations = reservationRepository.reservationMap.values();
+        
+        // Filter reservations based on user type
+        Collection<Reservation> displayReservations;
+        if (isAdminView) {
+            displayReservations = allReservations;
+        } else {
+            User currentUser = SessionManager.getInstance().getLoggedInUser();
+            displayReservations = allReservations.stream()
+                .filter(r -> r.getUser().getId().equals(currentUser.getId()))
+                .collect(java.util.stream.Collectors.toList());
+        }
+        
         int filteredCount = 0;
         
-        for (Reservation reservation : userReservations) {
+        for (Reservation reservation : displayReservations) {
             String reservationType = getReservationType(reservation);
             
             if (selectedType.equals("All Types") || selectedType.equals(reservationType)) {
@@ -582,21 +680,35 @@ public class AllReservationsPage extends BasePanel {
                         .reduce((s1, s2) -> s1 + ", " + s2)
                         .orElse("N/A");
                 
-                tableModel.addRow(new Object[]{
-                    reservation.getId(),
-                    reservation.getTrip().getStartPoint() + " → " + reservation.getTrip().getEndPoint(),
-                    reservation.getTrip().getDepartureTime(),
-                    seatList,
-                    reservation.getTrip().getArrivalTime()
-                });
+                java.time.format.DateTimeFormatter dateFormatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                java.time.format.DateTimeFormatter timeFormatter = java.time.format.DateTimeFormatter.ofPattern("HH:mm");
+                
+                String departureDate = reservation.getTrip().getDepartureTime().format(dateFormatter);
+                String departureTime = reservation.getTrip().getDepartureTime().format(timeFormatter);
+                String arrivalTime = reservation.getTrip().getArrivalTime().format(timeFormatter);
+                
+                if (isAdminView) {
+                    tableModel.addRow(new Object[]{
+                        reservation.getUser().getName(),
+                        reservation.getTrip().getTripType(),
+                        reservation.getTrip().getStartPoint() + " → " + reservation.getTrip().getEndPoint(),
+                        departureDate,
+                        departureTime,
+                        arrivalTime,
+                        seatList
+                    });
+                } else {
+                    tableModel.addRow(new Object[]{
+                        reservation.getTrip().getTripType(),
+                        reservation.getTrip().getStartPoint() + " → " + reservation.getTrip().getEndPoint(),
+                        departureDate,
+                        departureTime,
+                        arrivalTime,
+                        seatList
+                    });
+                }
                 filteredCount++;
             }
-        }
-        
-        if (filteredCount == 0) {
-            tableModel.addRow(new Object[]{
-                "No " + selectedType.toLowerCase() + " reservations found", "", "", "", ""
-            });
         }
         
         if (!selectedType.equals("All Types")) {
@@ -612,6 +724,7 @@ public class AllReservationsPage extends BasePanel {
             return tripType;
         }
         
+        // Fallback: check the class type
         if (reservation.getTrip() instanceof models.BusTrip) {
             return "Bus";
         } else if (reservation.getTrip() instanceof models.FlightTrip) {
@@ -620,12 +733,27 @@ public class AllReservationsPage extends BasePanel {
         
         return "Unknown";
     }
-    
-    public void initializePage() {
-        setupUI();
-        loadUserReservations();
+        
+    // Method to handle table row selection events
+    private void handleTableSelection() {
+        reservationTable.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                int selectedRow = reservationTable.getSelectedRow();
+                if (selectedRow != -1) {
+                    // Optional: Show preview of selected reservation
+                }
+            }
+        });
     }
     
+    // Initialize the page
+    public void initializePage() {
+        setupUI();
+        handleTableSelection();
+        loadReservationsFromRepository();
+    }
+    
+    // Override display method to ensure proper initialization
     @Override
     public void display() {
         initializePage();

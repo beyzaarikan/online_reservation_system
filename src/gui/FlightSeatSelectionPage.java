@@ -5,9 +5,7 @@ import factory.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
-
 import javax.swing.*;
 import models.*;
 import observer.Observer;
@@ -35,12 +33,12 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
     private JButton backButton;
 
     private List<FlightSeatButton> selectedSeats;
-    private List<FlightSeatButton> allSeats; // Eklendi
+    private List<FlightSeatButton> allSeats;
     
     private double basePriceValue;
 
     private SeatManager seatManager;
-    private SeatStatusManager seatStatusManager; // Eklendi
+    private SeatStatusManager seatStatusManager;
 
     private ReservationRepository reservationRepository;
     private UserRepository userRepository;
@@ -48,6 +46,7 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
     private ReservationService reservationService;
     private CommandInvoker commandInvoker;
 
+    private List<Integer> preReservedSeats;
 
     public FlightSeatSelectionPage(String airline, String fromAirport, String toAirport,
                                  String departureTime, String arrivalTime, String basePrice,
@@ -63,7 +62,7 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         this.aircraft = aircraft;
         this.flightClass = flightClass;
         this.selectedSeats = new ArrayList<>();
-        this.allSeats = new ArrayList<>(); // Initialize allSeats
+        this.allSeats = new ArrayList<>();
         this.seatManager = new SeatManager();
 
         this.seatManager.addObserver(this);
@@ -75,7 +74,7 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         }
 
         initializeServices();
-        initializePreReservedSeats(); // Yeni metod çağrısı
+        initializePreReservedSeats();
     }
 
     private void initializeServices(){
@@ -86,32 +85,40 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         this.commandInvoker = new CommandInvoker(); 
     }
 
-    // BAŞLANGIÇ - initializePreReservedSeats Metodu
     private void initializePreReservedSeats() {
         seatStatusManager = SeatStatusManager.getInstance();
-        // Bu uçuş için benzersiz bir anahtar oluştur. TripNo en idealidir, ancak burada mevcut bilgilerle oluşturulur.
         String tripKey = airline + "_" + fromAirport + "_" + toAirport + "_" + departureTime;
         Set<Integer> occupiedSeatsForThisFlight = seatStatusManager.getOccupiedSeats(tripKey);
-        if(occupiedSeatsForThisFlight.isEmpty()){
-            List<Integer> demoOccupiedSeats = new ArrayList<>();
+        
+        preReservedSeats = new ArrayList<>(occupiedSeatsForThisFlight);
+        
+        // Add demo data if no occupied seats exist
+        if (preReservedSeats.isEmpty()) {
+            preReservedSeats = new ArrayList<>();
             if ("First Class".equals(flightClass)) {
-                demoOccupiedSeats.add(1);
-                demoOccupiedSeats.add(2);
+                preReservedSeats.add(1);
+                preReservedSeats.add(3);
+                preReservedSeats.add(5);
             } else if ("Business".equals(flightClass)) {
-                demoOccupiedSeats.add(3);
-                demoOccupiedSeats.add(4);
+                preReservedSeats.add(2);
+                preReservedSeats.add(6);
+                preReservedSeats.add(10);
+                preReservedSeats.add(14);
             } else {
-                // Ekonomi sınıfı için örnek dolu koltuklar
-                demoOccupiedSeats.add(5);
-                demoOccupiedSeats.add(6);
+                // Economy class demo occupied seats
+                preReservedSeats.add(15);
+                preReservedSeats.add(18);
+                preReservedSeats.add(22);
+                preReservedSeats.add(27);
+                preReservedSeats.add(33);
+                preReservedSeats.add(41);
+                preReservedSeats.add(48);
             }
+            
+            // Save demo seats
+            seatStatusManager.markSeatsAsOccupied(tripKey, preReservedSeats);
         }
-
-        // TripKey'e göre rezerve edilmiş koltuk numaralarını (int) al
-        // Otobüs sayfasındaki gibi, demo verisi ekleyebilirsiniz.
-
     }
-    // BİTİŞ - initializePreReservedSeats Metodu
 
     @Override
     public void setupUI() {
@@ -323,7 +330,6 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         seatMapPanel.add(aircraftContainer, BorderLayout.CENTER);
     }
 
-    // BAŞLANGIÇ - createModernSeatLayout Metodu
     private JPanel createModernSeatLayout() {
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setOpaque(false);
@@ -333,8 +339,7 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         aircraftLayout.setLayout(new BoxLayout(aircraftLayout, BoxLayout.Y_AXIS));
         aircraftLayout.setOpaque(false);
 
-        int seatUniqueIdCounter = 1; // Her koltuk için benzersiz bir tam sayı ID'si
-
+        int seatUniqueIdCounter = 1;
         int seatsPerRow = getSeatsPerRow();
         int totalRows = getTotalRows();
 
@@ -358,104 +363,102 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
                 }
 
                 String seatLabel = (row + 1) + String.valueOf(currentLetter);
-                int currentSeatUniqueId = seatUniqueIdCounter++; // Koltuğa benzersiz ID ata
+                int currentSeatUniqueId = seatUniqueIdCounter++;
 
                 String tripKey = airline + "_" + fromAirport + "_" + toAirport + "_" + departureTime;
-                boolean isOccupied = SeatStatusManager.getInstance().isSeatOccupied(tripKey, currentSeatUniqueId); // Koltuğun dolu olup olmadığını kontrol et
+                boolean isOccupied = preReservedSeats.contains(currentSeatUniqueId);
 
                 boolean isWindow = (col == 0 || col == seatsPerRow - 1);
                 boolean isAisle = !isWindow && (seatsPerRow == 6 ? (col == 1 || col == 4) : (col == 1 || col == 2));
                 boolean isPremium = row < 3 || "Business".equals(flightClass) || "First Class".equals(flightClass);
 
-                FlightSeatButton seat = new FlightSeatButton(seatLabel, currentSeatUniqueId, isOccupied, isWindow, isAisle, isPremium); // Constructor'a seatId eklendi
+                FlightSeatButton seat = new FlightSeatButton(seatLabel, currentSeatUniqueId, isOccupied, isWindow, isAisle, isPremium);
                 seat.setSeatManager(seatManager);
-                allSeats.add(seat); // Tüm koltukları takip etmek için eklendi
+                allSeats.add(seat);
                 rowPanel.add(seat);
 
                 currentLetter++;
             }
 
             aircraftLayout.add(rowPanel);
-    }
-
-    JScrollPane scrollPane = new JScrollPane(aircraftLayout) {
-        @Override
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            Graphics2D g2d = (Graphics2D) g;
-            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            
-            g2d.setColor(new Color(255, 255, 255, 5));
-            g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
         }
-    };
-    
-    scrollPane.setOpaque(false);
-    scrollPane.getViewport().setOpaque(false);
-    scrollPane.setBorder(null);
-    scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-    scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-    
-    JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
-    verticalScrollBar.setOpaque(false);
-    verticalScrollBar.setUI(new ModernScrollBarUI());
-    verticalScrollBar.setPreferredSize(new Dimension(12, 0));
-    verticalScrollBar.setUnitIncrement(16);
-    verticalScrollBar.setBlockIncrement(64);
 
-    mainPanel.add(scrollPane, BorderLayout.CENTER);
-    return mainPanel;
-}
-// BİTİŞ - createModernSeatLayout Metodu
-
-private class ModernScrollBarUI extends javax.swing.plaf.basic.BasicScrollBarUI {
-    @Override
-    protected void configureScrollBarColors() {
-        this.thumbColor = new Color(138, 43, 226, 100);
-        this.trackColor = new Color(255, 255, 255, 20);
-    }
-
-    @Override
-    protected JButton createDecreaseButton(int orientation) {
-        return createZeroButton();
-    }
-
-    @Override
-    protected JButton createIncreaseButton(int orientation) {
-        return createZeroButton();
-    }
-
-    private JButton createZeroButton() {
-        JButton button = new JButton();
-        button.setPreferredSize(new Dimension(0, 0));
-        button.setMinimumSize(new Dimension(0, 0));
-        button.setMaximumSize(new Dimension(0, 0));
-        return button;
-    }
-
-    @Override
-    protected void paintThumb(Graphics g, JComponent c, Rectangle thumbBounds) {
-        Graphics2D g2 = (Graphics2D) g.create();
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        JScrollPane scrollPane = new JScrollPane(aircraftLayout) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                g2d.setColor(new Color(255, 255, 255, 5));
+                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
+            }
+        };
         
-        g2.setColor(thumbColor);
-        g2.fillRoundRect(thumbBounds.x + 2, thumbBounds.y + 2, 
-                        thumbBounds.width - 4, thumbBounds.height - 4, 6, 6);
-        g2.dispose();
-    }
-
-    @Override
-    protected void paintTrack(Graphics g, JComponent c, Rectangle trackBounds) {
-        Graphics2D g2 = (Graphics2D) g.create();
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        scrollPane.setOpaque(false);
+        scrollPane.getViewport().setOpaque(false);
+        scrollPane.setBorder(null);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         
-        g2.setColor(trackColor);
-        g2.fillRoundRect(trackBounds.x, trackBounds.y, 
-                        trackBounds.width, trackBounds.height, 6, 6);
-        g2.dispose();
-    }
-}
+        JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
+        verticalScrollBar.setOpaque(false);
+        verticalScrollBar.setUI(new ModernScrollBarUI());
+        verticalScrollBar.setPreferredSize(new Dimension(12, 0));
+        verticalScrollBar.setUnitIncrement(16);
+        verticalScrollBar.setBlockIncrement(64);
 
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+        return mainPanel;
+    }
+
+    private class ModernScrollBarUI extends javax.swing.plaf.basic.BasicScrollBarUI {
+        @Override
+        protected void configureScrollBarColors() {
+            this.thumbColor = new Color(138, 43, 226, 100);
+            this.trackColor = new Color(255, 255, 255, 20);
+        }
+
+        @Override
+        protected JButton createDecreaseButton(int orientation) {
+            return createZeroButton();
+        }
+
+        @Override
+        protected JButton createIncreaseButton(int orientation) {
+            return createZeroButton();
+        }
+
+        private JButton createZeroButton() {
+            JButton button = new JButton();
+            button.setPreferredSize(new Dimension(0, 0));
+            button.setMinimumSize(new Dimension(0, 0));
+            button.setMaximumSize(new Dimension(0, 0));
+            return button;
+        }
+
+        @Override
+        protected void paintThumb(Graphics g, JComponent c, Rectangle thumbBounds) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            
+            g2.setColor(thumbColor);
+            g2.fillRoundRect(thumbBounds.x + 2, thumbBounds.y + 2, 
+                            thumbBounds.width - 4, thumbBounds.height - 4, 6, 6);
+            g2.dispose();
+        }
+
+        @Override
+        protected void paintTrack(Graphics g, JComponent c, Rectangle trackBounds) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            
+            g2.setColor(trackColor);
+            g2.fillRoundRect(trackBounds.x, trackBounds.y, 
+                            trackBounds.width, trackBounds.height, 6, 6);
+            g2.dispose();
+        }
+    }
 
     private int getSeatsPerRow() {
         if ("First Class".equals(flightClass)) {
@@ -693,7 +696,6 @@ private class ModernScrollBarUI extends javax.swing.plaf.basic.BasicScrollBarUI 
         return yiq >= 180;
     }
 
-    // BAŞLANGIÇ - clearSelection Metodu
     private void clearSelection() {
         for (FlightSeatButton seat : selectedSeats) {
             seat.setSelected(false);
@@ -701,7 +703,6 @@ private class ModernScrollBarUI extends javax.swing.plaf.basic.BasicScrollBarUI 
         selectedSeats.clear();
         updateSelectionInfo();
     }
-    // BİTİŞ - clearSelection Metodu
 
     @Override
     public void update() {
@@ -730,20 +731,19 @@ private class ModernScrollBarUI extends javax.swing.plaf.basic.BasicScrollBarUI 
         }
     }
     
-    // BAŞLANGIÇ - confirmReservation Metodu
     private void confirmReservation() {
         if (selectedSeats.size() != passengerCount) {
-            PageComponents.showStyledMessage("Hata", 
-                "Lütfen tam olarak " + passengerCount + " koltuk seçin!", this);
+            PageComponents.showStyledMessage("Error", 
+                "Please select exactly " + passengerCount + " seat(s)!", this);
             return;
         }
-        
+
         User currentUser = SessionManager.getInstance().getLoggedInUser();
         if (currentUser == null) {
-            PageComponents.showStyledMessage("Hata", "Lütfen önce giriş yapın!", this);
+            PageComponents.showStyledMessage("Error", "Please login first!", this);
             return;
         }
-        
+
         try {
             // Create a proper FlightTrip using the factory pattern
             TripFactoryManager factoryManager = new TripFactoryManager();
@@ -770,7 +770,7 @@ private class ModernScrollBarUI extends javax.swing.plaf.basic.BasicScrollBarUI 
             // Seçilen koltukların benzersiz tam sayı ID'lerini topla
             List<Integer> selectedSeatUniqueIds = new ArrayList<>();
             for (FlightSeatButton seatButton : selectedSeats) {
-                selectedSeatUniqueIds.add(seatButton.getSeatId()); // getSeatId() metodu kullanılacak
+                selectedSeatUniqueIds.add(seatButton.getSeatId());
             }
 
             // Bu koltukları SeatStatusManager'da rezerve edilmiş olarak işaretle
@@ -781,25 +781,12 @@ private class ModernScrollBarUI extends javax.swing.plaf.basic.BasicScrollBarUI 
             List<Seat> reservedSeats = new ArrayList<>();
             for (FlightSeatButton seatButton : selectedSeats) {
                 // For flights, we need to create seats based on seat labels
-                // Since flight seats use labels like "1A", "2B", etc.
                 String seatLabel = seatButton.getSeatLabel();
                 // Extract seat number from label (e.g., "1A" -> 1)
                 int seatNo = Integer.parseInt(seatLabel.replaceAll("[^0-9]", ""));
                 
-                // Find or create the corresponding seat in the trip
-                Seat seat = null;
-                for (Seat tripSeat : flightTrip.getSeats()) {
-                    if (tripSeat.getSeatNo() == seatNo) {
-                        seat = tripSeat;
-                        break;
-                    }
-                }
-                
-                if (seat == null) {
-                    // Create new seat if not found
-                    seat = new Seat(seatNo,false);
-                }
-                
+                // Create new seat
+                Seat seat = new Seat(seatNo, false);
                 seat.reserve(); // Reserve the seat
                 reservedSeats.add(seat);
             }
@@ -828,21 +815,20 @@ private class ModernScrollBarUI extends javax.swing.plaf.basic.BasicScrollBarUI 
             
             // Show success message
             String successMessage = String.format(
-                "🎉 Uçuş Rezervasyonunuz Onaylandı!\n\n" +
-                "Rezervasyon ID: %s\n" +
-                "Seyahat Türü: Uçuş\n" +
-                "Uçuş: %s → %s\n" +
-                "Havayolu: %s\n" +
-                "Uçak: %s\n" + // Burada düzeltme yapıldı: flightTrip.getAircraft() yerine doğrudan 'aircraft' kullanıldı
-                "Koltuklar: %s\n" +
-                "Toplam Fiyat: $%.2f\n\n" +
-                "Uçuş rezervasyonunuz başarıyla kaydedildi!\n" +
-                "Seçilen koltuklar artık rezerve edilmiş olarak işaretlendi.", // Eklenen satır
+                "🎉 Flight Reservation Confirmed!\n\n" +
+                "Reservation ID: %s\n" +
+                "Trip Type: Flight\n" +
+                "Flight: %s → %s\n" +
+                "Airline: %s\n" +
+                "Aircraft: %s\n" +
+                "Seats: %s\n" +
+                "Total Price: $%.2f\n\n" +
+                "Your flight reservation has been saved successfully!",
                 reservationId,
                 flightTrip.getStartPoint(),
                 flightTrip.getEndPoint(),
                 airline,
-                aircraft, // 'aircraft' member variable used
+                aircraft,
                 selectedSeats.stream()
                     .map(seat -> seat.getSeatLabel())
                     .reduce((s1, s2) -> s1 + ", " + s2)
@@ -850,31 +836,28 @@ private class ModernScrollBarUI extends javax.swing.plaf.basic.BasicScrollBarUI 
                 totalPrice
             );
             
-            PageComponents.showStyledMessage("Uçuş Rezervasyonu Başarılı!", successMessage, this);
+            PageComponents.showStyledMessage("Flight Reservation Successful!", successMessage, this);
             
             // Navigate back to main menu
             dispose();
             new MainMenuPage().display();
             
         } catch (Exception e) {
-            PageComponents.showStyledMessage("Hata", 
-                "Uçuş rezervasyonu oluşturulamadı: " + e.getMessage(), this);
+            PageComponents.showStyledMessage("Error", 
+                "Failed to create flight reservation: " + e.getMessage(), this);
             e.printStackTrace();
         }
     }
-    // BİTİŞ - confirmReservation Metodu
     
     // Method to get the global reservation repository instance
     private ReservationRepository getGlobalReservationRepository() {
-        // This should return the same instance used by AllReservationsPage
         return GlobalRepositoryManager.getInstance().getReservationRepository();
     }
 
     // Modern flight seat button inner class
-    // BAŞLANGIÇ - FlightSeatButton İç Sınıfı
     private class FlightSeatButton extends JButton {
         private String seatLabel;
-        private int seatId; // Eklendi: Benzersiz tam sayı ID'si
+        private int seatId;
         private boolean isOccupied;
         private boolean isSelected;
         private boolean isWindow;
@@ -883,10 +866,9 @@ private class ModernScrollBarUI extends javax.swing.plaf.basic.BasicScrollBarUI 
         private double price;
         private SeatManager seatManager;
 
-        // Kurucu güncellendi: seatId parametresi eklendi
         public FlightSeatButton(String seatLabel, int seatId, boolean isOccupied, boolean isWindow, boolean isAisle, boolean isPremium) {
             this.seatLabel = seatLabel;
-            this.seatId = seatId; // seatId'yi başlat
+            this.seatId = seatId;
             this.isOccupied = isOccupied;
             this.isSelected = false;
             this.isWindow = isWindow;
@@ -897,7 +879,6 @@ private class ModernScrollBarUI extends javax.swing.plaf.basic.BasicScrollBarUI 
             setupModernButton();
         }
 
-        // seatId için getter eklendi
         public int getSeatId() {
             return seatId;
         }
@@ -943,14 +924,14 @@ private class ModernScrollBarUI extends javax.swing.plaf.basic.BasicScrollBarUI 
                 setText("X");
                 setForeground(Color.WHITE);
                 setEnabled(false);
-                setToolTipText("Koltuk " + seatLabel + " dolu");
+                setToolTipText("Seat " + seatLabel + " occupied");
             } else {
                 setText(seatLabel);
                 setForeground(Color.WHITE);
                 
-                String tooltip = String.format("Koltuk %s - $%.2f", seatLabel, price);
-                if (isWindow) tooltip += " (Pencere)";
-                if (isAisle) tooltip += " (Koridor)";
+                String tooltip = String.format("Seat %s - $%.2f", seatLabel, price);
+                if (isWindow) tooltip += " (Window)";
+                if (isAisle) tooltip += " (Aisle)";
                 if (isPremium) tooltip += " (Premium)";
                 
                 setToolTipText(tooltip);
@@ -968,14 +949,15 @@ private class ModernScrollBarUI extends javax.swing.plaf.basic.BasicScrollBarUI 
             if (isAisle) multiplier += 0.1;
             return basePriceValue * multiplier;
         }
+        
         private void toggleSelection() {
             if (isSelected) {
                 setSelected(false);
                 selectedSeats.remove(this);
             } else {
                 if (selectedSeats.size() >= passengerCount) {
-                    PageComponents.showStyledMessage("Uyarı",
-                        "Sadece " + passengerCount + " koltuk seçebilirsiniz!",
+                    PageComponents.showStyledMessage("Warning",
+                        "You can only select " + passengerCount + " seat(s)!",
                         FlightSeatSelectionPage.this);
                     return;
                 }
@@ -1009,5 +991,4 @@ private class ModernScrollBarUI extends javax.swing.plaf.basic.BasicScrollBarUI 
             return price;
         }
     }
-    // BİTİŞ - FlightSeatButton İç Sınıfı
 }
