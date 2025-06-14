@@ -709,7 +709,6 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
                 "Seats: %s\n" +
                 "Total Price: %.1f TL\n\n" +
                 "Your bus reservation has been saved successfully!\n" +
-                "Selected seats are now marked as occupied.",
                 reservationId,
                 busTrip.getStartPoint(),
                 busTrip.getEndPoint(),

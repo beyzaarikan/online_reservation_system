@@ -1,11 +1,6 @@
 package singleton;
 
 import java.util.List;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -13,12 +8,12 @@ import java.util.Set;
 
 public class SeatStatusManager {
     private static SeatStatusManager instance;
+    // Koltuk doluluk bilgileri sadece bellekte tutulacak
     private Map<String, Set<Integer>> occupiedSeats; // busCompany -> occupied seat numbers
-    private String dataFilePath = "occupied_seats.dat";
     
     private SeatStatusManager() {
         occupiedSeats = new HashMap<>();
-        loadOccupiedSeats();
+        // Dosyadan yükleme işlemi artık yok
     }
     
     public static SeatStatusManager getInstance() {
@@ -26,28 +21,6 @@ public class SeatStatusManager {
             instance = new SeatStatusManager();
         }
         return instance;
-    }
-    
-    // Occupied seat'leri dosyadan yükle
-    private void loadOccupiedSeats() {
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(dataFilePath))) {
-            occupiedSeats = (Map<String, Set<Integer>>) ois.readObject();
-        } catch (FileNotFoundException e) {
-            // Dosya yoksa boş map ile başla
-            occupiedSeats = new HashMap<>();
-        } catch (Exception e) {
-            e.printStackTrace();
-            occupiedSeats = new HashMap<>();
-        }
-    }
-    
-    // Occupied seat'leri dosyaya kaydet
-    private void saveOccupiedSeats() {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(dataFilePath))) {
-            oos.writeObject(occupiedSeats);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
     
     // Belirli bir bus company için occupied seat'leri al
@@ -58,18 +31,28 @@ public class SeatStatusManager {
     // Seat'i occupied olarak işaretle
     public void markSeatAsOccupied(String busCompany, int seatNumber) {
         occupiedSeats.computeIfAbsent(busCompany, k -> new HashSet<>()).add(seatNumber);
-        saveOccupiedSeats();
+        // Dosyaya kaydetme işlemi artık yok
     }
     
     // Birden fazla seat'i occupied olarak işaretle
     public void markSeatsAsOccupied(String busCompany, List<Integer> seatNumbers) {
         Set<Integer> companySeats = occupiedSeats.computeIfAbsent(busCompany, k -> new HashSet<>());
         companySeats.addAll(seatNumbers);
-        saveOccupiedSeats();
+        // Dosyaya kaydetme işlemi artık yok
     }
     
     // Seat'in occupied olup olmadığını kontrol et
     public boolean isSeatOccupied(String busCompany, int seatNumber) {
         return occupiedSeats.getOrDefault(busCompany, new HashSet<>()).contains(seatNumber);
+    }
+    
+    // Tüm koltuk doluluk verilerini temizlemek isterseniz bu metodu kullanabilirsiniz
+    public void clearAllOccupiedSeats() {
+        occupiedSeats.clear();
+    }
+    
+    // Belirli bir otobüs şirketinin koltuk doluluk verilerini temizlemek isterseniz
+    public void clearOccupiedSeatsForCompany(String busCompany) {
+        occupiedSeats.remove(busCompany);
     }
 }

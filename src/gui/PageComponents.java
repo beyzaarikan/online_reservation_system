@@ -215,13 +215,11 @@ public static final Color ADMIN_COLOR = new Color(147, 51, 234); // 🟣 Mor - a
     }
 
     public static void showStyledMessage(String title, String message, JFrame parent) {
-        showStyledMessage(title, message, parent, PRIMARY_COLOR);
-    }
+    showStyledMessage(title, message, parent, PRIMARY_COLOR);
+}
 
     public static void showStyledMessage(String title, String message, JFrame parent, Color accentColor) {
         JDialog dialog = new JDialog(parent, title, true);
-        dialog.setSize(400, 200);
-        dialog.setLocationRelativeTo(parent);
         dialog.getContentPane().setBackground(BACKGROUND_COLOR);
         
         JPanel panel = new JPanel(new BorderLayout());
@@ -231,11 +229,60 @@ public static final Color ADMIN_COLOR = new Color(147, 51, 234); // 🟣 Mor - a
             new EmptyBorder(30, 30, 20, 30)
         ));
         
-        JLabel messageLabel = new JLabel("<html><div style='text-align: center;'>" + 
-                                       message.replace("\n", "<br>") + "</div></html>", 
-                                       SwingConstants.CENTER);
+        // Create message label with HTML formatting
+        JLabel messageLabel = new JLabel("<html><div style='text-align: left; line-height: 1.4;'>" + 
+                                       message.replace("\n", "<br>") + "</div></html>");
         messageLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         messageLabel.setForeground(TEXT_COLOR);
+        messageLabel.setVerticalAlignment(SwingConstants.TOP);
+        
+        // Calculate dynamic size based on text content
+        FontMetrics fm = messageLabel.getFontMetrics(messageLabel.getFont());
+        String[] lines = message.split("\n");
+        
+        // Calculate required width and height
+        int maxLineWidth = 0;
+        for (String line : lines) {
+            int lineWidth = fm.stringWidth(line);
+            if (lineWidth > maxLineWidth) {
+                maxLineWidth = lineWidth;
+            }
+        }
+        
+        // Minimum and maximum dimensions
+        int minWidth = 350;
+        int maxWidth = 600;
+        int minHeight = 200;
+        int maxHeight = 500;
+        
+        // Calculate dialog dimensions
+        int dialogWidth = Math.max(minWidth, Math.min(maxWidth, maxLineWidth + 120)); // +120 for padding and borders
+        int lineHeight = fm.getHeight();
+        int textHeight = lines.length * (int)(lineHeight * 1.4); // 1.4 for line spacing
+        int dialogHeight = Math.max(minHeight, Math.min(maxHeight, textHeight + 150)); // +150 for title bar, button, padding
+        
+        // Set preferred size for message label
+        messageLabel.setPreferredSize(new Dimension(dialogWidth - 120, textHeight + 20));
+        
+        // Create scroll pane for very long messages
+        JScrollPane scrollPane = new JScrollPane(messageLabel);
+        scrollPane.setBackground(CARD_COLOR);
+        scrollPane.getViewport().setBackground(CARD_COLOR);
+        scrollPane.setBorder(null);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        
+        // Style scrollbar if needed
+        if (textHeight > maxHeight - 150) {
+            scrollPane.getVerticalScrollBar().setBackground(SECONDARY_COLOR);
+            scrollPane.getVerticalScrollBar().setUI(new javax.swing.plaf.basic.BasicScrollBarUI() {
+                @Override
+                protected void configureScrollBarColors() {
+                    this.thumbColor = PRIMARY_COLOR;
+                    this.trackColor = SECONDARY_COLOR;
+                }
+            });
+        }
         
         JButton okButton = createStyledButton("OK", accentColor, true);
         okButton.addActionListener(e -> dialog.dispose());
@@ -244,17 +291,17 @@ public static final Color ADMIN_COLOR = new Color(147, 51, 234); // 🟣 Mor - a
         buttonPanel.setBackground(CARD_COLOR);
         buttonPanel.add(okButton);
         
-        panel.add(messageLabel, BorderLayout.CENTER);
+        panel.add(scrollPane, BorderLayout.CENTER);
         panel.add(buttonPanel, BorderLayout.SOUTH);
         
         dialog.add(panel);
+        dialog.setSize(dialogWidth, dialogHeight);
+        dialog.setLocationRelativeTo(parent);
         dialog.setVisible(true);
     }
-
+    
     public static boolean showConfirmDialog(String title, String message, JFrame parent) {
         JDialog dialog = new JDialog(parent, title, true);
-        dialog.setSize(400, 200);
-        dialog.setLocationRelativeTo(parent);
         dialog.getContentPane().setBackground(BACKGROUND_COLOR);
         
         final boolean[] result = {false};
@@ -266,11 +313,28 @@ public static final Color ADMIN_COLOR = new Color(147, 51, 234); // 🟣 Mor - a
             new EmptyBorder(30, 30, 20, 30)
         ));
         
-        JLabel messageLabel = new JLabel("<html><div style='text-align: center;'>" + 
-                                       message.replace("\n", "<br>") + "</div></html>", 
-                                       SwingConstants.CENTER);
+        // Create message label with dynamic sizing
+        JLabel messageLabel = new JLabel("<html><div style='text-align: center; line-height: 1.4;'>" + 
+                                       message.replace("\n", "<br>") + "</div></html>");
         messageLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         messageLabel.setForeground(TEXT_COLOR);
+        
+        // Calculate dynamic size for confirm dialog too
+        FontMetrics fm = messageLabel.getFontMetrics(messageLabel.getFont());
+        String[] lines = message.split("\n");
+        
+        int maxLineWidth = 0;
+        for (String line : lines) {
+            int lineWidth = fm.stringWidth(line);
+            if (lineWidth > maxLineWidth) {
+                maxLineWidth = lineWidth;
+            }
+        }
+        
+        int dialogWidth = Math.max(350, Math.min(500, maxLineWidth + 120));
+        int lineHeight = fm.getHeight();
+        int textHeight = lines.length * (int)(lineHeight * 1.4);
+        int dialogHeight = Math.max(200, Math.min(400, textHeight + 150));
         
         JPanel buttonPanel = new JPanel(new FlowLayout());
         buttonPanel.setBackground(CARD_COLOR);
@@ -296,6 +360,8 @@ public static final Color ADMIN_COLOR = new Color(147, 51, 234); // 🟣 Mor - a
         panel.add(buttonPanel, BorderLayout.SOUTH);
         
         dialog.add(panel);
+        dialog.setSize(dialogWidth, dialogHeight);
+        dialog.setLocationRelativeTo(parent);
         dialog.setVisible(true);
         
         return result[0];
