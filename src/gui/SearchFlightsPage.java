@@ -25,7 +25,6 @@ public class SearchFlightsPage extends BasePanel {
     private JTable flightTable;
     private DefaultTableModel tableModel;
 
-    // Use shared repository instance
     private TripRepository tripRepository;
     private TripService tripService;
     private TripFactoryManager tripFactoryManager;
@@ -34,15 +33,10 @@ public class SearchFlightsPage extends BasePanel {
     
     public SearchFlightsPage() {
         super("Search Flights - Travel System", 1200, 800);
-        // Use the shared repository instance
-        this.tripRepository = TripRepositoryManager.getInstance().getTripRepository();
+        this.tripRepository = new TripRepository();
         this.tripService = new TripService(tripRepository);
         this.tripFactoryManager = new TripFactoryManager();
-        
-        // Only initialize sample data if repository is empty
-        if (tripRepository.findAll().stream().noneMatch(trip -> trip instanceof FlightTrip)) {
-            initializeSampleDataWithFactory();
-        }
+        initializeSampleDataWithFactory();
     }
 
     private void initializeSampleDataWithFactory() {

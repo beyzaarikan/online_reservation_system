@@ -26,67 +26,59 @@ public class TripManagementPage extends BasePanel {
     private JComboBox<String> tripTypeCombo;
     private JComboBox<String> statusCombo;
     
-    // Services and Repositories - Use shared instances
+    // Services and Repositories
     private TripRepository tripRepository;
     private TripService tripService;
     private TripFactoryManager factoryManager;
 
     public TripManagementPage() {
         super("Trip Management - Admin Panel", 1000, 700);
-        // Use the shared repository instance from SearchBusTripPage and SearchFlightsPage
-        this.tripRepository = getSharedTripRepository();
+        // Initialize repositories and services
+        this.tripRepository = new TripRepository();
         this.tripService = new TripService(tripRepository);
-        this.factoryManager = new TripFactoryManager();
-        
-        // Only initialize sample data if repository is empty
-        if (tripRepository.findAll().isEmpty()) {
-            initializeSampleTripData();
-        }
-    }
-    
-    // Get the shared trip repository instance
-    private TripRepository getSharedTripRepository() {
-        // Create a static instance that can be shared across pages
-        return TripRepositoryManager.getInstance().getTripRepository();
+        this.factoryManager = new TripFactoryManager(); // Initialize factory manager
+        initializeSampleTripData(); // Load sample data using the service
     }
 
     // Initialize with sample data using Factory pattern
     private void initializeSampleTripData() {
-        try {
-            // Register factories (ensure they are registered before use)
-            factoryManager.registerFactory("Bus", new BusTripFactory());
-            factoryManager.registerFactory("Flight", new FlightTripFactory());
+        if (tripRepository.findAll().isEmpty()) { // Only add if repository is empty
+            try {
+                // Register factories (ensure they are registered before use)
+                factoryManager.registerFactory("Bus", new BusTripFactory());
+                factoryManager.registerFactory("Flight", new FlightTripFactory());
 
-            Trip busTrip1 = factoryManager.getFactory("Bus").createTrip(
-                    "BT001", "Istanbul", "Ankara",
-                    LocalDateTime.of(2025, 6, 15, 9, 0),
-                    LocalDateTime.of(2025, 6, 15, 15, 0),
-                    45.0, 40, "Metro Turizm", "6h", "AC, WiFi", "BusNo001");
-            tripService.addTrip(busTrip1);
+                Trip busTrip1 = factoryManager.getFactory("Bus").createTrip( // Create BusTrip using factory
+                        "BT001", "Istanbul", "Ankara",
+                        LocalDateTime.of(2025, 6, 15, 9, 0),
+                        LocalDateTime.of(2025, 6, 15, 15, 0),
+                        45.0, 40, "Metro Turizm", "6h", "AC, WiFi", "BusNo001");
+                tripService.addTrip(busTrip1);
 
-            Trip busTrip2 = factoryManager.getFactory("Bus").createTrip(
-                    "BT002", "Ankara", "Izmir",
-                    LocalDateTime.of(2025, 6, 16, 10, 0),
-                    LocalDateTime.of(2025, 6, 16, 18, 0),
-                    50.0, 40, "Varan Turizm", "8h", "AC", "BusNo002");
-            tripService.addTrip(busTrip2);
+                Trip busTrip2 = factoryManager.getFactory("Bus").createTrip( // Create BusTrip using factory
+                        "BT002", "Ankara", "Izmir",
+                        LocalDateTime.of(2025, 6, 16, 10, 0),
+                        LocalDateTime.of(2025, 6, 16, 18, 0),
+                        50.0, 40, "Varan Turizm", "8h", "AC", "BusNo002");
+                tripService.addTrip(busTrip2);
 
-            Trip flightTrip1 = factoryManager.getFactory("Flight").createTrip(
-                    "FT001", "Istanbul", "London",
-                    LocalDateTime.of(2025, 6, 20, 10, 0),
-                    LocalDateTime.of(2025, 6, 20, 13, 0),
-                    300.0, 150, "Turkish Airlines", "3h", "Meals", "FlightNo001");
-            tripService.addTrip(flightTrip1);
+                Trip flightTrip1 = factoryManager.getFactory("Flight").createTrip( // Create FlightTrip using factory
+                        "FT001", "Istanbul", "London",
+                        LocalDateTime.of(2025, 6, 20, 10, 0),
+                        LocalDateTime.of(2025, 6, 20, 13, 0),
+                        300.0, 150, "Turkish Airlines", "3h", "Meals", "FlightNo001");
+                tripService.addTrip(flightTrip1);
 
-            Trip flightTrip2 = factoryManager.getFactory("Flight").createTrip(
-                    "FT002", "London", "Istanbul",
-                    LocalDateTime.of(2025, 6, 22, 14, 0),
-                    LocalDateTime.of(2025, 6, 22, 19, 0),
-                    280.0, 150, "Pegasus Airlines", "5h", "No-frills", "FlightNo002");
-            tripService.addTrip(flightTrip2);
+                Trip flightTrip2 = factoryManager.getFactory("Flight").createTrip( // Create FlightTrip using factory
+                        "FT002", "London", "Istanbul",
+                        LocalDateTime.of(2025, 6, 22, 14, 0),
+                        LocalDateTime.of(2025, 6, 22, 19, 0),
+                        280.0, 150, "Pegasus Airlines", "5h", "No-frills", "FlightNo002");
+                tripService.addTrip(flightTrip2);
 
-        } catch (Exception e) {
-            System.err.println("Error initializing sample data: " + e.getMessage());
+            } catch (Exception e) {
+                System.err.println("Error initializing sample data: " + e.getMessage());
+            }
         }
     }
 
@@ -489,23 +481,23 @@ public class TripManagementPage extends BasePanel {
         });
     }
     
-    private void populateTripTable() {
+    private void populateTripTable() { // Renamed from populateSampleTripData
         tableModel.setRowCount(0); // Clear existing data
         List<Trip> allTrips = tripService.getAllTrips(); // Get all trips from the service
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
         for (Trip trip : allTrips) {
-            String id = trip.getTripNo();
-            String type = trip.getTripType();
-            String route = trip.getStartPoint() + " → " + trip.getEndPoint();
-            String date = trip.getDepartureTime().format(dateFormatter);
-            String time = trip.getDepartureTime().format(timeFormatter);
-            String price = String.format("$%.2f", trip.getBasePrice());
-            int availableSeats = tripService.findAvailableSeats(trip.getTripNo()).size();
-            String status = "Active"; // Assuming all initialized trips are active for now
+            String id = trip.getTripNo(); // Get trip number
+            String type = trip.getTripType(); // Get trip type (Bus or Flight)
+            String route = trip.getStartPoint() + " → " + trip.getEndPoint(); // Get start and end points
+            String date = trip.getDepartureTime().format(dateFormatter); // Format departure date
+            String time = trip.getDepartureTime().format(timeFormatter); // Format departure time
+            String price = String.format("$%.2f", trip.getBasePrice()); // Format base price
+            int availableSeats = tripService.findAvailableSeats(trip.getTripNo()).size(); // Get available seats
+            String status = "Active"; // Assuming all initialized trips are active for now, update if a status field is added to Trip model
 
-            tableModel.addRow(new Object[]{id, type, route, date, time, price, availableSeats + "/" + trip.getTotalSeats(), status});
+            tableModel.addRow(new Object[]{id, type, route, date, time, price, availableSeats + "/" + trip.getTotalSeats(), status}); // Add row to table model
         }
     }
     
@@ -545,6 +537,8 @@ public class TripManagementPage extends BasePanel {
         }
         
         // Status filtering is more complex without a 'status' field in Trip model.
+        // For demonstration, let's assume if availableSeats == 0, status is "Cancelled".
+        // In a real application, Trip model should have a proper status enum/field.
         if (!selectedStatus.equals("All Status")) {
             if (selectedStatus.equals("Cancelled")) {
                 filteredTrips = filteredTrips.stream()
@@ -555,6 +549,7 @@ public class TripManagementPage extends BasePanel {
                         .filter(trip -> !tripService.findAvailableSeats(trip.getTripNo()).isEmpty())
                         .collect(java.util.stream.Collectors.toList());
             }
+            // "Inactive" status not easily derivable without more trip data.
         }
 
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -568,7 +563,7 @@ public class TripManagementPage extends BasePanel {
             String time = trip.getDepartureTime().format(timeFormatter);
             String price = String.format("$%.2f", trip.getBasePrice());
             int availableSeats = tripService.findAvailableSeats(trip.getTripNo()).size();
-            String status = availableSeats == 0 ? "Cancelled" : "Active";
+            String status = availableSeats == 0 ? "Cancelled" : "Active"; // Simplified status derivation
 
             tableModel.addRow(new Object[]{id, type, route, date, time, price, availableSeats + "/" + trip.getTotalSeats(), status});
         }
@@ -578,7 +573,7 @@ public class TripManagementPage extends BasePanel {
                            "Type: " + selectedType + "\n" +
                            "Status: " + selectedStatus;
         
-        PageComponents.showStyledMessage("Search Applied", filterInfo, this);
+        PageComponents.showStyledMessage("Search Applied", filterInfo, this); // Corrected parent to 'this'
     }
     
     private void resetFilters() {
@@ -587,9 +582,9 @@ public class TripManagementPage extends BasePanel {
         tripTypeCombo.setSelectedIndex(0);
         statusCombo.setSelectedIndex(0);
         
-        populateTripTable();
+        populateTripTable(); // Reload all data
         
-        PageComponents.showStyledMessage("Success", "Filters reset successfully!", this);
+        PageComponents.showStyledMessage("Success", "Filters reset successfully!", this); // Corrected parent to 'this'
     }
     
     private void addNewTrip() {
@@ -620,7 +615,7 @@ public class TripManagementPage extends BasePanel {
         JTextField durationField = new JTextField();
         JTextField amenitiesField = new JTextField();
         JComboBox<String> typeCombo = new JComboBox<>(new String[]{"Bus", "Flight"});
-        JTextField vehicleNoField = new JTextField();
+        JTextField vehicleNoField = new JTextField(); // For busNo or flightNo
 
         formPanel.add(new JLabel("Trip No:"));
         formPanel.add(tripNoField);
@@ -695,6 +690,7 @@ public class TripManagementPage extends BasePanel {
                 String startPoint = startPointField.getText();
                 String endPoint = endPointField.getText();
                 
+                // Convert Date from JSpinner to LocalDateTime
                 Date depDate = (Date) departureSpinner.getValue();
                 LocalDateTime departureTime = depDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
                 
@@ -715,15 +711,16 @@ public class TripManagementPage extends BasePanel {
                     return;
                 }
 
-                Trip newTrip = factoryManager.getFactory(tripType).createTrip(
+                // Use the factory to create the trip based on selected type
+                Trip newTrip = factoryManager.getFactory(tripType).createTrip( // Create trip using factory
                     tripNo, startPoint, endPoint, departureTime, arrivalTime,
                     price, totalSeats, company, duration, amenities, vehicleNo
                 );
 
-                tripService.addTrip(newTrip);
-                populateTripTable();
-                PageComponents.showStyledMessage("Success", "Trip added successfully!", this);
-                addTripDialog.dispose();
+                tripService.addTrip(newTrip); // Add trip using the service
+                populateTripTable(); // Refresh the table
+                PageComponents.showStyledMessage("Success", "Trip added successfully!", this); // Corrected parent to 'this'
+                this.dispose();
             } catch (NumberFormatException ex) {
                 PageComponents.showStyledMessage("Error", "Price and Total Seats must be valid numbers!", this);
             } catch (IllegalArgumentException ex) {
@@ -746,8 +743,8 @@ public class TripManagementPage extends BasePanel {
             return;
         }
 
-        String tripId = (String) tableModel.getValueAt(selectedRow, 0);
-        Trip existingTrip = tripService.findTripByNo(tripId);
+        String tripId = (String) tableModel.getValueAt(selectedRow, 0); // Get trip ID from table
+        Trip existingTrip = tripService.findTripByNo(tripId); // Find trip by ID
 
         if (existingTrip == null) {
             PageComponents.showStyledMessage("Error", "Selected trip not found in system!", this);
@@ -766,7 +763,7 @@ public class TripManagementPage extends BasePanel {
 
         // Populate fields with existing trip data
         JTextField tripNoField = new JTextField(existingTrip.getTripNo());
-        tripNoField.setEditable(false);
+        tripNoField.setEditable(false); // Trip number should not be editable
 
         JComboBox<String> typeCombo = new JComboBox<>(new String[]{"Bus", "Flight"});
         typeCombo.setSelectedItem(existingTrip.getTripType());
@@ -824,7 +821,7 @@ public class TripManagementPage extends BasePanel {
         formPanel.add(new JLabel("Vehicle No (Bus/Flight):"));
         formPanel.add(vehicleNoField);
 
-        // Style form components
+        // Style form components (similar to add)
         for (Component comp : formPanel.getComponents()) {
             if (comp instanceof JLabel) {
                 ((JLabel) comp).setForeground(Color.WHITE);
@@ -891,15 +888,20 @@ public class TripManagementPage extends BasePanel {
                     return;
                 }
 
-                // Create updated trip using factory
-                Trip updatedTrip = factoryManager.getFactory(newTripType).createTrip(
-                    existingTrip.getTripNo(),
-                    newStartPoint, newEndPoint, newDepartureTime, newArrivalTime, newPrice,
-                    newTotalSeats, newCompany, newDuration, newAmenities, newVehicleNo);
+                Trip updatedTrip;
+                if ("Bus".equals(newTripType)) {
+                    updatedTrip = factoryManager.getFactory("Bus").createTrip(existingTrip.getTripNo(),
+                            newStartPoint, newEndPoint, newDepartureTime, newArrivalTime, newPrice,
+                            newTotalSeats, newCompany, newDuration, newAmenities, newVehicleNo);
+                } else { // Flight
+                    updatedTrip = factoryManager.getFactory("Flight").createTrip(existingTrip.getTripNo(),
+                            newStartPoint, newEndPoint, newDepartureTime, newArrivalTime, newPrice,
+                            newTotalSeats, newCompany, newDuration, newAmenities, newVehicleNo);
+                }
                 
-                tripService.updateTrip(updatedTrip);
-                populateTripTable();
-                PageComponents.showStyledMessage("Success", "Trip updated successfully!", this);
+                tripService.updateTrip(updatedTrip); // Update trip using the service
+                populateTripTable(); // Refresh the table
+                PageComponents.showStyledMessage("Success", "Trip updated successfully!", this); // Corrected parent to 'this'
                 editTripDialog.dispose();
             } catch (NumberFormatException ex) {
                 PageComponents.showStyledMessage("Error", "Price and Total Seats must be valid numbers!", this);
@@ -923,8 +925,8 @@ public class TripManagementPage extends BasePanel {
             return;
         }
         
-        String tripId = (String) tableModel.getValueAt(selectedRow, 0);
-        Trip trip = tripService.findTripByNo(tripId);
+        String tripId = (String) tableModel.getValueAt(selectedRow, 0); // Get trip ID from table
+        Trip trip = tripService.findTripByNo(tripId); // Find trip by ID
 
         if (trip == null) {
             PageComponents.showStyledMessage("Error", "Selected trip not found in system!", this);
@@ -950,7 +952,7 @@ public class TripManagementPage extends BasePanel {
             details += "\nFlight No: " + ((FlightTrip) trip).getFlightNo();
         }
 
-        PageComponents.showStyledMessage("Trip Details", details, this);
+        PageComponents.showStyledMessage("Trip Details", details, this); // Corrected parent to 'this'
     }
     
     private void cancelTrip() {
@@ -960,8 +962,8 @@ public class TripManagementPage extends BasePanel {
             return;
         }
         
-        String tripId = (String) tableModel.getValueAt(selectedRow, 0);
-        Trip tripToCancel = tripService.findTripByNo(tripId);
+        String tripId = (String) tableModel.getValueAt(selectedRow, 0); // Get trip ID from table
+        Trip tripToCancel = tripService.findTripByNo(tripId); // Find trip by ID
 
         if (tripToCancel == null) {
             PageComponents.showStyledMessage("Error", "Selected trip not found in system!", this);
@@ -981,21 +983,21 @@ public class TripManagementPage extends BasePanel {
         
         if (confirm == JOptionPane.YES_OPTION) {
             try {
-                tripService.deleteTrip(tripId);
-                populateTripTable();
+                tripService.deleteTrip(tripId); // Delete trip using the service
+                populateTripTable(); // Refresh the table
                 PageComponents.showStyledMessage("Success", 
-                    "Trip " + tripId + " has been cancelled!", this);
+                    "Trip " + tripId + " has been cancelled!", this); // Corrected parent to 'this'
             } catch (IllegalArgumentException ex) {
-                PageComponents.showStyledMessage("Error", ex.getMessage(), this);
+                PageComponents.showStyledMessage("Error", ex.getMessage(), this); // Corrected parent to 'this'
             } catch (Exception ex) {
-                PageComponents.showStyledMessage("Error", "An unexpected error occurred: " + ex.getMessage(), this);
+                PageComponents.showStyledMessage("Error", "An unexpected error occurred: " + ex.getMessage(), this); // Corrected parent to 'this'
                 ex.printStackTrace();
             }
         }
     }
     
     private void refreshTripData() {
-        populateTripTable();
+        populateTripTable(); // Refresh the table with current data
         
         // Reset filters
         searchField.setText("Search trips...");
@@ -1003,27 +1005,37 @@ public class TripManagementPage extends BasePanel {
         tripTypeCombo.setSelectedIndex(0);
         statusCombo.setSelectedIndex(0);
         
-        PageComponents.showStyledMessage("Success", "Trip data refreshed successfully!", this);
+        PageComponents.showStyledMessage("Success", "Trip data refreshed successfully!", this); // Corrected parent to 'this'
     }
+private void showStyledMessage(String title, String message, Window parent) {
+    // Create a styled message dialog that matches the theme
+    JDialog dialog = new JDialog(parent, title, Dialog.ModalityType.APPLICATION_MODAL);
+    dialog.setSize(400, 200);
+    dialog.setLocationRelativeTo(parent);
+    dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+    dialog.getContentPane().setBackground(new Color(15, 15, 35));
+    
+    JPanel panel = new JPanel();
+    panel.setBackground(new Color(25, 25, 55));
+    panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+    
+    JLabel messageLabel = new JLabel("<html><div style='text-align: center;'>" + message.replace("\n", "<br>") + "</div></html>");
+    messageLabel.setForeground(Color.WHITE);
+    messageLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+    messageLabel.setHorizontalAlignment(SwingConstants.CENTER);
+    
+    JButton okButton = createModernButton("OK", new Color(138, 43, 226), true);
+    okButton.addActionListener(e -> dialog.dispose());
+    
+    JPanel buttonPanel = new JPanel(new FlowLayout());
+    buttonPanel.setBackground(new Color(25, 25, 55));
+    buttonPanel.add(okButton);
+    
+    panel.setLayout(new BorderLayout());
+    panel.add(messageLabel, BorderLayout.CENTER);
+    panel.add(buttonPanel, BorderLayout.SOUTH);
+    
+    dialog.add(panel);
+    dialog.setVisible(true);
 }
-
-// Singleton class to manage shared TripRepository instance
-class TripRepositoryManager {
-    private static TripRepositoryManager instance;
-    private TripRepository tripRepository;
-    
-    private TripRepositoryManager() {
-        this.tripRepository = new TripRepository();
-    }
-    
-    public static synchronized TripRepositoryManager getInstance() {
-        if (instance == null) {
-            instance = new TripRepositoryManager();
-        }
-        return instance;
-    }
-    
-    public TripRepository getTripRepository() {
-        return tripRepository;
-    }
 }

@@ -27,22 +27,20 @@ public class SearchBusTripPage extends BasePanel {
     private DefaultTableModel tableModel;
     private JPanel returnDatePanel;
     
-    // Repository and Service - Use shared instances
+    // Repository and Service
     private TripRepository tripRepository;
     private TripService tripService;
     private TripFactoryManager factoryManager;
     
     public SearchBusTripPage() {
         super("Search Bus Trips - Travel System", 1200, 800);
-        // Use the shared repository instance
-        this.tripRepository = TripRepositoryManager.getInstance().getTripRepository();
+        // Initialize repository and service
+        this.tripRepository = new TripRepository();
         this.tripService = new TripService(tripRepository);
         this.factoryManager = new TripFactoryManager();
         
-        // Initialize with sample data using Factory pattern only if repository is empty
-        if (tripRepository.findAll().isEmpty()) {
-            initializeSampleDataWithFactory();
-        }
+        // Initialize with sample data using Factory pattern
+        initializeSampleDataWithFactory();
     }
     
     private void initializeSampleDataWithFactory() {
@@ -739,26 +737,5 @@ public class SearchBusTripPage extends BasePanel {
                 "Failed to proceed to seat selection: " + ex.getMessage(), this);
             ex.printStackTrace();
         }
-    }
-}
-
-// Singleton class to manage shared TripRepository instance
-class TripRepositoryManager {
-    private static TripRepositoryManager instance;
-    private TripRepository tripRepository;
-    
-    private TripRepositoryManager() {
-        this.tripRepository = new TripRepository();
-    }
-    
-    public static synchronized TripRepositoryManager getInstance() {
-        if (instance == null) {
-            instance = new TripRepositoryManager();
-        }
-        return instance;
-    }
-    
-    public TripRepository getTripRepository() {
-        return tripRepository;
     }
 }
