@@ -681,7 +681,7 @@ public class TripManagementPage extends BasePanel {
                 tripService.addTrip(newTrip);
                 populateTripTable();
                 PageComponents.showStyledMessage("Success", "Trip added successfully!", this);
-                this.dispose();
+                addTripDialog.dispose();
             } catch (NumberFormatException ex) {
                 PageComponents.showStyledMessage("Error", "Price and Total Seats must be valid numbers!", this);
             } catch (IllegalArgumentException ex) {
