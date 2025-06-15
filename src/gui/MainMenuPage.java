@@ -230,10 +230,18 @@ public class MainMenuPage extends JFrame {
             }
         };
         
-        menuPanel.setLayout(new GridLayout(isAdmin ? 3 : 2, 2, 25, 25));
+        if (isAdmin) {
+            // For admin: only 2 cards, use 1x2 layout
+            menuPanel.setLayout(new GridLayout(1, 2, 25, 25));
+            menuPanel.setPreferredSize(new Dimension(600, 180));
+        } else {
+            // For user: 4 cards, use 2x2 layout
+            menuPanel.setLayout(new GridLayout(2, 2, 25, 25));
+            menuPanel.setPreferredSize(new Dimension(700, 320));
+        }
+        
         menuPanel.setOpaque(false);
         menuPanel.setBorder(new EmptyBorder(40, 40, 40, 40));
-        menuPanel.setPreferredSize(new Dimension(700, isAdmin ? 480 : 320));
         
         if (isAdmin) {
             setupAdminMenu(menuPanel);
@@ -284,18 +292,11 @@ public class MainMenuPage extends JFrame {
     }
     
     private void setupAdminMenu(JPanel menuGrid) {
-        // Admin menu options
+        // Admin menu options - only User Management and Trip Management
         JPanel userManagementCard = createModernMenuCard("User Management", 
             "Manage system users", new Color(108, 92, 231), "👥");
         JPanel tripManagementCard = createModernMenuCard("Trip Management", 
             "Manage trips and routes", new Color(138, 43, 226), "🗺️");
-        JPanel reservationManagementCard = createModernMenuCard("All Reservations", 
-            "View all bookings", new Color(52, 211, 153), "📋");
-        JPanel reportsCard = createModernMenuCard("Reports & Analytics", 
-            "System reports and stats", new Color(56, 189, 248), "📊");
-        JPanel consoleCard = createModernMenuCard("System Console", 
-            "Advanced system tools", new Color(220, 38, 127), "⚙️");
-            
         
         // Event listeners
         addClickListener(userManagementCard, () -> {
@@ -308,28 +309,8 @@ public class MainMenuPage extends JFrame {
             new TripManagementPage().display();
         });
         
-        addClickListener(reservationManagementCard, () -> {
-            dispose();
-            new AllReservationsPage().display();
-        });
-        
-        addClickListener(reportsCard, () -> {
-            showEnhancedFeatureDialog("Reports & Analytics", 
-                "Reports page will be available soon.\n\nFeatures:\n" +
-                "• User statistics\n• Revenue reports\n• Trip analytics");
-        });
-        
-        addClickListener(consoleCard, () -> {
-            dispose();
-            new ConsolePage().display();
-        });
-        
         menuGrid.add(userManagementCard);
         menuGrid.add(tripManagementCard);
-        menuGrid.add(reservationManagementCard);
-        menuGrid.add(reportsCard);
-        menuGrid.add(consoleCard);
-        menuGrid.add(new JPanel()); // Empty panel for spacingd
     }
     
     private JPanel createModernMenuCard(String title, String description, Color accentColor, String emoji) {
@@ -351,9 +332,9 @@ public class MainMenuPage extends JFrame {
             }
         };
         
-        card.setLayout(new BorderLayout());
+        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
         card.setOpaque(false);
-        card.setBorder(new EmptyBorder(25, 25, 25, 25));
+        card.setBorder(new EmptyBorder(20, 20, 20, 20));
         card.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
         // Icon panel
@@ -385,22 +366,27 @@ public class MainMenuPage extends JFrame {
             }
         };
         iconPanel.setPreferredSize(new Dimension(60, 60));
+        iconPanel.setMaximumSize(new Dimension(60, 60));
+        iconPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
         iconPanel.setOpaque(false);
         
-        // Text panel
+        // Text panel with proper alignment
         JPanel textPanel = new JPanel();
         textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
         textPanel.setOpaque(false);
+        textPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         JLabel titleLabel = new JLabel(title);
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
         titleLabel.setForeground(Color.WHITE);
-        titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
         
-        JLabel descLabel = new JLabel("<html>" + description + "</html>");
+        JLabel descLabel = new JLabel("<html><div style='text-align: center;'>" + description + "</div></html>");
         descLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         descLabel.setForeground(new Color(189, 147, 249));
-        descLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        descLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        descLabel.setHorizontalAlignment(SwingConstants.CENTER);
         
         textPanel.add(titleLabel);
         textPanel.add(Box.createVerticalStrut(8));
@@ -420,9 +406,12 @@ public class MainMenuPage extends JFrame {
             }
         });
         
-        card.add(iconPanel, BorderLayout.WEST);
-        card.add(Box.createHorizontalStrut(20), BorderLayout.CENTER);
-        card.add(textPanel, BorderLayout.EAST);
+        // Add components to card with proper spacing
+        card.add(Box.createVerticalGlue());
+        card.add(iconPanel);
+        card.add(Box.createVerticalStrut(15));
+        card.add(textPanel);
+        card.add(Box.createVerticalGlue());
         
         return card;
     }
@@ -464,84 +453,6 @@ public class MainMenuPage extends JFrame {
                 action.run();
             }
         });
-    }
-    
-    private void showEnhancedFeatureDialog(String title, String message) {
-        // Modern dialog with glassmorphism
-        JDialog dialog = new JDialog(this, title, true);
-        dialog.setSize(450, 300);
-        dialog.setLocationRelativeTo(this);
-        dialog.setResizable(false);
-        
-        // Main panel with gradient background
-        JPanel mainPanel = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                Graphics2D g2d = (Graphics2D) g;
-                g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-                
-                GradientPaint gradient = new GradientPaint(
-                    0, 0, new Color(15, 15, 35),
-                    getWidth(), getHeight(), new Color(25, 25, 55)
-                );
-                g2d.setPaint(gradient);
-                g2d.fillRect(0, 0, getWidth(), getHeight());
-            }
-        };
-        mainPanel.setLayout(new BorderLayout());
-        mainPanel.setBorder(new EmptyBorder(30, 30, 30, 30));
-        
-        // Title
-        JLabel titleLabel = new JLabel(title, SwingConstants.CENTER);
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
-        titleLabel.setForeground(Color.WHITE);
-        
-        // Content panel with glassmorphism
-        JPanel contentPanel = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                Graphics2D g2d = (Graphics2D) g;
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                
-                g2d.setColor(new Color(255, 255, 255, 10));
-                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
-                
-                g2d.setColor(new Color(255, 255, 255, 30));
-                g2d.setStroke(new BasicStroke(1));
-                g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 15, 15);
-            }
-        };
-        contentPanel.setOpaque(false);
-        contentPanel.setBorder(new EmptyBorder(25, 25, 25, 25));
-        
-        JTextArea messageArea = new JTextArea(message);
-        messageArea.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        messageArea.setForeground(new Color(189, 147, 249));
-        messageArea.setOpaque(false);
-        messageArea.setEditable(false);
-        messageArea.setWrapStyleWord(true);
-        messageArea.setLineWrap(true);
-        messageArea.setBorder(null);
-        
-        contentPanel.add(messageArea);
-        
-        // OK Button
-        JButton okButton = createModernButton("OK", new Color(138, 43, 226), true);
-        okButton.setPreferredSize(new Dimension(100, 40));
-        okButton.addActionListener(e -> dialog.dispose());
-        
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        buttonPanel.setOpaque(false);
-        buttonPanel.add(okButton);
-        
-        mainPanel.add(titleLabel, BorderLayout.NORTH);
-        mainPanel.add(contentPanel, BorderLayout.CENTER);
-        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
-        
-        dialog.add(mainPanel);
-        dialog.setVisible(true);
     }
     
     public void display() {
