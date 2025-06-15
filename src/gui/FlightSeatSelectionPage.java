@@ -80,7 +80,7 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
     private void initializeServices(){
         this.reservationRepository = new ReservationRepository();
         this.userRepository = UserRepository.getInstance();
-        this.flightRepository = new TripRepository();
+        this.flightRepository = TripRepository.getInstance(); 
         this.reservationService = new ReservationService(reservationRepository, userRepository, flightRepository);
         this.commandInvoker = new CommandInvoker(); 
     }

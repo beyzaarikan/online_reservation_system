@@ -9,6 +9,8 @@ import javax.swing.table.DefaultTableModel;
 import models.User;
 import repository.UserRepository;
 import service.UserService;
+import repository.TripRepository;
+import service.TripService;
 
 public class AdminPage extends BasePanel {
     private JTable userTable;
@@ -16,14 +18,18 @@ public class AdminPage extends BasePanel {
     private JTextField searchField;
     private UserRepository userRepository;
     private UserService userService;
+    private TripRepository tripRepository;
+    private TripService tripService;
     
     public AdminPage() {
         super("Admin Panel - Travel System", 1000, 700);
         this.userRepository = UserRepository.getInstance();
         this.userService = new UserService(userRepository);
+        this.tripRepository = TripRepository.getInstance();
+        this.tripService = new TripService(tripRepository);
         initializeSampleUsers();
-    }   
-    
+    }
+
     @Override
     public void setupUI() {
         setLayout(new BorderLayout());

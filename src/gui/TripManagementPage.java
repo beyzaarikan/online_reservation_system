@@ -1,4 +1,4 @@
-
+// iremmozkaynak/online_reservation_system/online_reservation_system-28ba3ad86cb9b46dda1defc47db65f71a11cf40a/src/gui/TripManagementPage.java
 package gui;
 
 import factory.BusTripFactory;
@@ -19,12 +19,14 @@ import models.Trip;
 import repository.TripRepository;
 import service.TripService;
 
+
 public class TripManagementPage extends BasePanel {
     private JTable tripTable;
     private DefaultTableModel tableModel;
     private JTextField searchField;
     private JComboBox<String> tripTypeCombo;
-    
+    private JComboBox<String> statusCombo; // <<-- BURADA EKLEME YAPILDI
+
     // Services and Repositories
     private TripRepository tripRepository;
     private TripService tripService;
@@ -33,54 +35,11 @@ public class TripManagementPage extends BasePanel {
     public TripManagementPage() {
         super("Trip Management - Admin Panel", 1000, 700);
         // Initialize repositories and services
-        this.tripRepository = new TripRepository();
+        this.tripRepository = TripRepository.getInstance();
         this.tripService = new TripService(tripRepository);
-        this.factoryManager = new TripFactoryManager(); // Initialize factory manager
-        initializeSampleTripData(); // Load sample data using the service
+
     }
-
-    // Initialize with sample data using Factory pattern
-    private void initializeSampleTripData() {
-        if (tripRepository.findAll().isEmpty()) { // Only add if repository is empty
-            try {
-                // Register factories (ensure they are registered before use)
-                factoryManager.registerFactory("Bus", new BusTripFactory());
-                factoryManager.registerFactory("Flight", new FlightTripFactory());
-
-                Trip busTrip1 = factoryManager.getFactory("Bus").createTrip( // Create BusTrip using factory
-                        "BT001", "Istanbul", "Ankara",
-                        LocalDateTime.of(2025, 6, 15, 9, 0),
-                        LocalDateTime.of(2025, 6, 15, 15, 0),
-                        45.0, 40, "Metro Turizm", "6h", "AC, WiFi", "BusNo001");
-                tripService.addTrip(busTrip1);
-
-                Trip busTrip2 = factoryManager.getFactory("Bus").createTrip( // Create BusTrip using factory
-                        "BT002", "Ankara", "Izmir",
-                        LocalDateTime.of(2025, 6, 16, 10, 0),
-                        LocalDateTime.of(2025, 6, 16, 18, 0),
-                        50.0, 40, "Varan Turizm", "8h", "AC", "BusNo002");
-                tripService.addTrip(busTrip2);
-
-                Trip flightTrip1 = factoryManager.getFactory("Flight").createTrip( // Create FlightTrip using factory
-                        "FT001", "Istanbul", "London",
-                        LocalDateTime.of(2025, 6, 20, 10, 0),
-                        LocalDateTime.of(2025, 6, 20, 13, 0),
-                        300.0, 150, "Turkish Airlines", "3h", "Meals", "FlightNo001");
-                tripService.addTrip(flightTrip1);
-
-                Trip flightTrip2 = factoryManager.getFactory("Flight").createTrip( // Create FlightTrip using factory
-                        "FT002", "London", "Istanbul",
-                        LocalDateTime.of(2025, 6, 22, 14, 0),
-                        LocalDateTime.of(2025, 6, 22, 19, 0),
-                        280.0, 150, "Pegasus Airlines", "5h", "No-frills", "FlightNo002");
-                tripService.addTrip(flightTrip2);
-
-            } catch (Exception e) {
-                System.err.println("Error initializing sample data: " + e.getMessage());
-            }
-        }
-    }
-
+    
     @Override
     public void setupUI() {
         setLayout(new BorderLayout());
@@ -200,6 +159,7 @@ public class TripManagementPage extends BasePanel {
 
         searchField = createModernTextField("Search trips...");
         tripTypeCombo = new JComboBox<>(new String[]{"All Types", "Bus", "Flight"});
+        statusCombo = new JComboBox<>(new String[]{"All Status", "Active", "Inactive", "Cancelled"});
 
         JButton searchButton = createModernButton("Search", new Color(138, 43, 226), true);
         JButton resetButton = createModernButton("Reset", new Color(108, 92, 231), false);
@@ -211,11 +171,13 @@ public class TripManagementPage extends BasePanel {
         filterContent.add(searchField);
         filterContent.add(createFilterLabel("Type:"));
         filterContent.add(tripTypeCombo);
+        filterContent.add(createFilterLabel("Status:"));
+        filterContent.add(statusCombo);
         filterContent.add(searchButton);
         filterContent.add(resetButton);
 
         JPanel filterMainPanel = new JPanel();
-        filterMainPanel.setLayout(new BoxLayout(filterMainPanel, BoxLayout.Y_AXIS));
+        filterMainPanel.setLayout(new BoxLayout(filterMainPanel, BoxLayout.Y_AXIS)); // <<-- BURADA new BoxLayout kullanıldı
         filterMainPanel.setOpaque(false);
         filterTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
         filterMainPanel.add(filterTitle);
@@ -230,7 +192,7 @@ public class TripManagementPage extends BasePanel {
         tablePanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
 
         // Create table with enhanced columns
-        String[] columnNames = {"ID", "Type", "Route", "Date", "Time", "Price", "Available Seats"};
+        String[] columnNames = {"ID", "Type", "Route", "Date", "Time", "Price", "Available Seats", "Status"};
         tableModel = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -260,6 +222,7 @@ public class TripManagementPage extends BasePanel {
         JButton editTripButton = createModernButton("Edit Trip", new Color(108, 92, 231), true);
         JButton viewDetailsButton = createModernButton("View Details", new Color(189, 147, 249), false);
         JButton cancelTripButton = createModernButton("Cancel Trip", new Color(255, 121, 121), true);
+        JButton refreshButton = createModernButton("Refresh", new Color(138, 43, 226), true);
 
         actionPanel.add(addTripButton);
         actionPanel.add(Box.createHorizontalStrut(10));
@@ -268,6 +231,8 @@ public class TripManagementPage extends BasePanel {
         actionPanel.add(viewDetailsButton);
         actionPanel.add(Box.createHorizontalStrut(10));
         actionPanel.add(cancelTripButton);
+        actionPanel.add(Box.createHorizontalStrut(10));
+        actionPanel.add(refreshButton);
 
         tablePanel.add(scrollPane, BorderLayout.CENTER);
         tablePanel.add(actionPanel, BorderLayout.SOUTH);
@@ -297,6 +262,7 @@ public class TripManagementPage extends BasePanel {
         editTripButton.addActionListener(e -> editTrip());
         viewDetailsButton.addActionListener(e -> viewTripDetails());
         cancelTripButton.addActionListener(e -> cancelTrip());
+        refreshButton.addActionListener(e -> refreshTripData());
     }
 
     private JLabel createFilterLabel(String text) {
@@ -361,6 +327,7 @@ public class TripManagementPage extends BasePanel {
         JComboBox<String> comboBox = new JComboBox<String>(items) {
             @Override
             protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
                 Graphics2D g2d = (Graphics2D) g;
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 
@@ -428,13 +395,14 @@ public class TripManagementPage extends BasePanel {
         tripTable.setIntercellSpacing(new Dimension(1, 1));
         
         // Set column widths
-        tripTable.getColumnModel().getColumn(0).setPreferredWidth(50);  // ID
-        tripTable.getColumnModel().getColumn(1).setPreferredWidth(70);  // Type
-        tripTable.getColumnModel().getColumn(2).setPreferredWidth(200); // Route
-        tripTable.getColumnModel().getColumn(3).setPreferredWidth(100); // Date
-        tripTable.getColumnModel().getColumn(4).setPreferredWidth(80);  // Time
-        tripTable.getColumnModel().getColumn(5).setPreferredWidth(80);  // Price
-        tripTable.getColumnModel().getColumn(6).setPreferredWidth(100); // Available Seats
+        tripTable.getColumnModel().getColumn(0).setPreferredWidth(50);
+        tripTable.getColumnModel().getColumn(1).setPreferredWidth(70);
+        tripTable.getColumnModel().getColumn(2).setPreferredWidth(200);
+        tripTable.getColumnModel().getColumn(3).setPreferredWidth(100);
+        tripTable.getColumnModel().getColumn(4).setPreferredWidth(80);
+        tripTable.getColumnModel().getColumn(5).setPreferredWidth(80);
+        tripTable.getColumnModel().getColumn(6).setPreferredWidth(100);
+        tripTable.getColumnModel().getColumn(7).setPreferredWidth(80); // <<-- BURADA SÜTUN GENİŞLİĞİ AYARLANDI
         
         // Custom header renderer
         tripTable.getTableHeader().setDefaultRenderer(new DefaultTableCellRenderer() {
@@ -472,28 +440,30 @@ public class TripManagementPage extends BasePanel {
         });
     }
     
-    private void populateTripTable() { // Renamed from populateSampleTripData
-        tableModel.setRowCount(0); // Clear existing data
-        List<Trip> allTrips = tripService.getAllTrips(); // Get all trips from the service
+    private void populateTripTable() {
+        tableModel.setRowCount(0);
+        List<Trip> allTrips = tripService.getAllTrips();
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 
         for (Trip trip : allTrips) {
-            String id = trip.getTripNo(); // Get trip number
-            String type = trip.getTripType(); // Get trip type (Bus or Flight)
-            String route = trip.getStartPoint() + " → " + trip.getEndPoint(); // Get start and end points
-            String date = trip.getDepartureTime().format(dateFormatter); // Format departure date
-            String time = trip.getDepartureTime().format(timeFormatter); // Format departure time
-            String price = String.format("$%.2f", trip.getBasePrice()); // Format base price
-            int availableSeats = tripService.findAvailableSeats(trip.getTripNo()).size(); // Get available seats
+            String id = trip.getTripNo();
+            String type = trip.getTripType();
+            String route = trip.getStartPoint() + " → " + trip.getEndPoint();
+            String date = trip.getDepartureTime().format(dateFormatter);
+            String time = trip.getDepartureTime().format(timeFormatter);
+            String price = String.format("$%.2f", trip.getBasePrice());
+            int availableSeats = tripService.findAvailableSeats(trip.getTripNo()).size();
+            String status = "Active"; // Assuming all initialized trips are active for now, update if a status field is added to Trip model
 
-            tableModel.addRow(new Object[]{id, type, route, date, time, price, availableSeats + "/" + trip.getTotalSeats()}); // Add row to table model
+            tableModel.addRow(new Object[]{id, type, route, date, time, price, availableSeats + "/" + trip.getTotalSeats(), status});
         }
     }
     
     private void searchTrips() {
         String searchTermRaw = searchField.getText().trim();
         String selectedType = (String) tripTypeCombo.getSelectedItem();
+        String selectedStatus = (String) statusCombo.getSelectedItem();
         
         final String searchTerm;
         if (searchTermRaw.equals("Search trips...")) {
@@ -524,6 +494,22 @@ public class TripManagementPage extends BasePanel {
                     .filter(trip -> trip.getTripType().equals(selectedType))
                     .collect(java.util.stream.Collectors.toList());
         }
+        
+        // Status filtering is more complex without a 'status' field in Trip model.
+        // For demonstration, let's assume if availableSeats == 0, status is "Cancelled".
+        // In a real application, Trip model should have a proper status enum/field.
+        if (!selectedStatus.equals("All Status")) {
+            if (selectedStatus.equals("Cancelled")) {
+                filteredTrips = filteredTrips.stream()
+                        .filter(trip -> tripService.findAvailableSeats(trip.getTripNo()).isEmpty())
+                        .collect(java.util.stream.Collectors.toList());
+            } else if (selectedStatus.equals("Active")) {
+                filteredTrips = filteredTrips.stream()
+                        .filter(trip -> !tripService.findAvailableSeats(trip.getTripNo()).isEmpty())
+                        .collect(java.util.stream.Collectors.toList());
+            }
+            // "Inactive" status not easily derivable without more trip data.
+        }
 
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
@@ -536,25 +522,28 @@ public class TripManagementPage extends BasePanel {
             String time = trip.getDepartureTime().format(timeFormatter);
             String price = String.format("$%.2f", trip.getBasePrice());
             int availableSeats = tripService.findAvailableSeats(trip.getTripNo()).size();
+            String status = availableSeats == 0 ? "Cancelled" : "Active";
 
-            tableModel.addRow(new Object[]{id, type, route, date, time, price, availableSeats + "/" + trip.getTotalSeats()});
+            tableModel.addRow(new Object[]{id, type, route, date, time, price, availableSeats + "/" + trip.getTotalSeats(), status});
         }
         
         String filterInfo = "Searching with filters:\n" +
                            "Search Term: " + (searchTerm.isEmpty() ? "None" : searchTerm) + "\n" +
-                           "Type: " + selectedType + "\n" ;
+                           "Type: " + selectedType + "\n" +
+                           "Status: " + selectedStatus;
         
-        PageComponents.showStyledMessage("Search Applied", filterInfo, this); // Corrected parent to 'this'
+        PageComponents.showStyledMessage("Search Applied", filterInfo, this);
     }
     
     private void resetFilters() {
         searchField.setText("Search trips...");
         searchField.setForeground(new Color(150, 150, 150));
         tripTypeCombo.setSelectedIndex(0);
+        statusCombo.setSelectedIndex(0);
         
-        populateTripTable(); // Reload all data
+        populateTripTable();
         
-        PageComponents.showStyledMessage("Success", "Filters reset successfully!", this); // Corrected parent to 'this'
+        PageComponents.showStyledMessage("Success", "Filters reset successfully!", this);
     }
     
     private void addNewTrip() {
@@ -585,7 +574,7 @@ public class TripManagementPage extends BasePanel {
         JTextField durationField = new JTextField();
         JTextField amenitiesField = new JTextField();
         JComboBox<String> typeCombo = new JComboBox<>(new String[]{"Bus", "Flight"});
-        JTextField vehicleNoField = new JTextField(); // For busNo or flightNo
+        JTextField vehicleNoField = new JTextField();
 
         formPanel.add(new JLabel("Trip No:"));
         formPanel.add(tripNoField);
@@ -682,14 +671,14 @@ public class TripManagementPage extends BasePanel {
                 }
 
                 // Use the factory to create the trip based on selected type
-                Trip newTrip = factoryManager.getFactory(tripType).createTrip( // Create trip using factory
+                Trip newTrip = factoryManager.getFactory(tripType).createTrip(
                     tripNo, startPoint, endPoint, departureTime, arrivalTime,
                     price, totalSeats, company, duration, amenities, vehicleNo
                 );
 
-                tripService.addTrip(newTrip); // Add trip using the service
-                populateTripTable(); // Refresh the table
-                PageComponents.showStyledMessage("Success", "Trip added successfully!", this); // Corrected parent to 'this'
+                tripService.addTrip(newTrip);
+                populateTripTable();
+                PageComponents.showStyledMessage("Success", "Trip added successfully!", this);
                 this.dispose();
             } catch (NumberFormatException ex) {
                 PageComponents.showStyledMessage("Error", "Price and Total Seats must be valid numbers!", this);
@@ -713,8 +702,8 @@ public class TripManagementPage extends BasePanel {
             return;
         }
 
-        String tripId = (String) tableModel.getValueAt(selectedRow, 0); // Get trip ID from table
-        Trip existingTrip = tripService.findTripByNo(tripId); // Find trip by ID
+        String tripId = (String) tableModel.getValueAt(selectedRow, 0);
+        Trip existingTrip = tripService.findTripByNo(tripId);
 
         if (existingTrip == null) {
             PageComponents.showStyledMessage("Error", "Selected trip not found in system!", this);
@@ -733,7 +722,7 @@ public class TripManagementPage extends BasePanel {
 
         // Populate fields with existing trip data
         JTextField tripNoField = new JTextField(existingTrip.getTripNo());
-        tripNoField.setEditable(false); // Trip number should not be editable
+        tripNoField.setEditable(false);
 
         JComboBox<String> typeCombo = new JComboBox<>(new String[]{"Bus", "Flight"});
         typeCombo.setSelectedItem(existingTrip.getTripType());
@@ -869,9 +858,9 @@ public class TripManagementPage extends BasePanel {
                             newTotalSeats, newCompany, newDuration, newAmenities, newVehicleNo);
                 }
                 
-                tripService.updateTrip(updatedTrip); // Update trip using the service
-                populateTripTable(); // Refresh the table
-                PageComponents.showStyledMessage("Success", "Trip updated successfully!", this); // Corrected parent to 'this'
+                tripService.updateTrip(updatedTrip);
+                populateTripTable();
+                PageComponents.showStyledMessage("Success", "Trip updated successfully!", this);
                 editTripDialog.dispose();
             } catch (NumberFormatException ex) {
                 PageComponents.showStyledMessage("Error", "Price and Total Seats must be valid numbers!", this);
@@ -895,8 +884,8 @@ public class TripManagementPage extends BasePanel {
             return;
         }
         
-        String tripId = (String) tableModel.getValueAt(selectedRow, 0); // Get trip ID from table
-        Trip trip = tripService.findTripByNo(tripId); // Find trip by ID
+        String tripId = (String) tableModel.getValueAt(selectedRow, 0);
+        Trip trip = tripService.findTripByNo(tripId);
 
         if (trip == null) {
             PageComponents.showStyledMessage("Error", "Selected trip not found in system!", this);
@@ -922,7 +911,7 @@ public class TripManagementPage extends BasePanel {
             details += "\nFlight No: " + ((FlightTrip) trip).getFlightNo();
         }
 
-        PageComponents.showStyledMessage("Trip Details", details, this); // Corrected parent to 'this'
+        PageComponents.showStyledMessage("Trip Details", details, this);
     }
     
     private void cancelTrip() {
@@ -932,8 +921,8 @@ public class TripManagementPage extends BasePanel {
             return;
         }
         
-        String tripId = (String) tableModel.getValueAt(selectedRow, 0); // Get trip ID from table
-        Trip tripToCancel = tripService.findTripByNo(tripId); // Find trip by ID
+        String tripId = (String) tableModel.getValueAt(selectedRow, 0);
+        Trip tripToCancel = tripService.findTripByNo(tripId);
 
         if (tripToCancel == null) {
             PageComponents.showStyledMessage("Error", "Selected trip not found in system!", this);
@@ -943,7 +932,9 @@ public class TripManagementPage extends BasePanel {
         int confirm = JOptionPane.showConfirmDialog(
             this,
             "Are you sure you want to CANCEL this trip?\n\n" +
-            "Trip ID: " + tripId + "\n" ,
+            "Trip ID: " + tripId + "\n" +
+            "Route: " + tripToCancel.getStartPoint() + " → " + tripToCancel.getEndPoint() + "\n\n" +
+            "This action cannot be undone!",
             "Confirm Trip Cancellation",
             JOptionPane.YES_NO_OPTION,
             JOptionPane.WARNING_MESSAGE
@@ -951,19 +942,30 @@ public class TripManagementPage extends BasePanel {
         
         if (confirm == JOptionPane.YES_OPTION) {
             try {
-                tripService.deleteTrip(tripId); // Delete trip using the service
-                populateTripTable(); // Refresh the table
+                tripService.deleteTrip(tripId);
+                populateTripTable();
                 PageComponents.showStyledMessage("Success", 
-                    "Trip " + tripId + " has been cancelled!", this); // Corrected parent to 'this'
+                    "Trip " + tripId + " has been cancelled!", this);
             } catch (IllegalArgumentException ex) {
-                PageComponents.showStyledMessage("Error", ex.getMessage(), this); // Corrected parent to 'this'
+                PageComponents.showStyledMessage("Error", ex.getMessage(), this);
             } catch (Exception ex) {
-                PageComponents.showStyledMessage("Error", "An unexpected error occurred: " + ex.getMessage(), this); // Corrected parent to 'this'
+                PageComponents.showStyledMessage("Error", "An unexpected error occurred: " + ex.getMessage(), this);
                 ex.printStackTrace();
             }
         }
     }
     
+    private void refreshTripData() {
+        populateTripTable();
+        
+        // Reset filters
+        searchField.setText("Search trips...");
+        searchField.setForeground(new Color(150, 150, 150));
+        tripTypeCombo.setSelectedIndex(0);
+        statusCombo.setSelectedIndex(0);
+        
+        PageComponents.showStyledMessage("Success", "Trip data refreshed successfully!", this);
+    }
 private void showStyledMessage(String title, String message, Window parent) {
     // Create a styled message dialog that matches the theme
     JDialog dialog = new JDialog(parent, title, Dialog.ModalityType.APPLICATION_MODAL);

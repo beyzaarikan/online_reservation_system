@@ -1,3 +1,4 @@
+// iremmozkaynak/online_reservation_system/online_reservation_system-28ba3ad86cb9b46dda1defc47db65f71a11cf40a/src/repository/TripRepository.java
 package repository;
 
 import java.time.LocalDateTime;
@@ -8,9 +9,20 @@ import java.util.stream.Collectors;
 import models.Trip;
 
 public class TripRepository { 
+    private static TripRepository instance; // Singleton örneği
     private List<Trip> trips;
-    public TripRepository() {
+
+    // Private constructor for Singleton pattern
+    private TripRepository() { // Constructor'ı private yaptık
         this.trips = new ArrayList<>();
+    }
+
+    // Singleton erişim metodu
+    public static synchronized TripRepository getInstance() {
+        if (instance == null) {
+            instance = new TripRepository();
+        }
+        return instance;
     }
 
     public void save(Trip trip) {

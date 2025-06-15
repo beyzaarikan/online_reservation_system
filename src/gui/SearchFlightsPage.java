@@ -33,68 +33,10 @@ public class SearchFlightsPage extends BasePanel {
     
     public SearchFlightsPage() {
         super("Search Flights - Travel System", 1200, 800);
-        this.tripRepository = new TripRepository();
+        this.tripRepository = TripRepository.getInstance();
         this.tripService = new TripService(tripRepository);
         this.tripFactoryManager = new TripFactoryManager();
-        initializeSampleDataWithFactory();
-    }
 
-    private void initializeSampleDataWithFactory() {
-        try{
-            TripFactory flightFactory = tripFactoryManager.getFactory("Flight");
- 
-            Trip flight1= flightFactory.createTrip(
-                "TK123", "Istanbul", "Ankara", 
-                LocalDate.of(2025, 10, 1).atTime(8, 30), 
-                LocalDate.of(2025, 10, 1).atTime(9, 45), 
-                150.0, 150, "THY " , "1 h" ,
-                "WiFi , Meal Service",
-                "Boeing 737"
-            );
-            tripService.addTrip(flight1);
-
-            Trip flight2 = flightFactory.createTrip(
-                "PC456", "Istanbul", "Izmir", 
-                LocalDate.of(2023, 10, 1).atTime(10, 15), 
-                LocalDate.of(2023, 10, 1).atTime(11, 30), 
-                120.0, 150, "Pegasus", "1 h 15 m",
-                "WiFi , Meal Service",
-                "Airbus A320"
-            );
-            tripService.addTrip(flight2);
-
-            Trip flight3 = flightFactory.createTrip(
-                "XQ789", "Istanbul", "Antalya", 
-                LocalDate.of(2023, 10, 1).atTime(14, 0), 
-                LocalDate.of(2023, 10, 1).atTime(15, 15), 
-                180.0, 150, "SunExpress", "1 h 15 m",
-                "WiFi , Meal Service",
-                "Boeing 7377"
-            );
-            tripService.addTrip(flight3);
-            Trip flight4 = flightFactory.createTrip(
-                "TK321", "Ankara", "Bodrum", 
-                LocalDate.of(2023, 10, 1).atTime(16, 30), 
-                LocalDate.of(2023, 10, 1).atTime(17, 45), 
-                200.0, 150, "THY", "1 h 15 m",
-                "WiFi , Meal Service",
-                "Airbus A321"
-            );
-            tripService.addTrip(flight4);
-            Trip flight5 = flightFactory.createTrip(
-                "PC654", "izmir", "Trabzon", 
-                LocalDate.of(2023, 10, 1).atTime(19, 0), 
-                LocalDate.of(2023, 10, 1).atTime(20, 15), 
-                160.0, 150, "Pegasus", "1 h 15 m",
-                "WiFi , Meal Service",
-                "Boeing 737"
-            );
-            tripService.addTrip(flight5);
-        }catch (Exception e) {
-            System.err.println("Error: Failed to initialize sample flight data: " + e.getMessage());
-        }
-        
-        
     }
 
     @Override

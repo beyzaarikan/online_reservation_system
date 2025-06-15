@@ -1,6 +1,6 @@
 package gui;
 import javax.swing.*;
-
+import utils.SampleDataLoader;
 
 public class MainApplication {
     
@@ -11,8 +11,8 @@ public class MainApplication {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
+        SampleDataLoader.loadSampleTripData();
+
         SwingUtilities.invokeLater(() -> new WelcomePage().display());
     }
 }
-
