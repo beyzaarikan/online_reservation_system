@@ -37,7 +37,9 @@ public class TripManagementPage extends BasePanel {
         // Initialize repositories and services
         this.tripRepository = TripRepository.getInstance();
         this.tripService = new TripService(tripRepository);
+        this.factoryManager = new TripFactoryManager();
 
+        setupUI();
     }
     
     @Override
