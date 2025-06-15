@@ -423,7 +423,7 @@ public class SearchFlightsPage extends BasePanel {
         Component editor = spinner.getEditor();
         JFormattedTextField textField = ((JSpinner.DateEditor) editor).getTextField();
         textField.setBackground(new Color(255, 255, 255, 0));
-        textField.setForeground(Color.WHITE);
+        textField.setForeground(Color.BLACK);
         textField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         textField.setBorder(BorderFactory.createEmptyBorder(12, 15, 12, 15));
         textField.setHorizontalAlignment(JTextField.CENTER);

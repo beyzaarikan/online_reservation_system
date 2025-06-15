@@ -773,22 +773,26 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         }
 
         @Override
-        protected void paintComponent(Graphics g) {
-            Graphics2D g2 = (Graphics2D) g.create();
+protected void paintComponent(Graphics g) {
+    Graphics2D g2 = (Graphics2D) g.create();
+    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        // Arka plan rengi
-            if (isOccupied) {
-                g2.setColor(new Color(220, 53, 69)); // Kırmızı
-            } else if (isPremium) {
-                g2.setColor(new Color(255, 193, 7)); // Sarı
-            } else {
-                g2.setColor(new Color(75, 181, 67)); // Yeşil
-            }
-             g2.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
-            g2.dispose();
+    // Arka plan rengi - seçili durumu da kontrol et
+    if (isSelected) {
+        g2.setColor(new Color(138, 43, 226)); // Mor - seçili
+    } else if (isOccupied) {
+        g2.setColor(new Color(220, 53, 69)); // Kırmızı - dolu
+    } else if (isPremium) {
+        g2.setColor(new Color(255, 193, 7)); // Sarı - premium
+    } else {
+        g2.setColor(new Color(75, 181, 67)); // Yeşil - müsait
+    }
+    
+    g2.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
+    g2.dispose();
 
-            super.paintComponent(g); // Yazı ve ikonları çiz
-        }
+    super.paintComponent(g); // Yazı ve ikonları çiz
+}
 
          public void setSeatManager(SeatManager seatManager) {
              this.seatManager = seatManager;
@@ -853,18 +857,18 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
             }
         }
 
+        
         public void setSelected(boolean selected) {
             this.isSelected = selected;
 
             if (selected) {
-                setBackground(new Color(138, 43, 226));
-                setForeground(Color.WHITE);
                 setBorder(BorderFactory.createLineBorder(new Color(189, 147, 249), 2, true));
             } else {
-                setBackground(isPremium ? new Color(255, 193, 7) : new Color(75, 181, 67));
-                setForeground(Color.WHITE);
                 setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255, 50), 1, true));
             }
+    
+            // Componenti yeniden çiz
+            repaint();
         }
 
         public int getSeatNumber() {
