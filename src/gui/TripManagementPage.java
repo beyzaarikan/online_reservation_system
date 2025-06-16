@@ -25,7 +25,6 @@ public class TripManagementPage extends BasePanel {
     private DefaultTableModel tableModel;
     private JTextField searchField;
     private JComboBox<String> tripTypeCombo;
-    private JComboBox<String> statusCombo; // <<-- BURADA EKLEME YAPILDI
 
     // Services and Repositories
     private TripRepository tripRepository;
@@ -161,7 +160,6 @@ public class TripManagementPage extends BasePanel {
 
         searchField = createModernTextField("Search trips...");
         tripTypeCombo = new JComboBox<>(new String[]{"All Types", "Bus", "Flight"});
-        statusCombo = new JComboBox<>(new String[]{"All Status", "Active", "Inactive", "Cancelled"});
 
         JButton searchButton = createModernButton("Search", new Color(138, 43, 226), true);
         JButton resetButton = createModernButton("Reset", new Color(108, 92, 231), false);
@@ -174,7 +172,6 @@ public class TripManagementPage extends BasePanel {
         filterContent.add(createFilterLabel("Type:"));
         filterContent.add(tripTypeCombo);
         filterContent.add(createFilterLabel("Status:"));
-        filterContent.add(statusCombo);
         filterContent.add(searchButton);
         filterContent.add(resetButton);
 
@@ -194,7 +191,8 @@ public class TripManagementPage extends BasePanel {
         tablePanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
 
         // Create table with enhanced columns
-        String[] columnNames = {"ID", "Type", "Route", "Date", "Time", "Price", "Available Seats", "Status"};
+        // MODIFIED: Removed "Status" column
+        String[] columnNames = {"ID", "Type", "Route", "Date", "Time", "Price", "Available Seats"};
         tableModel = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -403,8 +401,8 @@ public class TripManagementPage extends BasePanel {
         tripTable.getColumnModel().getColumn(3).setPreferredWidth(100);
         tripTable.getColumnModel().getColumn(4).setPreferredWidth(80);
         tripTable.getColumnModel().getColumn(5).setPreferredWidth(80);
-        tripTable.getColumnModel().getColumn(6).setPreferredWidth(100);
-        tripTable.getColumnModel().getColumn(7).setPreferredWidth(80); // <<-- BURADA SÜTUN GENİŞLİĞİ AYARLANDI
+        // MODIFIED: Removed "Status" column's width setting, adjusted the last one
+        tripTable.getColumnModel().getColumn(6).setPreferredWidth(100); 
         
         // Custom header renderer
         tripTable.getTableHeader().setDefaultRenderer(new DefaultTableCellRenderer() {
@@ -456,16 +454,17 @@ public class TripManagementPage extends BasePanel {
             String time = trip.getDepartureTime().format(timeFormatter);
             String price = String.format("$%.2f", trip.getBasePrice());
             int availableSeats = tripService.findAvailableSeats(trip.getTripNo()).size();
-            String status = "Active"; // Assuming all initialized trips are active for now, update if a status field is added to Trip model
+            // MODIFIED: Removed status display
+            // String status = "Active"; // Assuming all initialized trips are active for now, update if a status field is added to Trip model
 
-            tableModel.addRow(new Object[]{id, type, route, date, time, price, availableSeats + "/" + trip.getTotalSeats(), status});
+            // MODIFIED: Removed status from addRow
+            tableModel.addRow(new Object[]{id, type, route, date, time, price, availableSeats + "/" + trip.getTotalSeats()});
         }
     }
     
     private void searchTrips() {
         String searchTermRaw = searchField.getText().trim();
         String selectedType = (String) tripTypeCombo.getSelectedItem();
-        String selectedStatus = (String) statusCombo.getSelectedItem();
         
         final String searchTerm;
         if (searchTermRaw.equals("Search trips...")) {
@@ -496,22 +495,6 @@ public class TripManagementPage extends BasePanel {
                     .filter(trip -> trip.getTripType().equals(selectedType))
                     .collect(java.util.stream.Collectors.toList());
         }
-        
-        // Status filtering is more complex without a 'status' field in Trip model.
-        // For demonstration, let's assume if availableSeats == 0, status is "Cancelled".
-        // In a real application, Trip model should have a proper status enum/field.
-        if (!selectedStatus.equals("All Status")) {
-            if (selectedStatus.equals("Cancelled")) {
-                filteredTrips = filteredTrips.stream()
-                        .filter(trip -> tripService.findAvailableSeats(trip.getTripNo()).isEmpty())
-                        .collect(java.util.stream.Collectors.toList());
-            } else if (selectedStatus.equals("Active")) {
-                filteredTrips = filteredTrips.stream()
-                        .filter(trip -> !tripService.findAvailableSeats(trip.getTripNo()).isEmpty())
-                        .collect(java.util.stream.Collectors.toList());
-            }
-            // "Inactive" status not easily derivable without more trip data.
-        }
 
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
@@ -524,15 +507,16 @@ public class TripManagementPage extends BasePanel {
             String time = trip.getDepartureTime().format(timeFormatter);
             String price = String.format("$%.2f", trip.getBasePrice());
             int availableSeats = tripService.findAvailableSeats(trip.getTripNo()).size();
-            String status = availableSeats == 0 ? "Cancelled" : "Active";
+            // MODIFIED: Removed status
+            // String status = availableSeats == 0 ? "Cancelled" : "Active";
 
-            tableModel.addRow(new Object[]{id, type, route, date, time, price, availableSeats + "/" + trip.getTotalSeats(), status});
+            // MODIFIED: Removed status from addRow
+            tableModel.addRow(new Object[]{id, type, route, date, time, price, availableSeats + "/" + trip.getTotalSeats()});
         }
         
         String filterInfo = "Searching with filters:\n" +
                            "Search Term: " + (searchTerm.isEmpty() ? "None" : searchTerm) + "\n" +
-                           "Type: " + selectedType + "\n" +
-                           "Status: " + selectedStatus;
+                           "Type: " + selectedType + "\n" ;
         
         PageComponents.showStyledMessage("Search Applied", filterInfo, this);
     }
@@ -541,7 +525,6 @@ public class TripManagementPage extends BasePanel {
         searchField.setText("Search trips...");
         searchField.setForeground(new Color(150, 150, 150));
         tripTypeCombo.setSelectedIndex(0);
-        statusCombo.setSelectedIndex(0);
         
         populateTripTable();
         
@@ -705,7 +688,7 @@ public class TripManagementPage extends BasePanel {
         }
 
         String tripId = (String) tableModel.getValueAt(selectedRow, 0);
-        Trip existingTrip = tripService.findTripByNo(tripId); //
+        Trip existingTrip = tripService.findTripByNo(tripId);
 
         if (existingTrip == null) {
             PageComponents.showStyledMessage("Error", "Selected trip not found in system!", this);
@@ -724,7 +707,7 @@ public class TripManagementPage extends BasePanel {
 
         // Populate fields with existing trip data
         JTextField tripNoField = new JTextField(existingTrip.getTripNo());
-        tripNoField.setEditable(false); //
+        tripNoField.setEditable(false);
 
         JComboBox<String> typeCombo = new JComboBox<>(new String[]{"Bus", "Flight"});
         typeCombo.setSelectedItem(existingTrip.getTripType());
@@ -736,7 +719,7 @@ public class TripManagementPage extends BasePanel {
             java.util.Date.from(existingTrip.getDepartureTime().atZone(java.time.ZoneId.systemDefault()).toInstant()),
             null, null, java.util.Calendar.MINUTE));
         JSpinner.DateEditor depEditor = new JSpinner.DateEditor(departureSpinner, "yyyy-MM-dd HH:mm");
-        departureSpinner.setEditor(depEditor); //
+        departureSpinner.setEditor(depEditor);
 
         JSpinner arrivalSpinner = new JSpinner(new SpinnerDateModel(
             java.util.Date.from(existingTrip.getArrivalTime().atZone(java.time.ZoneId.systemDefault()).toInstant()),
@@ -744,8 +727,8 @@ public class TripManagementPage extends BasePanel {
         JSpinner.DateEditor arrEditor = new JSpinner.DateEditor(arrivalSpinner, "yyyy-MM-dd HH:mm");
         arrivalSpinner.setEditor(arrEditor);
 
-        JTextField priceField = new JTextField(String.valueOf(existingTrip.getBasePrice())); //
-        JTextField totalSeatsField = new JTextField(String.valueOf(existingTrip.getTotalSeats())); //
+        JTextField priceField = new JTextField(String.valueOf(existingTrip.getBasePrice()));
+        JTextField totalSeatsField = new JTextField(String.valueOf(existingTrip.getTotalSeats()));
         JTextField companyField = new JTextField(existingTrip.getCompany());
         JTextField durationField = new JTextField(existingTrip.getDuration());
         JTextField amenitiesField = new JTextField(existingTrip.getAmentities());
@@ -816,7 +799,6 @@ public class TripManagementPage extends BasePanel {
         buttonPanel.add(saveButton);
         buttonPanel.add(cancelButton);
 
-
         editTripDialog.add(new JLabel("Edit Trip", SwingConstants.CENTER) {{
             setFont(new Font("Segoe UI", Font.BOLD, 18));
             setForeground(Color.WHITE);
@@ -825,19 +807,19 @@ public class TripManagementPage extends BasePanel {
         editTripDialog.add(formPanel, BorderLayout.CENTER);
         editTripDialog.add(buttonPanel, BorderLayout.SOUTH);
 
-        saveButton.addActionListener(e -> { //
+        saveButton.addActionListener(e -> {
             try {
                 String newStartPoint = startPointField.getText();
                 String newEndPoint = endPointField.getText();
                 
                 Date depDate = (Date) departureSpinner.getValue();
-                LocalDateTime newDepartureTime = depDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(); //
+                LocalDateTime newDepartureTime = depDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
                 
                 Date arrDate = (Date) arrivalSpinner.getValue();
-                LocalDateTime newArrivalTime = arrDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(); //
+                LocalDateTime newArrivalTime = arrDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
                 
-                double newPrice = Double.parseDouble(priceField.getText()); //
-                int newTotalSeats = Integer.parseInt(totalSeatsField.getText()); //
+                double newPrice = Double.parseDouble(priceField.getText());
+                int newTotalSeats = Integer.parseInt(totalSeatsField.getText());
                 String newCompany = companyField.getText();
                 String newDuration = durationField.getText();
                 String newAmenities = amenitiesField.getText();
@@ -861,15 +843,15 @@ public class TripManagementPage extends BasePanel {
                             newTotalSeats, newCompany, newDuration, newAmenities, newVehicleNo);
                 }
                 
-                tripService.updateTrip(updatedTrip); //
-                populateTripTable(); //
+                tripService.updateTrip(updatedTrip);
+                populateTripTable();
                 PageComponents.showStyledMessage("Success", "Trip updated successfully!", this);
                 editTripDialog.dispose();
-            } catch (NumberFormatException ex) { //
+            } catch (NumberFormatException ex) {
                 PageComponents.showStyledMessage("Error", "Price and Total Seats must be valid numbers!", this);
-            } catch (IllegalArgumentException ex) { //
+            } catch (IllegalArgumentException ex) {
                 PageComponents.showStyledMessage("Error", ex.getMessage(), this);
-            } catch (Exception ex) { //
+            } catch (Exception ex) {
                 PageComponents.showStyledMessage("Error", "An unexpected error occurred: " + ex.getMessage(), this);
                 ex.printStackTrace();
             }
@@ -879,8 +861,7 @@ public class TripManagementPage extends BasePanel {
 
         editTripDialog.setVisible(true);
     }
-
-
+    
     private void viewTripDetails() {
         int selectedRow = tripTable.getSelectedRow();
         if (selectedRow == -1) {
@@ -966,7 +947,6 @@ public class TripManagementPage extends BasePanel {
         searchField.setText("Search trips...");
         searchField.setForeground(new Color(150, 150, 150));
         tripTypeCombo.setSelectedIndex(0);
-        statusCombo.setSelectedIndex(0);
         
         PageComponents.showStyledMessage("Success", "Trip data refreshed successfully!", this);
     }
