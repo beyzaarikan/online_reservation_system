@@ -705,7 +705,7 @@ public class TripManagementPage extends BasePanel {
         }
 
         String tripId = (String) tableModel.getValueAt(selectedRow, 0);
-        Trip existingTrip = tripService.findTripByNo(tripId);
+        Trip existingTrip = tripService.findTripByNo(tripId); //
 
         if (existingTrip == null) {
             PageComponents.showStyledMessage("Error", "Selected trip not found in system!", this);
@@ -724,7 +724,7 @@ public class TripManagementPage extends BasePanel {
 
         // Populate fields with existing trip data
         JTextField tripNoField = new JTextField(existingTrip.getTripNo());
-        tripNoField.setEditable(false);
+        tripNoField.setEditable(false); //
 
         JComboBox<String> typeCombo = new JComboBox<>(new String[]{"Bus", "Flight"});
         typeCombo.setSelectedItem(existingTrip.getTripType());
@@ -736,7 +736,7 @@ public class TripManagementPage extends BasePanel {
             java.util.Date.from(existingTrip.getDepartureTime().atZone(java.time.ZoneId.systemDefault()).toInstant()),
             null, null, java.util.Calendar.MINUTE));
         JSpinner.DateEditor depEditor = new JSpinner.DateEditor(departureSpinner, "yyyy-MM-dd HH:mm");
-        departureSpinner.setEditor(depEditor);
+        departureSpinner.setEditor(depEditor); //
 
         JSpinner arrivalSpinner = new JSpinner(new SpinnerDateModel(
             java.util.Date.from(existingTrip.getArrivalTime().atZone(java.time.ZoneId.systemDefault()).toInstant()),
@@ -744,8 +744,8 @@ public class TripManagementPage extends BasePanel {
         JSpinner.DateEditor arrEditor = new JSpinner.DateEditor(arrivalSpinner, "yyyy-MM-dd HH:mm");
         arrivalSpinner.setEditor(arrEditor);
 
-        JTextField priceField = new JTextField(String.valueOf(existingTrip.getBasePrice()));
-        JTextField totalSeatsField = new JTextField(String.valueOf(existingTrip.getTotalSeats()));
+        JTextField priceField = new JTextField(String.valueOf(existingTrip.getBasePrice())); //
+        JTextField totalSeatsField = new JTextField(String.valueOf(existingTrip.getTotalSeats())); //
         JTextField companyField = new JTextField(existingTrip.getCompany());
         JTextField durationField = new JTextField(existingTrip.getDuration());
         JTextField amenitiesField = new JTextField(existingTrip.getAmentities());
@@ -816,6 +816,7 @@ public class TripManagementPage extends BasePanel {
         buttonPanel.add(saveButton);
         buttonPanel.add(cancelButton);
 
+
         editTripDialog.add(new JLabel("Edit Trip", SwingConstants.CENTER) {{
             setFont(new Font("Segoe UI", Font.BOLD, 18));
             setForeground(Color.WHITE);
@@ -824,19 +825,19 @@ public class TripManagementPage extends BasePanel {
         editTripDialog.add(formPanel, BorderLayout.CENTER);
         editTripDialog.add(buttonPanel, BorderLayout.SOUTH);
 
-        saveButton.addActionListener(e -> {
+        saveButton.addActionListener(e -> { //
             try {
                 String newStartPoint = startPointField.getText();
                 String newEndPoint = endPointField.getText();
                 
                 Date depDate = (Date) departureSpinner.getValue();
-                LocalDateTime newDepartureTime = depDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+                LocalDateTime newDepartureTime = depDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(); //
                 
                 Date arrDate = (Date) arrivalSpinner.getValue();
-                LocalDateTime newArrivalTime = arrDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+                LocalDateTime newArrivalTime = arrDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime(); //
                 
-                double newPrice = Double.parseDouble(priceField.getText());
-                int newTotalSeats = Integer.parseInt(totalSeatsField.getText());
+                double newPrice = Double.parseDouble(priceField.getText()); //
+                int newTotalSeats = Integer.parseInt(totalSeatsField.getText()); //
                 String newCompany = companyField.getText();
                 String newDuration = durationField.getText();
                 String newAmenities = amenitiesField.getText();
@@ -860,15 +861,15 @@ public class TripManagementPage extends BasePanel {
                             newTotalSeats, newCompany, newDuration, newAmenities, newVehicleNo);
                 }
                 
-                tripService.updateTrip(updatedTrip);
-                populateTripTable();
+                tripService.updateTrip(updatedTrip); //
+                populateTripTable(); //
                 PageComponents.showStyledMessage("Success", "Trip updated successfully!", this);
                 editTripDialog.dispose();
-            } catch (NumberFormatException ex) {
+            } catch (NumberFormatException ex) { //
                 PageComponents.showStyledMessage("Error", "Price and Total Seats must be valid numbers!", this);
-            } catch (IllegalArgumentException ex) {
+            } catch (IllegalArgumentException ex) { //
                 PageComponents.showStyledMessage("Error", ex.getMessage(), this);
-            } catch (Exception ex) {
+            } catch (Exception ex) { //
                 PageComponents.showStyledMessage("Error", "An unexpected error occurred: " + ex.getMessage(), this);
                 ex.printStackTrace();
             }
@@ -878,7 +879,8 @@ public class TripManagementPage extends BasePanel {
 
         editTripDialog.setVisible(true);
     }
-    
+
+
     private void viewTripDetails() {
         int selectedRow = tripTable.getSelectedRow();
         if (selectedRow == -1) {

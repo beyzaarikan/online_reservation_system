@@ -76,11 +76,11 @@ public class TripRepository {
                 .collect(Collectors.toList());
     }
 
-    public void updateTrip(Trip trip) {
+    public void updateTrip(Trip trip) { //
         Trip existingTrip = findByTripNo(trip.getTripNo());
         if (existingTrip != null) {
-            delete(existingTrip);
-            save(trip);
+            delete(existingTrip); //
+            save(trip); //
         } else {
             throw new IllegalArgumentException("Trip not found");
         }

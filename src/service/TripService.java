@@ -54,7 +54,8 @@ public class TripService {
         if (existingTrip == null) {
             throw new IllegalArgumentException("Trip not found");
         }
-        tripRepository.save(trip);
+        // CORRECTED LINE: Call updateTrip from repository instead of save
+        tripRepository.updateTrip(trip); 
     }
 
     public List<Trip> filterTripsByType(String tripType) {
