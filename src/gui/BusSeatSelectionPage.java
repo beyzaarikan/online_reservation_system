@@ -349,7 +349,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
                     aisleLabel.setHorizontalAlignment(SwingConstants.CENTER);
                     rowPanel.add(aisleLabel);
                 } else {
-                    boolean isWindow = (row == 0 || row == 3);
+                    boolean isWindow = (col == 0 || col == 9);
                     boolean isOccupied = preReservedSeats.contains(seatNumber);
                     boolean isPremium = col < 3;
 
@@ -817,7 +817,7 @@ protected void paintComponent(Graphics g) {
                 setText(isPremium ? "P" + seatNumber : String.valueOf(seatNumber));
                 setBackground(isPremium ? new Color(255, 193, 7) : new Color(75, 181, 67));
                 setForeground(Color.WHITE);
-                setToolTipText(String.format("Seat %d - $%.2f%s%s",
+                setToolTipText(String.format("Seat %d - %.2f TL%s%s",
                     seatNumber, price,
                     isWindow ? " (Window)" : "",
                     isPremium ? " (Premium)" : ""
