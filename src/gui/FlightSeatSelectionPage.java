@@ -810,30 +810,13 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
             // Calculate total price
             double totalPrice = 0;
             for (FlightSeatButton seat : selectedSeats) {
-                totalPrice += seat.getPrice();
+                totalPrice += seat.getPrice()/100.0;
             }
             
             // Show success message
             String successMessage = String.format(
                 "🎉 Flight Reservation Confirmed!\n\n" +
-                "Reservation ID: %s\n" +
-                "Trip Type: Flight\n" +
-                "Flight: %s → %s\n" +
-                "Airline: %s\n" +
-                "Aircraft: %s\n" +
-                "Seats: %s\n" +
-                "Total Price: $%.2f\n\n" +
-                "Your flight reservation has been saved successfully!",
-                reservationId,
-                flightTrip.getStartPoint(),
-                flightTrip.getEndPoint(),
-                airline,
-                aircraft,
-                selectedSeats.stream()
-                    .map(seat -> seat.getSeatLabel())
-                    .reduce((s1, s2) -> s1 + ", " + s2)
-                    .orElse(""),
-                totalPrice
+                "Your flight reservation has been saved successfully!"
             );
             
             PageComponents.showStyledMessage("Flight Reservation Successful!", successMessage, this);

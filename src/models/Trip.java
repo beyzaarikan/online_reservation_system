@@ -23,7 +23,7 @@ public abstract class Trip {
         this.departureTime = departureTime;
         this.arrivalTime = arrivalTime;
         this.basePrice = basePrice;
-        this.totalSeats = 29;
+        this.totalSeats = totalSeats; // Use the provided totalSeats parameter instead of hardcoding 29
         this.company = company;
         this.duration = duration;
         this.amentities = amentities;

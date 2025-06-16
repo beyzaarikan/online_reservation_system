@@ -1,19 +1,18 @@
 package gui;
+import factory.*;
 import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import models.*;
 import repository.*;
 import service.*;
-import factory.*;
-import singleton.*;
-import java.util.List;
 
 public class SearchFlightsPage extends BasePanel {
     private JTextField fromField;
@@ -97,7 +96,7 @@ public class SearchFlightsPage extends BasePanel {
         titlePanel.setOpaque(false);
         titlePanel.setBorder(BorderFactory.createEmptyBorder(30, 0, 20, 0));
 
-        JLabel titleLabel = new JLabel("✈️ Search Flights", SwingConstants.CENTER);
+        JLabel titleLabel = new JLabel("Search Flights", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 32));
         titleLabel.setForeground(Color.WHITE);
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -183,7 +182,7 @@ public class SearchFlightsPage extends BasePanel {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 0));
         buttonPanel.setOpaque(false);
         
-        JButton searchButton = createModernButton("🔍 Search Flights", new Color(138, 43, 226), true);
+        JButton searchButton = createModernButton("Search Flights", new Color(138, 43, 226), true);
         JButton clearButton = createModernButton("Clear Form", new Color(108, 92, 231), false);
         
         buttonPanel.add(searchButton);

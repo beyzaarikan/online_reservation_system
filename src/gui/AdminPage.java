@@ -7,10 +7,10 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import models.User;
-import repository.UserRepository;
-import service.UserService;
 import repository.TripRepository;
+import repository.UserRepository;
 import service.TripService;
+import service.UserService;
 
 public class AdminPage extends BasePanel {
     private JTable userTable;
@@ -173,12 +173,9 @@ public class AdminPage extends BasePanel {
         actionPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
         
         JButton viewButton = createModernButton("View Details", new Color(138, 43, 226), true);
-        JButton blockButton = createModernButton("Block User", new Color(255, 121, 121), true);
         JButton deleteButton = createModernButton("Delete User", new Color(255, 85, 85), true);
         
         actionPanel.add(viewButton);
-        actionPanel.add(Box.createHorizontalStrut(10));
-        actionPanel.add(blockButton);
         actionPanel.add(Box.createHorizontalStrut(10));
         actionPanel.add(deleteButton);
         
@@ -207,7 +204,6 @@ public class AdminPage extends BasePanel {
         searchButton.addActionListener(e -> searchUsers());
         refreshButton.addActionListener(e -> refreshData());
         viewButton.addActionListener(e -> viewUserDetails());
-        blockButton.addActionListener(e -> blockUser());
         deleteButton.addActionListener(e -> deleteUser());
     }
 
@@ -422,34 +418,6 @@ public class AdminPage extends BasePanel {
                             "User Type: " + user.getUserType();
 
             showStyledMessage("User Details", details);
-        } else {
-            showStyledMessage("Error", "User not found in system!");
-        }
-    }
-
-    private void blockUser() {
-        int selectedRow = userTable.getSelectedRow();
-        if (selectedRow == -1) {
-            showStyledMessage("Error", "Please select a user to block!");
-            return;
-        }
-
-        String userId = (String) tableModel.getValueAt(selectedRow, 0);
-        Optional<User> userOpt = userRepository.findById(userId);
-
-        if (userOpt.isPresent()) {
-            User user = userOpt.get();
-            int confirm = JOptionPane.showConfirmDialog(
-                this,
-                "Are you sure you want to block user: " + user.getName() + "?",
-                "Confirm Block",
-                JOptionPane.YES_NO_OPTION
-            );
-
-            if (confirm == JOptionPane.YES_OPTION) {
-                tableModel.setValueAt("Blocked", selectedRow, 3);
-                showStyledMessage("Success", "User " + user.getName() + " has been blocked!");
-            }
         } else {
             showStyledMessage("Error", "User not found in system!");
         }

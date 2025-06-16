@@ -349,7 +349,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
                     aisleLabel.setHorizontalAlignment(SwingConstants.CENTER);
                     rowPanel.add(aisleLabel);
                 } else {
-                    boolean isWindow = (row == 0 || row == 3);
+                    boolean isWindow = (col == 0 || col == 9);
                     boolean isOccupied = preReservedSeats.contains(seatNumber);
                     boolean isPremium = col < 3;
 
@@ -606,11 +606,11 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
             for (int i = 0; i < selectedSeats.size(); i++) {
                 if (i > 0) seatNumbers.append(", ");
                 seatNumbers.append(selectedSeats.get(i).getSeatNumber());
-                totalPrice += selectedSeats.get(i).getPrice();
+                totalPrice += selectedSeats.get(i).getPrice()/ 100.0;  //kuruşu tl ye çevirme
             }
 
             selectedSeatsLabel.setText("Seats: " + seatNumbers.toString());
-            totalPriceLabel.setText(String.format("Total: %.1f TL", totalPrice));
+            totalPriceLabel.setText(String.format("Total: %.2f TL", totalPrice));
 
             confirmButton.setEnabled(selectedSeats.size() == passengerCount);
         }
@@ -696,22 +696,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
             // Show success message
             String successMessage = String.format(
                 "🎉 Bus Reservation Confirmed!\n\n" +
-                "Reservation ID: %s\n" +
-                "Trip Type: Bus\n" +
-                "Route: %s → %s\n" +
-                "Company: %s\n" +
-                "Seats: %s\n" +
-                "Total Price: %.1f TL\n\n" +
-                "Your bus reservation has been saved successfully!",
-                reservationId,
-                busTrip.getStartPoint(),
-                busTrip.getEndPoint(),
-                busCompany,
-                selectedSeats.stream()
-                    .map(seat -> String.valueOf(seat.getSeatNumber()))
-                    .reduce((s1, s2) -> s1 + ", " + s2)
-                    .orElse(""),
-                totalPrice
+                "Your bus reservation has been saved successfully!"
             );
 
             PageComponents.showStyledMessage("Bus Reservation Successful!", successMessage, this);
@@ -817,7 +802,7 @@ protected void paintComponent(Graphics g) {
                 setText(isPremium ? "P" + seatNumber : String.valueOf(seatNumber));
                 setBackground(isPremium ? new Color(255, 193, 7) : new Color(75, 181, 67));
                 setForeground(Color.WHITE);
-                setToolTipText(String.format("Seat %d - $%.2f%s%s",
+                setToolTipText(String.format("Seat %d - %.2f TL%s%s",
                     seatNumber, price,
                     isWindow ? " (Window)" : "",
                     isPremium ? " (Premium)" : ""

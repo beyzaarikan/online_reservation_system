@@ -10,7 +10,6 @@ import singleton.SessionManager;
 public class LoginPage extends BasePanel {
     private JTextField emailField;
     private JPasswordField passwordField;
-    private JCheckBox rememberMeBox;
     private boolean isAdminLogin = false;
     private UserRepository userRepository;
     private UserService userService;
@@ -115,13 +114,6 @@ public class LoginPage extends BasePanel {
         emailField = createModernTextField("Enter your email");
         passwordField = createModernPasswordField("Enter your password");
 
-        // Remember me checkbox
-        rememberMeBox = new JCheckBox("Remember me");
-        rememberMeBox.setOpaque(false);
-        rememberMeBox.setForeground(Color.WHITE);
-        rememberMeBox.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        rememberMeBox.setAlignmentX(Component.CENTER_ALIGNMENT);
-
         // Buttons
         JButton loginButton = createModernButton("Sign In", new Color(138, 43, 226), true);
         loginButton.setMaximumSize(new Dimension(300, 50));
@@ -137,8 +129,6 @@ public class LoginPage extends BasePanel {
         formPanel.add(createFieldPanel("Email Address", emailField));
         formPanel.add(Box.createVerticalStrut(20));
         formPanel.add(createFieldPanel("Password", passwordField));
-        formPanel.add(Box.createVerticalStrut(15));
-        formPanel.add(rememberMeBox);
         formPanel.add(Box.createVerticalStrut(25));
         formPanel.add(loginButton);
         formPanel.add(Box.createVerticalStrut(15));
