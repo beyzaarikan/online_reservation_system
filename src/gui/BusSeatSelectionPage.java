@@ -1,3 +1,4 @@
+// BusSeatSelectionPage.java
 package gui;
 
 import command.*;
@@ -14,6 +15,7 @@ import repository.*;
 import service.*;
 import singleton.*;
 import state.*;
+import strategy.*;
 
 public class BusSeatSelectionPage extends BasePanel implements Observer {
     private String busCompany;
@@ -45,6 +47,9 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
     private ReservationService reservationService;
     private CommandInvoker commandInvoker;
 
+    // Strategy pattern for pricing
+    private PricingContext pricingContext;
+
     private List<Integer> preReservedSeats;
 
     public BusSeatSelectionPage(String busCompany, String fromCity, String toCity, String departureDate, String arrivalTime,
@@ -70,6 +75,10 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         } catch (NumberFormatException e) {
             this.basePriceValue = 45.0;
         }
+        
+        // Initialize pricing strategy for bus
+        this.pricingContext = new PricingContext(new BusPricingStrategy());
+        
         initializePreReservedSeats();
         // Initialize services and repositories
         initializeServices();
@@ -341,11 +350,11 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
                     aisleLabel.setHorizontalAlignment(SwingConstants.CENTER);
                     rowPanel.add(aisleLabel);
                 } else {
-                    boolean isWindow = (col == 0 || col == 9);
+                    // Removed isWindow determination
                     boolean isOccupied = preReservedSeats.contains(seatNumber);
                     boolean isPremium = col < 3;
 
-                    BusSeatButton seat = new BusSeatButton(seatNumber++, isOccupied, isWindow, isPremium);
+                    BusSeatButton seat = new BusSeatButton(seatNumber++, isOccupied, false, isPremium); // isWindow is always false
                     seat.setSeatManager(seatManager);
                     allSeats.add(seat);
                     rowPanel.add(seat);
@@ -366,11 +375,15 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         JPanel selectedItem = createLegendItem("Selected", new Color(138, 43, 226), "12");
         JPanel occupiedItem = createLegendItem("Occupied", new Color(220, 53, 69), "X");
         JPanel premiumItem = createLegendItem("Premium (+30%)", new Color(255, 193, 7), "P1");
+        // Removed windowItem creation
+        // JPanel windowItem = createLegendItem("Window (+10%)", new Color(52, 152, 219), "W1");
 
         legendPanel.add(availableItem);
         legendPanel.add(selectedItem);
         legendPanel.add(occupiedItem);
         legendPanel.add(premiumItem);
+        // Removed windowItem addition
+        // legendPanel.add(windowItem);
 
         return legendPanel;
     }
@@ -591,7 +604,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
             for (int i = 0; i < selectedSeats.size(); i++) {
                 if (i > 0) seatNumbers.append(", ");
                 seatNumbers.append(selectedSeats.get(i).getSeatNumber());
-                totalPrice += selectedSeats.get(i).getPrice()/ 100.0;  //kuruşu tl ye çevirme
+                totalPrice += selectedSeats.get(i).getPrice(); // Removed division by 100.0
             }
             selectedSeatsLabel.setText("Seats: " + seatNumbers.toString());
             totalPriceLabel.setText(String.format("Total: %.2f TL", totalPrice));
@@ -724,16 +737,16 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         private int seatNumber;
         private boolean isOccupied;
         private boolean isSelected;
-        private boolean isWindow;
+        // Removed isWindow
         private boolean isPremium;
         private double price;
         private SeatManager seatManager;
 
-        public BusSeatButton(int seatNumber, boolean isOccupied, boolean isWindow, boolean isPremium) {
+        public BusSeatButton(int seatNumber, boolean isOccupied, boolean isWindow, boolean isPremium) { // isWindow parameter retained for compatibility, but its usage is removed
             this.seatNumber = seatNumber;
             this.isOccupied = isOccupied;
             this.isSelected = false;
-            this.isWindow = isWindow;
+            // Removed isWindow from constructor assignment
             this.isPremium = isPremium;
             this.price = calculateSeatPrice();
 
@@ -751,7 +764,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
                 g2.setColor(new Color(220, 53, 69)); // Kırmızı - dolu
             } else if (isPremium) {
                 g2.setColor(new Color(255, 193, 7)); // Sarı - premium
-            } else {
+            } else { // Removed isWindow check
                 g2.setColor(new Color(75, 181, 67)); // Yeşil - müsait
             }
             g2.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
@@ -783,9 +796,9 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
                 setText(isPremium ? "P" + seatNumber : String.valueOf(seatNumber));
                 setBackground(isPremium ? new Color(255, 193, 7) : new Color(75, 181, 67));
                 setForeground(Color.WHITE);
-                setToolTipText(String.format("Seat %d - %.2f TL%s%s",
+                setToolTipText(String.format("Seat %d - %.2f TL%s", // Removed %s for isWindow
                     seatNumber, price,
-                    isWindow ? " (Window)" : "",
+                    // Removed isWindow from tooltip
                     isPremium ? " (Premium)" : ""
                 ));
                 addActionListener(e -> toggleSelection());
@@ -797,7 +810,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
             double multiplier = 1.0;
 
             if (isPremium) multiplier += 0.3;
-            if (isWindow) multiplier += 0.1;
+            // Removed isWindow from price calculation
             return basePriceValue * multiplier;
         }
 

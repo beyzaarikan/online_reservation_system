@@ -14,6 +14,7 @@ import repository.*;
 import service.*;
 import singleton.*;
 import state.*;
+import strategy.*;
 
 public class FlightSeatSelectionPage extends BasePanel implements Observer {
     private String airline;
@@ -46,6 +47,9 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
     private ReservationService reservationService;
     private CommandInvoker commandInvoker;
 
+    // Strategy pattern for pricing
+    private PricingContext pricingContext;
+
     private List<Integer> preReservedSeats;
 
     public FlightSeatSelectionPage(String airline, String fromAirport, String toAirport,
@@ -72,6 +76,9 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         } catch (NumberFormatException e) {
             this.basePriceValue = 280.0;
         }
+
+        // Initialize pricing strategy for flight
+        this.pricingContext = new PricingContext(new FlightPricingStrategy());
 
         initializeServices();
         initializePreReservedSeats();
@@ -323,87 +330,98 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
     }
 
     private JPanel createSeatLayout() {
-        JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.setOpaque(false);
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(30, 0, 0, 0));
+    JPanel mainPanel = new JPanel(new BorderLayout());
+    mainPanel.setOpaque(false);
+    mainPanel.setBorder(BorderFactory.createEmptyBorder(30, 0, 0, 0));
 
-        JPanel aircraftLayout = new JPanel();
-        aircraftLayout.setLayout(new BoxLayout(aircraftLayout, BoxLayout.Y_AXIS));
-        aircraftLayout.setOpaque(false);
+    JPanel aircraftLayout = new JPanel();
+    aircraftLayout.setLayout(new BoxLayout(aircraftLayout, BoxLayout.Y_AXIS));
+    aircraftLayout.setOpaque(false);
 
-        int seatUniqueIdCounter = 1;
-        int seatsPerRow = getSeatsPerRow();
-        int totalRows = getTotalRows();
+    int seatUniqueIdCounter = 1;
+    int seatsPerRow = getSeatsPerRow();
+    int totalRows = getTotalRows();
 
-        for (int row = 0; row < totalRows; row++) {
-            JPanel rowPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 8));
-            rowPanel.setOpaque(false);
+    for (int row = 0; row < totalRows; row++) {
+        JPanel rowPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 8));
+        rowPanel.setOpaque(false);
 
-            JLabel rowLabel = new JLabel(String.valueOf(row + 1));
-            rowLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
-            rowLabel.setForeground(new Color(189, 147, 249));
-            rowLabel.setPreferredSize(new Dimension(25, 35));
-            rowLabel.setHorizontalAlignment(SwingConstants.CENTER);
-            rowPanel.add(rowLabel);
+        JLabel rowLabel = new JLabel(String.valueOf(row + 1));
+        rowLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        rowLabel.setForeground(new Color(189, 147, 249));
+        rowLabel.setPreferredSize(new Dimension(25, 35));
+        rowLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        rowPanel.add(rowLabel);
 
-            char currentLetter = 'A';
-            for (int col = 0; col < seatsPerRow; col++) {
+        char currentLetter = 'A';
+        for (int col = 0; col < seatsPerRow; col++) {
+            // Add spacing for different class configurations
+            if ("First Class".equals(flightClass) || "Business".equals(flightClass)) {
+                // For First Class and Business: 1-1-1 configuration with spaces
+                if (col == 1 || col == 2) {
+                    JLabel spaceLabel = new JLabel("  ");
+                    spaceLabel.setPreferredSize(new Dimension(30, 35));
+                    rowPanel.add(spaceLabel);
+                }
+            } else {
+                // For Economy: 3-3 configuration with aisle
                 if (seatsPerRow == 6 && (col == 2 || col == 4)) {
                     JLabel aisleLabel = new JLabel("  ");
                     aisleLabel.setPreferredSize(new Dimension(20, 35));
                     rowPanel.add(aisleLabel);
                 }
-
-                String seatLabel = (row + 1) + String.valueOf(currentLetter);
-                int currentSeatUniqueId = seatUniqueIdCounter++;
-
-                String tripKey = airline + "_" + fromAirport + "_" + toAirport + "_" + departureTime;
-                boolean isOccupied = preReservedSeats.contains(currentSeatUniqueId);
-
-                boolean isWindow = (col == 0 || col == seatsPerRow - 1);
-                boolean isAisle = !isWindow && (seatsPerRow == 6 ? (col == 1 || col == 4) : (col == 1 || col == 2));
-                boolean isPremium = row < 3 || "Business".equals(flightClass) || "First Class".equals(flightClass);
-
-                FlightSeatButton seat = new FlightSeatButton(seatLabel, currentSeatUniqueId, isOccupied, isWindow, isAisle, isPremium);
-                seat.setSeatManager(seatManager);
-                allSeats.add(seat);
-                rowPanel.add(seat);
-
-                currentLetter++;
             }
 
-            aircraftLayout.add(rowPanel);
+            String seatLabel = (row + 1) + String.valueOf(currentLetter);
+            int currentSeatUniqueId = seatUniqueIdCounter++;
+
+            String tripKey = airline + "_" + fromAirport + "_" + toAirport + "_" + departureTime;
+            boolean isOccupied = preReservedSeats.contains(currentSeatUniqueId);
+
+            boolean isWindow = (col == 0 || col == seatsPerRow - 1);
+            boolean isAisle = !isWindow && (seatsPerRow == 6 ? (col == 1 || col == 4) : (col == 1 || col == 2));
+            boolean isPremium = row < 3 || "Business".equals(flightClass) || "First Class".equals(flightClass);
+
+            FlightSeatButton seat = new FlightSeatButton(seatLabel, currentSeatUniqueId, isOccupied, isAisle, isPremium);
+            seat.setSeatManager(seatManager);
+            allSeats.add(seat);
+            rowPanel.add(seat);
+
+            currentLetter++;
         }
 
-        JScrollPane scrollPane = new JScrollPane(aircraftLayout) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                Graphics2D g2d = (Graphics2D) g;
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                
-                g2d.setColor(new Color(255, 255, 255, 5));
-                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
-            }
-        };
-        
-        scrollPane.setOpaque(false);
-        scrollPane.getViewport().setOpaque(false);
-        scrollPane.setBorder(null);
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        
-        JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
-        verticalScrollBar.setOpaque(false);
-        verticalScrollBar.setUI(new ScrollBarUI());
-        verticalScrollBar.setPreferredSize(new Dimension(12, 0));
-        verticalScrollBar.setUnitIncrement(16);
-        verticalScrollBar.setBlockIncrement(64);
-
-        mainPanel.add(scrollPane, BorderLayout.CENTER);
-        return mainPanel;
+        aircraftLayout.add(rowPanel);
     }
 
+    JScrollPane scrollPane = new JScrollPane(aircraftLayout) {
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            Graphics2D g2d = (Graphics2D) g;
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            
+            g2d.setColor(new Color(255, 255, 255, 5));
+            g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
+        }
+    };
+    
+    scrollPane.setOpaque(false);
+    scrollPane.getViewport().setOpaque(false);
+    scrollPane.setBorder(null);
+    scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+    scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+    
+    JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
+    verticalScrollBar.setOpaque(false);
+    verticalScrollBar.setUI(new ScrollBarUI());
+    verticalScrollBar.setPreferredSize(new Dimension(12, 0));
+    verticalScrollBar.setUnitIncrement(16);
+    verticalScrollBar.setBlockIncrement(64);
+
+    mainPanel.add(scrollPane, BorderLayout.CENTER);
+    return mainPanel;
+}
+    
     private class ScrollBarUI extends javax.swing.plaf.basic.BasicScrollBarUI {
         @Override
         protected void configureScrollBarColors() {
@@ -449,16 +467,6 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         }
     }
 
-    private int getSeatsPerRow() {
-        if ("First Class".equals(flightClass)) {
-            return 4; // 2-2 configuration
-        } else if ("Business".equals(flightClass)) {
-            return 4; // 2-2 configuration
-        } else {
-            return aircraft.contains("737") || aircraft.contains("A320") ? 6 : 6; // 3-3 configuration
-        }
-    }
-
     private int getTotalRows() {
         if ("First Class".equals(flightClass)) {
             return 6;
@@ -477,14 +485,16 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         JPanel availableItem = createLegendItem("Available", new Color(75, 181, 67), "1A");
         JPanel selectedItem = createLegendItem("Selected", new Color(138, 43, 226), "1A");
         JPanel occupiedItem = createLegendItem("Occupied", new Color(220, 53, 69), "X");
-        JPanel premiumItem = createLegendItem("Premium (+50%)", new Color(255, 193, 7), "P1");
-        JPanel windowItem = createLegendItem("Window (+20%)", new Color(52, 152, 219), "W1");
+        JPanel premiumItem = createLegendItem("Premium (+200%)", new Color(255, 193, 7), "P1");
+        // Removed windowItem creation
+        // JPanel windowItem = createLegendItem("Window (+15%)", new Color(52, 152, 219), "W1");
 
         legendPanel.add(availableItem);
         legendPanel.add(selectedItem);
         legendPanel.add(occupiedItem);
         legendPanel.add(premiumItem);
-        legendPanel.add(windowItem);
+        // Removed windowItem addition
+        // legendPanel.add(windowItem);
 
         return legendPanel;
     }
@@ -627,6 +637,16 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         return button;
     }
 
+    private int getSeatsPerRow() {
+        if ("First Class".equals(flightClass)) {
+            return 3; // 1-1-1 configuration
+        } else if ("Business".equals(flightClass)) {
+            return 3; // 1-1-1 configuration
+        } else {
+            return aircraft.contains("737") || aircraft.contains("A320") ? 6 : 6; // 3-3 configuration
+        }
+    }
+
     private JPanel createFeaturesPanel() {
         JPanel panel = new JPanel() {
             @Override
@@ -675,6 +695,9 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         return panel;
     }
 
+    
+    
+    
     private boolean isLightColor(Color color) {
         int yiq = ((color.getRed() * 299) +
                    (color.getGreen() * 587) +
@@ -790,10 +813,10 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
             ReservationContext reservationContext = new ReservationContext(reservationId);
             reservationContext.confirm(); // Confirm the reservation
             
-            // Calculate total price
+            // Calculate total price using strategy pattern
             double totalPrice = 0;
             for (FlightSeatButton seat : selectedSeats) {
-                totalPrice += seat.getPrice()/100.0;
+                totalPrice += seat.getPrice();
             }
             
             // Show success message
@@ -825,21 +848,21 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         private int seatId;
         private boolean isOccupied;
         private boolean isSelected;
-        private boolean isWindow;
-        private boolean isAisle;
+        private boolean isAisle; // isWindow removed
         private boolean isPremium;
         private double price;
         private SeatManager seatManager;
 
-        public FlightSeatButton(String seatLabel, int seatId, boolean isOccupied, boolean isWindow, boolean isAisle, boolean isPremium) {
+        public FlightSeatButton(String seatLabel, int seatId, boolean isOccupied, boolean isAisle, boolean isPremium) {
             this.seatLabel = seatLabel;
             this.seatId = seatId;
             this.isOccupied = isOccupied;
             this.isSelected = false;
-            this.isWindow = isWindow;
             this.isAisle = isAisle;
             this.isPremium = isPremium;
-            this.price = calculateSeatPrice();
+            
+            // Use Strategy pattern to calculate price
+            this.price = calculateSeatPriceWithStrategy();
 
             setupButton();
         }
@@ -854,15 +877,13 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
             // Background color
-            if (isOccupied) {
-                g2.setColor(new Color(220, 53, 69)); // Red
-            } else if (isSelected) {
+            if (isSelected) {
                 g2.setColor(new Color(138, 43, 226)); // Purple
+            } else if (isOccupied) {
+                g2.setColor(new Color(220, 53, 69)); // Red
             } else if (isPremium) {
                 g2.setColor(new Color(255, 193, 7)); // Yellow
-            } else if (isWindow) {
-                g2.setColor(new Color(52, 152, 219)); // Blue
-            } else {
+            } else { // No special color for window seats
                 g2.setColor(new Color(75, 181, 67)); // Green
             }
             
@@ -895,7 +916,7 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
                 setForeground(Color.WHITE);
                 
                 String tooltip = String.format("Seat %s - $%.2f", seatLabel, price);
-                if (isWindow) tooltip += " (Window)";
+                // Removed (Window) from tooltip
                 if (isAisle) tooltip += " (Aisle)";
                 if (isPremium) tooltip += " (Premium)";
                 
@@ -906,13 +927,17 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
             setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255, 50), 1, true));
         }
 
-        private double calculateSeatPrice() {
-            double multiplier = 1.0;
-
-            if (isPremium) multiplier += 0.5;
-            if (isWindow) multiplier += 0.2;
-            if (isAisle) multiplier += 0.1;
-            return basePriceValue * multiplier;
+        private double calculateSeatPriceWithStrategy() {
+            // Create a dummy trip for price calculation
+            Trip dummyTrip = new FlightTrip(
+                "DUMMY", "", "", 
+                java.time.LocalDateTime.now(), 
+                java.time.LocalDateTime.now(), 
+                basePriceValue, 150, "", "", "", ""
+            );
+            
+            // Use the pricing context to calculate price
+            return pricingContext.calculatePrice(dummyTrip, seatId);
         }
         
         private void toggleSelection() {

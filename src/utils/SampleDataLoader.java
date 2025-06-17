@@ -73,36 +73,36 @@ public class SampleDataLoader {
                 
                 Trip flightTrip1 = factoryManager.getFactory("Flight").createTrip(
                         "FT001", "Istanbul", "Ankara",
-                        LocalDate.of(2025, 10, 1).atTime(8, 30), 
-                        LocalDate.of(2025, 10, 1).atTime(9, 45), 
+                        LocalDate.of(2025, 06, 18).atTime(8, 30),
+                        LocalDate.of(2025, 06, 18).atTime(9, 45),
                         150.0, 150, "THY ", "1h 15m", "WiFi, Meal Service", "Boeing 737");
                 tripService.addTrip(flightTrip1);
 
                 Trip flightTrip2 = factoryManager.getFactory("Flight").createTrip(
                         "FT002", "Istanbul", "Izmir",
-                        LocalDate.of(2025, 10, 1).atTime(10, 15), 
-                        LocalDate.of(2025, 10, 1).atTime(11, 30), 
+                        LocalDate.of(2025, 06, 18).atTime(10, 15),
+                        LocalDate.of(2025, 06, 18).atTime(11, 30),
                         120.0, 150, "Pegasus", "1h 15m", "WiFi, Meal Service", "Airbus A320");
                 tripService.addTrip(flightTrip2);
 
                 Trip flightTrip3 = factoryManager.getFactory("Flight").createTrip(
                         "FT003", "Istanbul", "Antalya",
-                        LocalDate.of(2025, 10, 1).atTime(14, 0), 
-                        LocalDate.of(2025, 10, 1).atTime(15, 15), 
+                        LocalDate.of(2025, 06, 18).atTime(14, 0),
+                        LocalDate.of(2025, 06, 18).atTime(15, 15),
                         180.0, 150, "SunExpress", "1h 15m", "WiFi, Meal Service", "Boeing 7377");
                 tripService.addTrip(flightTrip3);
 
                 Trip flightTrip4 = factoryManager.getFactory("Flight").createTrip(
                         "FT004", "Ankara", "Bodrum",
-                        LocalDate.of(2025, 10, 1).atTime(16, 30), 
-                        LocalDate.of(2025, 10, 1).atTime(17, 45), 
+                        LocalDate.of(2025, 06, 18).atTime(16, 30),
+                        LocalDate.of(2025, 06, 18).atTime(17, 45),
                         200.0, 150, "THY", "1h 15m", "WiFi, Meal Service", "Airbus A321");
                 tripService.addTrip(flightTrip4);
 
                 Trip flightTrip5 = factoryManager.getFactory("Flight").createTrip(
                         "FT005", "Izmir", "Trabzon",
-                        LocalDate.of(2025, 10, 1).atTime(19, 0), 
-                        LocalDate.of(2025, 10, 1).atTime(20, 15), 
+                        LocalDate.of(2025, 06, 18).atTime(19, 0),
+                        LocalDate.of(2025, 06, 18).atTime(20, 15),
                         160.0, 150, "Pegasus", "1h 15m", "WiFi, Meal Service", "Boeing 737");
                 tripService.addTrip(flightTrip5);
 
