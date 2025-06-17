@@ -22,7 +22,6 @@ public class SearchBusTripPage extends BasePanel {
     private JSpinner dateSpinner;
     private JSpinner returnDateSpinner;
     private JComboBox<String> passengerCount;
-    private JCheckBox roundTripCheckbox;
     private JTable busTable;
     private DefaultTableModel tableModel;
     private JPanel returnDatePanel;
@@ -78,7 +77,7 @@ public class SearchBusTripPage extends BasePanel {
         // Back button panel
         JPanel backPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         backPanel.setOpaque(false);
-        JButton backButton = createModernButton("← Back to Menu", new Color(108, 92, 231), false);
+        JButton backButton = createButton("← Back to Menu", new Color(108, 92, 231), false);
         backButton.setPreferredSize(new Dimension(150, 35));
         backButton.setFont(new Font("Segoe UI", Font.BOLD, 12));
         backPanel.add(backButton);
@@ -99,7 +98,7 @@ public class SearchBusTripPage extends BasePanel {
         titlePanel.setOpaque(false);
         titlePanel.setBorder(BorderFactory.createEmptyBorder(30, 0, 20, 0));
 
-        JLabel titleLabel = new JLabel("🚌 Search Bus Trips", SwingConstants.CENTER);
+        JLabel titleLabel = new JLabel("Search Bus Trips", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 32));
         titleLabel.setForeground(Color.WHITE);
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -113,7 +112,6 @@ public class SearchBusTripPage extends BasePanel {
         titlePanel.add(Box.createVerticalStrut(8));
         titlePanel.add(subtitleLabel);
 
-        // Search Form panel with glassmorphism effect
         JPanel searchFormPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -121,11 +119,9 @@ public class SearchBusTripPage extends BasePanel {
                 Graphics2D g2d = (Graphics2D) g;
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 
-                // Glassmorphism background
                 g2d.setColor(new Color(255, 255, 255, 10));
                 g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
                 
-                // Border
                 g2d.setColor(new Color(255, 255, 255, 30));
                 g2d.setStroke(new BasicStroke(1));
                 g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 20, 20);
@@ -151,33 +147,17 @@ public class SearchBusTripPage extends BasePanel {
 
         // From and To cities - same row
         gbc.gridx = 0; gbc.gridy = 0;
-        fieldsPanel.add(createFieldPanel("From City", fromField = createModernTextField("Enter departure city")), gbc);
+        fieldsPanel.add(createFieldPanel("From City", fromField = creatTextField("Enter departure city")), gbc);
         
         gbc.gridx = 1;
-        fieldsPanel.add(createFieldPanel("To City", toField = createModernTextField("Enter destination city")), gbc);
+        fieldsPanel.add(createFieldPanel("To City", toField = creatTextField("Enter destination city")), gbc);
 
         // Date and Round trip - same row
         gbc.gridx = 0; gbc.gridy = 1;
         fieldsPanel.add(createFieldPanel("Departure Date", dateSpinner = createDateSpinner()), gbc);
         
-        gbc.gridx = 1;
-        JPanel roundTripPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        roundTripPanel.setOpaque(false);
-        roundTripCheckbox = new JCheckBox("Round Trip");
-        roundTripCheckbox.setOpaque(false);
-        roundTripCheckbox.setForeground(Color.WHITE);
-        roundTripCheckbox.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-
-        roundTripPanel.add(roundTripCheckbox);
-        fieldsPanel.add(createFieldPanel("Trip Type", roundTripPanel), gbc);
-
-        // Return date and passengers - same row
-        gbc.gridx = 0; gbc.gridy = 2;
-        returnDatePanel = createFieldPanel("Return Date", returnDateSpinner = createDateSpinner());
-        returnDatePanel.setVisible(false);
-        fieldsPanel.add(returnDatePanel, gbc);
         
-        gbc.gridx = 1;
+        gbc.gridx = 1; gbc.gridy = 1;
         passengerCount = new JComboBox<>(new String[]{"1", "2", "3", "4", "5", "6+"});
         styleComboBox(passengerCount);
         fieldsPanel.add(createFieldPanel("Passengers", passengerCount), gbc);
@@ -186,8 +166,8 @@ public class SearchBusTripPage extends BasePanel {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 0));
         buttonPanel.setOpaque(false);
         
-        JButton searchButton = createModernButton("🔍 Search Buses", new Color(138, 43, 226), true);
-        JButton clearButton = createModernButton("Clear Form", new Color(108, 92, 231), false);
+        JButton searchButton = createButton("🔍 Search Buses", new Color(138, 43, 226), true);
+        JButton clearButton = createButton("Clear Form", new Color(108, 92, 231), false);
         
         buttonPanel.add(searchButton);
         buttonPanel.add(clearButton);
@@ -198,7 +178,6 @@ public class SearchBusTripPage extends BasePanel {
         searchFormPanel.add(Box.createVerticalStrut(20));
         searchFormPanel.add(buttonPanel);
 
-        // Results panel with glassmorphism effect
         JPanel resultsPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -247,7 +226,7 @@ public class SearchBusTripPage extends BasePanel {
         tableScrollPane.setPreferredSize(new Dimension(800, 250));
 
         // Select and proceed button
-        JButton selectButton = createModernButton("Select Trip & Proceed", new Color(138, 43, 226), true);
+        JButton selectButton = createButton("Select Trip & Proceed", new Color(138, 43, 226), true);
         selectButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         resultsPanel.add(resultsTitle);
@@ -280,7 +259,7 @@ public class SearchBusTripPage extends BasePanel {
         selectButton.addActionListener(e -> selectTripAndProceed());
     }
 
-    private JTextField createModernTextField(String placeholder) {
+    private JTextField creatTextField(String placeholder) {
         JTextField field = new JTextField() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -331,7 +310,7 @@ public class SearchBusTripPage extends BasePanel {
         return field;
     }
 
-    private JButton createModernButton(String text, Color baseColor, boolean isPrimary) {
+    private JButton createButton(String text, Color baseColor, boolean isPrimary) {
         JButton button = new JButton(text) {
             @Override
             protected void paintComponent(Graphics g) {
@@ -415,7 +394,7 @@ public class SearchBusTripPage extends BasePanel {
         Component editor = spinner.getEditor();
         JFormattedTextField textField = ((JSpinner.DateEditor) editor).getTextField();
         textField.setBackground(new Color(255, 255, 255, 0));
-        textField.setForeground(Color.WHITE);
+        textField.setForeground(Color.BLACK);
         textField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         textField.setBorder(BorderFactory.createEmptyBorder(12, 15, 12, 15));
         
@@ -424,7 +403,7 @@ public class SearchBusTripPage extends BasePanel {
 
     private void styleComboBox(JComboBox<String> comboBox) {
         comboBox.setBackground(new Color(255, 255, 255, 15));
-        comboBox.setForeground(Color.WHITE);
+        comboBox.setForeground(Color.BLACK);
         comboBox.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         comboBox.setPreferredSize(new Dimension(250, 45));
         comboBox.setMaximumSize(new Dimension(250, 45));
@@ -541,7 +520,6 @@ public class SearchBusTripPage extends BasePanel {
         dateSpinner.setValue(java.sql.Date.valueOf(LocalDate.now()));
         returnDateSpinner.setValue(java.sql.Date.valueOf(LocalDate.now()));
         passengerCount.setSelectedIndex(0);
-        roundTripCheckbox.setSelected(false);
 
         tableModel.setRowCount(0);
         busTable.clearSelection();
@@ -571,10 +549,6 @@ public class SearchBusTripPage extends BasePanel {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         String departureDate = dateFormat.format((Date) dateSpinner.getValue());
         
-        String returnDate = null;
-        if (roundTripCheckbox.isSelected()) {
-            returnDate = dateFormat.format((Date) returnDateSpinner.getValue());
-        }
         
         String passengerCountStr = (String) passengerCount.getSelectedItem();
         int passengerCountInt = Integer.parseInt(passengerCountStr.replace("+", ""));
@@ -605,8 +579,7 @@ public class SearchBusTripPage extends BasePanel {
             BusSeatSelectionPage seatSelectionPage = new BusSeatSelectionPage(
                 busCompany, 
                 fromCity, 
-                toCity, 
-                returnDate, 
+                toCity,
                 departureDate, 
                 arrivalTime, 
                 price, 

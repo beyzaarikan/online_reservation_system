@@ -13,21 +13,14 @@ import service.TripService;
 public class SampleDataLoader {
 
     public static void loadSampleTripData() {
-        // TripRepository'nin Singleton örneğini al
         TripRepository tripRepository = TripRepository.getInstance();
-        // TripService, repository'yi parametre olarak alır
         TripService tripService = new TripService(tripRepository); 
-        // Fabrika yöneticisi
         TripFactoryManager factoryManager = new TripFactoryManager();
 
-        // Repository boşsa örnek verileri yükle, tekrar yüklemeyi önle
         if (tripRepository.findAll().isEmpty()) {
             try {
-                // Fabrikaları kaydet (TripFactoryManager constructor'ında zaten var ama emin olalım)
                 factoryManager.registerFactory("Bus", new BusTripFactory());
                 factoryManager.registerFactory("Flight", new FlightTripFactory());
-
-                // --- Bus Trip Data (SearchBusTripPage'den ve TripManagementPage'den toplanmış) ---
                 Trip busTrip1 = factoryManager.getFactory("Bus").createTrip(
                         "BT001", "Istanbul", "Ankara",
                         LocalDateTime.of(2025, 6, 15, 8, 0),
@@ -77,41 +70,40 @@ public class SampleDataLoader {
                         70.0, 29, "Varan Turizm", "7h 30m", "AC, Refreshment", "35-VR-007");
                 tripService.addTrip(busTrip7);
 
-
-                // --- Flight Trip Data (SearchFlightsPage'den ve TripManagementPage'den toplanmış) ---
+                
                 Trip flightTrip1 = factoryManager.getFactory("Flight").createTrip(
                         "FT001", "Istanbul", "Ankara",
                         LocalDate.of(2025, 10, 1).atTime(8, 30), 
                         LocalDate.of(2025, 10, 1).atTime(9, 45), 
-                        150.0, 100, "THY ", "1h 15m", "WiFi, Meal Service", "Boeing 737");
+                        150.0, 150, "THY ", "1h 15m", "WiFi, Meal Service", "Boeing 737");
                 tripService.addTrip(flightTrip1);
 
                 Trip flightTrip2 = factoryManager.getFactory("Flight").createTrip(
                         "FT002", "Istanbul", "Izmir",
                         LocalDate.of(2025, 10, 1).atTime(10, 15), 
                         LocalDate.of(2025, 10, 1).atTime(11, 30), 
-                        120.0, 100, "Pegasus", "1h 15m", "WiFi, Meal Service", "Airbus A320");
+                        120.0, 150, "Pegasus", "1h 15m", "WiFi, Meal Service", "Airbus A320");
                 tripService.addTrip(flightTrip2);
 
                 Trip flightTrip3 = factoryManager.getFactory("Flight").createTrip(
                         "FT003", "Istanbul", "Antalya",
                         LocalDate.of(2025, 10, 1).atTime(14, 0), 
                         LocalDate.of(2025, 10, 1).atTime(15, 15), 
-                        180.0, 100, "SunExpress", "1h 15m", "WiFi, Meal Service", "Boeing 7377");
+                        180.0, 150, "SunExpress", "1h 15m", "WiFi, Meal Service", "Boeing 7377");
                 tripService.addTrip(flightTrip3);
 
                 Trip flightTrip4 = factoryManager.getFactory("Flight").createTrip(
                         "FT004", "Ankara", "Bodrum",
                         LocalDate.of(2025, 10, 1).atTime(16, 30), 
                         LocalDate.of(2025, 10, 1).atTime(17, 45), 
-                        200.0, 100, "THY", "1h 15m", "WiFi, Meal Service", "Airbus A321");
+                        200.0, 150, "THY", "1h 15m", "WiFi, Meal Service", "Airbus A321");
                 tripService.addTrip(flightTrip4);
 
                 Trip flightTrip5 = factoryManager.getFactory("Flight").createTrip(
                         "FT005", "Izmir", "Trabzon",
                         LocalDate.of(2025, 10, 1).atTime(19, 0), 
                         LocalDate.of(2025, 10, 1).atTime(20, 15), 
-                        160.0, 100, "Pegasus", "1h 15m", "WiFi, Meal Service", "Boeing 737");
+                        160.0, 150, "Pegasus", "1h 15m", "WiFi, Meal Service", "Boeing 737");
                 tripService.addTrip(flightTrip5);
 
             } catch (Exception e) {

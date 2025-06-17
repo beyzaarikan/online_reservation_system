@@ -283,29 +283,29 @@ public class MyProfilePage extends BasePanel {
         gbc.gridx = 0; gbc.gridy = 0;
         formSection.add(createFieldLabel("Full Name"), gbc);
         gbc.gridx = 1;
-        nameField = createModernTextField(user.getName());
+        nameField = createTextField(user.getName());
         formSection.add(nameField, gbc);
         
         // Email Address
         gbc.gridx = 0; gbc.gridy = 1;
         formSection.add(createFieldLabel("Email Address"), gbc);
         gbc.gridx = 1;
-        emailField = createModernTextField(user.getEmail());
+        emailField = createTextField(user.getEmail());
         formSection.add(emailField, gbc);
         
         // Gender
         gbc.gridx = 0; gbc.gridy = 2;
         formSection.add(createFieldLabel("Gender"), gbc);
         gbc.gridx = 1;
-        genderCombo = createModernComboBox(new String[]{"Male", "Female", "Other", "Prefer not to say"});
+        genderCombo = createComboBox(new String[]{"Male", "Female", "Other", "Prefer not to say"});
         formSection.add(genderCombo, gbc);
         
         // Buttons
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 30));
         buttonPanel.setOpaque(false);
         
-        JButton saveButton = createModernButton(" Save Changes", new Color(139, 92, 246), true);
-        JButton cancelButton = createModernButton("Cancel", new Color(138, 92, 246), false);
+        JButton saveButton = createButton(" Save Changes", new Color(139, 92, 246), true);
+        JButton cancelButton = createButton("Cancel", new Color(138, 92, 246), false);
         
         saveButton.addActionListener(e -> savePersonalInfo());
         cancelButton.addActionListener(e -> resetPersonalInfo());
@@ -329,7 +329,7 @@ public class MyProfilePage extends BasePanel {
         return label;
     }
 
-    private JTextField createModernTextField(String text) {
+    private JTextField createTextField(String text) {
         JTextField field = new JTextField(text) {
             @Override
             protected void paintComponent(Graphics g) {
@@ -364,7 +364,7 @@ public class MyProfilePage extends BasePanel {
         return field;
     }
 
-    private JComboBox<String> createModernComboBox(String[] items) {
+    private JComboBox<String> createComboBox(String[] items) {
         JComboBox<String> combo = new JComboBox<String>(items) {
             @Override
             protected void paintComponent(Graphics g) {
@@ -398,7 +398,7 @@ public class MyProfilePage extends BasePanel {
         return combo;
     }
 
-    private JButton createModernButton(String text, Color backgroundColor, boolean isPrimary) {
+    private JButton createButton(String text, Color backgroundColor, boolean isPrimary) {
         JButton button = new JButton(text) {
             @Override
             protected void paintComponent(Graphics g) {
@@ -561,21 +561,21 @@ public class MyProfilePage extends BasePanel {
         gbc.gridx = 0; gbc.gridy = 0;
         formSection.add(createFieldLabel("Current Password"), gbc);
         gbc.gridx = 1;
-        currentPasswordField = createModernPasswordField();
+        currentPasswordField = createPasswordField();
         formSection.add(currentPasswordField, gbc);
         
         // New Password
         gbc.gridx = 0; gbc.gridy = 1;
         formSection.add(createFieldLabel("New Password"), gbc);
         gbc.gridx = 1;
-        newPasswordField = createModernPasswordField();
+        newPasswordField = createPasswordField();
         formSection.add(newPasswordField, gbc);
         
         // Confirm Password
         gbc.gridx = 0; gbc.gridy = 2;
         formSection.add(createFieldLabel("Confirm Password"), gbc);
         gbc.gridx = 1;
-        confirmPasswordField = createModernPasswordField();
+        confirmPasswordField = createPasswordField();
         formSection.add(confirmPasswordField, gbc);
 
         // Error message label
@@ -591,8 +591,8 @@ public class MyProfilePage extends BasePanel {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 30));
         buttonPanel.setOpaque(false);
 
-        JButton updatePasswordButton = createModernButton("🔑 Update Password", new Color(139, 92, 246), true);
-        JButton cancelButton = createModernButton("Cancel", new Color(138, 92, 246), false);
+        JButton updatePasswordButton = createButton("🔑 Update Password", new Color(139, 92, 246), true);
+        JButton cancelButton = createButton("Cancel", new Color(138, 92, 246), false);
 
         updatePasswordButton.addActionListener(e -> updatePassword());
         cancelButton.addActionListener(e -> resetSecurityFields());
@@ -608,7 +608,7 @@ public class MyProfilePage extends BasePanel {
         return panel;
     }
 
-    private JPasswordField createModernPasswordField() {
+    private JPasswordField createPasswordField() {
         JPasswordField field = new JPasswordField() {
             @Override
             protected void paintComponent(Graphics g) {

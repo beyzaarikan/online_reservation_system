@@ -89,99 +89,109 @@ public class MainMenuPage extends JFrame {
     }
     
     private JPanel createHeaderPanel() {
-        JPanel headerPanel = new JPanel(new BorderLayout());
-        headerPanel.setOpaque(false);
-        headerPanel.setBorder(new EmptyBorder(20, 40, 10, 40));
-        
-        // User info panel with glassmorphism
-        JPanel userInfoPanel = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                Graphics2D g2d = (Graphics2D) g;
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                
-                // Glassmorphism background
-                g2d.setColor(new Color(255, 255, 255, 10));
-                g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
-                
-                // Border
-                g2d.setColor(new Color(255, 255, 255, 30));
-                g2d.setStroke(new BasicStroke(1));
-                g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 15, 15);
-            }
-        };
-        userInfoPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-        userInfoPanel.setOpaque(false);
-        userInfoPanel.setBorder(new EmptyBorder(15, 20, 15, 20));
-        
-        // User avatar
-        JPanel avatarPanel = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                Graphics2D g2d = (Graphics2D) g;
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                
-                int centerX = getWidth() / 2;
-                int centerY = getHeight() / 2;
-                
-                // Profil dairesi - gradient
-                GradientPaint avatarGradient = new GradientPaint(
-                    0, 0, new Color(138, 43, 226),
-                    getWidth(), getHeight(), new Color(108, 92, 231)
-                );
-                g2d.setPaint(avatarGradient);
-                g2d.fillOval(centerX - 20, centerY - 20, 40, 40);
-                
-                // Kullanıcı simgesi
-                g2d.setColor(Color.WHITE);
-                g2d.setFont(new Font("Segoe UI", Font.BOLD, 18));
-                FontMetrics fm = g2d.getFontMetrics();
-                String text = isAdmin ? "A" : "U";
-                int textX = centerX - fm.stringWidth(text) / 2;
-                int textY = centerY + fm.getAscent() / 2 - 2;
-                g2d.drawString(text, textX, textY);
-            }
-        };
-        avatarPanel.setPreferredSize(new Dimension(50, 50));
-        avatarPanel.setOpaque(false);
-        
-        User currentUser = SessionManager.getInstance().getLoggedInUser(); 
-        
-        JLabel welcomeLabel = new JLabel("Welcome, " + (isAdmin ? "Admin" : (currentUser != null ? currentUser.getName() : "Guest")) + "!"); // Added null check for currentUser
-        welcomeLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        welcomeLabel.setForeground(Color.WHITE);
-        
-        JLabel statusLabel = new JLabel(isAdmin ? "Administrator" : "Customer");
-        statusLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        statusLabel.setForeground(new Color(189, 147, 249));
-        
-        JPanel textPanel = new JPanel();
-        textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
-        textPanel.setOpaque(false);
-        textPanel.add(welcomeLabel);
-        textPanel.add(statusLabel);
-        
-        userInfoPanel.add(avatarPanel);
-        userInfoPanel.add(Box.createHorizontalStrut(15));
-        userInfoPanel.add(textPanel);
-        
-        // Logout button - modern style
-        JButton logoutButton = createModernButton("Logout", new Color(220, 38, 127), false);
-        logoutButton.setPreferredSize(new Dimension(100, 40));
-        logoutButton.addActionListener(e -> {
-            // Clear the logged-in user when logging out
-            SessionManager.getInstance().logout();
-            dispose();
-            new WelcomePage().display(); // Correctly navigate to WelcomePage
-        });
-        
-        headerPanel.add(userInfoPanel, BorderLayout.WEST);
-        headerPanel.add(logoutButton, BorderLayout.EAST);
-        
-        return headerPanel;
-    }
+    JPanel headerPanel = new JPanel(new BorderLayout());
+    headerPanel.setOpaque(false);
+    headerPanel.setBorder(new EmptyBorder(20, 40, 10, 40));
+    
+    // User info panel with glassmorphism
+    JPanel userInfoPanel = new JPanel() {
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            Graphics2D g2d = (Graphics2D) g;
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            
+            // Glassmorphism background
+            g2d.setColor(new Color(255, 255, 255, 10));
+            g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
+            
+            // Border
+            g2d.setColor(new Color(255, 255, 255, 30));
+            g2d.setStroke(new BasicStroke(1));
+            g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 15, 15);
+        }
+    };
+    userInfoPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+    userInfoPanel.setOpaque(false);
+    userInfoPanel.setBorder(new EmptyBorder(15, 20, 15, 20));
+    
+    // User avatar
+    JPanel avatarPanel = new JPanel() {
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            Graphics2D g2d = (Graphics2D) g;
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            
+            int centerX = getWidth() / 2;
+            int centerY = getHeight() / 2;
+            
+            // Profil dairesi - gradient
+            GradientPaint avatarGradient = new GradientPaint(
+                0, 0, new Color(138, 43, 226),
+                getWidth(), getHeight(), new Color(108, 92, 231)
+            );
+            g2d.setPaint(avatarGradient);
+            g2d.fillOval(centerX - 20, centerY - 20, 40, 40);
+            
+            // Kullanıcı simgesi
+            g2d.setColor(Color.WHITE);
+            g2d.setFont(new Font("Segoe UI", Font.BOLD, 18));
+            FontMetrics fm = g2d.getFontMetrics();
+            String text = isAdmin ? "A" : "U";
+            int textX = centerX - fm.stringWidth(text) / 2;
+            int textY = centerY + fm.getAscent() / 2 - 2;
+            g2d.drawString(text, textX, textY);
+        }
+    };
+    avatarPanel.setPreferredSize(new Dimension(50, 50));
+    avatarPanel.setOpaque(false);
+    
+    User currentUser = SessionManager.getInstance().getLoggedInUser(); 
+    
+    JLabel welcomeLabel = new JLabel("Welcome, " + (isAdmin ? "Admin" : (currentUser != null ? currentUser.getName() : "Guest")) + "!");
+    welcomeLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
+    welcomeLabel.setForeground(Color.WHITE);
+    
+    JLabel statusLabel = new JLabel(isAdmin ? "Administrator" : "Customer");
+    statusLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+    statusLabel.setForeground(new Color(189, 147, 249));
+    
+    JPanel textPanel = new JPanel();
+    textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
+    textPanel.setOpaque(false);
+    textPanel.add(welcomeLabel);
+    textPanel.add(statusLabel);
+    
+    userInfoPanel.add(avatarPanel);
+    userInfoPanel.add(Box.createHorizontalStrut(15));
+    userInfoPanel.add(textPanel);
+    
+    JPanel logoutPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+    logoutPanel.setOpaque(false);
+    
+    JButton logoutButton = createButton("Logout", new Color(220, 38, 127), false);
+    
+    // *** ÖNEMLİ: Tüm boyut ayarlarını yap ***
+    logoutButton.setPreferredSize(new Dimension(80, 35));
+    logoutButton.setMinimumSize(new Dimension(80, 35));
+    logoutButton.setMaximumSize(new Dimension(80, 35));
+    
+    logoutButton.addActionListener(e -> {
+        // Clear the logged-in user when logging out
+        SessionManager.getInstance().logout();
+        dispose();
+        new WelcomePage().display(); // Correctly navigate to WelcomePage
+    });
+    
+    // Button'u wrapper panel'e ekle
+    logoutPanel.add(logoutButton);
+    
+    headerPanel.add(userInfoPanel, BorderLayout.WEST);
+    headerPanel.add(logoutPanel, BorderLayout.EAST); // Wrapper panel'i ekle
+    
+    return headerPanel;
+}
     
     private JPanel createTitlePanel() {
         JPanel titlePanel = new JPanel();
@@ -255,13 +265,13 @@ public class MainMenuPage extends JFrame {
     
     private void setupUserMenu(JPanel menuGrid) {
         // User menu options
-        JPanel busTripsCard = createModernMenuCard("Search Bus Trips", 
+        JPanel busTripsCard = createMenuCard("Search Bus Trips", 
             "Find and book bus journeys", new Color(138, 43, 226), "🚌");
-        JPanel flightTripsCard = createModernMenuCard("Search Flights", 
+        JPanel flightTripsCard = createMenuCard("Search Flights", 
             "Discover flight options", new Color(56, 189, 248), "   ✈️");
-        JPanel reservationCard = createModernMenuCard("My Reservations", 
+        JPanel reservationCard = createMenuCard("My Reservations", 
             "View your bookings", new Color(52, 211, 153), "🎫");
-        JPanel profileCard = createModernMenuCard("My Profile", 
+        JPanel profileCard = createMenuCard("My Profile", 
             "Manage your account", new Color(251, 146, 60), "👤");
         
         // Event listeners
@@ -293,15 +303,15 @@ public class MainMenuPage extends JFrame {
     
     private void setupAdminMenu(JPanel menuGrid) {
         // Admin menu options - only User Management and Trip Management
-        JPanel userManagementCard = createModernMenuCard("User Management", 
+        JPanel userManagementCard = createMenuCard("User Management", 
             "Manage system users", new Color(108, 92, 231), "👥");
-        JPanel tripManagementCard = createModernMenuCard("Trip Management", 
+        JPanel tripManagementCard = createMenuCard("Trip Management", 
             "Manage trips and routes", new Color(138, 43, 226), "🗺️");
         
         // Event listeners
         addClickListener(userManagementCard, () -> {
             dispose();
-            new AdminPage().display();
+            new UserManagementPage().display();
         });
         
         addClickListener(tripManagementCard, () -> {
@@ -313,7 +323,7 @@ public class MainMenuPage extends JFrame {
         menuGrid.add(tripManagementCard);
     }
     
-    private JPanel createModernMenuCard(String title, String description, Color accentColor, String emoji) {
+    private JPanel createMenuCard(String title, String description, Color accentColor, String emoji) {
         JPanel card = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -416,7 +426,7 @@ public class MainMenuPage extends JFrame {
         return card;
     }
     
-    private JButton createModernButton(String text, Color baseColor, boolean isPrimary) {
+    private JButton createButton(String text, Color baseColor, boolean isPrimary) {
         JButton button = new JButton(text) {
             @Override
             protected void paintComponent(Graphics g) {

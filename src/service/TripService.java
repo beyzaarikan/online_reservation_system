@@ -1,9 +1,9 @@
 package service;
-import repository.*;
-import models.*;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import models.*;
+import repository.*;
 
 public class TripService {
     private TripRepository tripRepository;
@@ -46,34 +46,17 @@ public class TripService {
     public List<Trip> getAllTrips() {
         return tripRepository.findAll();
     }
+
     public Trip findTripByNo(String tripNo) {
         return tripRepository.findByTripNo(tripNo);
     }
+
     public void updateTrip(Trip trip) { //admin
         Trip existingTrip = tripRepository.findByTripNo(trip.getTripNo());
         if (existingTrip == null) {
             throw new IllegalArgumentException("Trip not found");
         }
-        // CORRECTED LINE: Call updateTrip from repository instead of save
         tripRepository.updateTrip(trip); 
     }
 
-    public List<Trip> filterTripsByType(String tripType) {
-        return tripRepository.findByType(tripType);
-    }
-
-    public List<Trip> filterTripsByDate(LocalDateTime date) {
-        return tripRepository.findByDate(date);
-    }
-
-    public List<Trip> filterTripsByPriceRange(double minPrice, double maxPrice) {
-        return tripRepository.findByPriceRange(minPrice, maxPrice);
-    }
-
-    public List<Trip> filterTripsByStartPoint(String startPoint) {
-        return tripRepository.findByStartPoint(startPoint);
-    }
-    public List<Trip> filterTripsByEndPoint(String endPoint) {
-        return tripRepository.findByEndPoint(endPoint);
-    }
 }

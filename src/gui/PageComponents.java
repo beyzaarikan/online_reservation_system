@@ -6,7 +6,6 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 public class PageComponents {
-    // Modern color palette - Daha zengin renkler
 public static final Color BACKGROUND_COLOR = new Color(145, 216, 237); // 🌤️ Açık mavi - genel arka plan rengi, ferah bir görünüm sağlar
 
 public static final Color CARD_COLOR = new Color(30, 32, 44); // 🟥 Çok koyu lacivert/gri - kart arka planı, dark mode panel zemini

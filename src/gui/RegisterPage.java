@@ -53,7 +53,7 @@ public class RegisterPage extends BasePanel {
         // Back button panel
         JPanel backPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         backPanel.setOpaque(false);
-        JButton backButton = createModernButton("← Back", new Color(108, 92, 231), false);
+        JButton backButton = createButton("← Back", new Color(108, 92, 231), false);
         backButton.setPreferredSize(new Dimension(100, 35));
         backButton.setFont(new Font("Segoe UI", Font.BOLD, 12));
         backPanel.add(backButton);
@@ -107,12 +107,12 @@ public class RegisterPage extends BasePanel {
         formPanel.setMaximumSize(new Dimension(400, 650));
 
         // Form fields
-        usernameField = createModernTextField("Enter your username");
-        emailField = createModernTextField("Enter your email");
-        passwordField = createModernPasswordField("Enter your password");
+        usernameField = createTextField("Enter your username");
+        emailField = createTextField("Enter your email");
+        passwordField = createPasswordField("Enter your password");
 
         // Buttons
-        JButton createButton = createModernButton("Create Account", new Color(138, 43, 226), true);
+        JButton createButton = createButton("Create Account", new Color(138, 43, 226), true);
         createButton.setMaximumSize(new Dimension(300, 50));
 
         // Links
@@ -148,7 +148,7 @@ public class RegisterPage extends BasePanel {
         passwordField.addActionListener(e -> createAccount());
     }
 
-    private JTextField createModernTextField(String placeholder) {
+    private JTextField createTextField(String placeholder) {
         JTextField field = new JTextField() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -199,7 +199,7 @@ public class RegisterPage extends BasePanel {
         return field;
     }
 
-    private JPasswordField createModernPasswordField(String placeholder) {
+    private JPasswordField createPasswordField(String placeholder) {
         JPasswordField field = new JPasswordField() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -253,7 +253,7 @@ public class RegisterPage extends BasePanel {
         return field;
     }
 
-    private JButton createModernButton(String text, Color baseColor, boolean isPrimary) {
+    private JButton createButton(String text, Color baseColor, boolean isPrimary) {
         JButton button = new JButton(text) {
             @Override
             protected void paintComponent(Graphics g) {

@@ -75,7 +75,7 @@ public class SearchFlightsPage extends BasePanel {
         // Back button panel
         JPanel backPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         backPanel.setOpaque(false);
-        JButton backButton = createModernButton("← Back to Menu", new Color(108, 92, 231), false);
+        JButton backButton = createButton("← Back to Menu", new Color(108, 92, 231), false);
         backButton.setPreferredSize(new Dimension(150, 35));
         backButton.setFont(new Font("Segoe UI", Font.BOLD, 12));
         backPanel.add(backButton);
@@ -148,10 +148,10 @@ public class SearchFlightsPage extends BasePanel {
 
         // From and To cities - same row
         gbc.gridx = 0; gbc.gridy = 0;
-        fieldsPanel.add(createFieldPanel("From Airport", fromField = createModernTextField("Enter departure airport")), gbc);
+        fieldsPanel.add(createFieldPanel("From Airport", fromField = createTextField("Enter departure airport")), gbc);
         
         gbc.gridx = 1; gbc.gridy = 0;
-        fieldsPanel.add(createFieldPanel("To Airport", toField = createModernTextField("Enter destination airport")), gbc);
+        fieldsPanel.add(createFieldPanel("To Airport", toField = createTextField("Enter destination airport")), gbc);
 
         // Date and Passengers - same row
         gbc.gridx = 0; gbc.gridy = 1;
@@ -168,22 +168,12 @@ public class SearchFlightsPage extends BasePanel {
         styleComboBox(classType);
         fieldsPanel.add(createFieldPanel("Class", classType), gbc);
 
-        gbc.gridx = 1; gbc.gridy = 2;
-        JPanel roundTripPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
-        roundTripPanel.setOpaque(false);
-        roundTripCheckbox = new JCheckBox("Round Trip");
-        roundTripCheckbox.setOpaque(false);
-        roundTripCheckbox.setForeground(Color.WHITE);
-        roundTripCheckbox.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        roundTripPanel.add(roundTripCheckbox);
-        fieldsPanel.add(roundTripPanel, gbc);
-
         // Buttons panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 0));
         buttonPanel.setOpaque(false);
         
-        JButton searchButton = createModernButton("Search Flights", new Color(138, 43, 226), true);
-        JButton clearButton = createModernButton("Clear Form", new Color(108, 92, 231), false);
+        JButton searchButton = createButton("Search Flights", new Color(138, 43, 226), true);
+        JButton clearButton = createButton("Clear Form", new Color(108, 92, 231), false);
         
         buttonPanel.add(searchButton);
         buttonPanel.add(clearButton);
@@ -243,7 +233,7 @@ public class SearchFlightsPage extends BasePanel {
         tableScrollPane.setPreferredSize(new Dimension(800, 250));
 
         // Select and proceed button
-        JButton selectButton = createModernButton("Select Flight & Proceed", new Color(138, 43, 226), true);
+        JButton selectButton = createButton("Select Flight & Proceed", new Color(138, 43, 226), true);
         selectButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         resultsPanel.add(resultsTitle);
@@ -276,7 +266,7 @@ public class SearchFlightsPage extends BasePanel {
         selectButton.addActionListener(e -> selectFlightAndProceed());
     }
 
-    private JTextField createModernTextField(String placeholder) {
+    private JTextField createTextField(String placeholder) {
         JTextField field = new JTextField() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -327,7 +317,7 @@ public class SearchFlightsPage extends BasePanel {
         return field;
     }
 
-    private JButton createModernButton(String text, Color baseColor, boolean isPrimary) {
+    private JButton createButton(String text, Color baseColor, boolean isPrimary) {
         JButton button = new JButton(text) {
             @Override
             protected void paintComponent(Graphics g) {
@@ -546,7 +536,6 @@ public class SearchFlightsPage extends BasePanel {
         dateSpinner.setValue(java.sql.Date.valueOf(LocalDate.now()));
         passengerCount.setSelectedIndex(0);
         classType.setSelectedIndex(0);
-        roundTripCheckbox.setSelected(false);
         tableModel.setRowCount(0);
         flightTable.clearSelection();
     }

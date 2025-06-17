@@ -78,7 +78,7 @@ public class TripManagementPage extends BasePanel {
         // Back button panel
         JPanel backPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         backPanel.setOpaque(false);
-        JButton backButton = createModernButton("← Back", new Color(108, 92, 231), false);
+        JButton backButton = createButton("← Back", new Color(108, 92, 231), false);
         backButton.setPreferredSize(new Dimension(100, 35));
         backButton.setFont(new Font("Segoe UI", Font.BOLD, 12));
         backPanel.add(backButton);
@@ -158,11 +158,11 @@ public class TripManagementPage extends BasePanel {
         filterTitle.setForeground(new Color(189, 147, 249));
         filterTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
 
-        searchField = createModernTextField("Search trips...");
+        searchField = createTextField("Search trips...");
         tripTypeCombo = new JComboBox<>(new String[]{"All Types", "Bus", "Flight"});
 
-        JButton searchButton = createModernButton("Search", new Color(138, 43, 226), true);
-        JButton resetButton = createModernButton("Reset", new Color(108, 92, 231), false);
+        JButton searchButton = createButton("Search", new Color(138, 43, 226), true);
+        JButton resetButton = createButton("Reset", new Color(108, 92, 231), false);
 
         JPanel filterContent = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
         filterContent.setOpaque(false);
@@ -218,11 +218,11 @@ public class TripManagementPage extends BasePanel {
         actionPanel.setOpaque(false);
         actionPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
         
-        JButton addTripButton = createModernButton("Add New Trip", new Color(138, 43, 226), true);
-        JButton editTripButton = createModernButton("Edit Trip", new Color(108, 92, 231), true);
-        JButton viewDetailsButton = createModernButton("View Details", new Color(189, 147, 249), false);
-        JButton cancelTripButton = createModernButton("Cancel Trip", new Color(255, 121, 121), true);
-        JButton refreshButton = createModernButton("Refresh", new Color(138, 43, 226), true);
+        JButton addTripButton = createButton("Add New Trip", new Color(138, 43, 226), true);
+        JButton editTripButton = createButton("Edit Trip", new Color(108, 92, 231), true);
+        JButton viewDetailsButton = createButton("View Details", new Color(189, 147, 249), false);
+        JButton cancelTripButton = createButton("Cancel Trip", new Color(255, 121, 121), true);
+        JButton refreshButton = createButton("Refresh", new Color(138, 43, 226), true);
 
         actionPanel.add(addTripButton);
         actionPanel.add(Box.createHorizontalStrut(10));
@@ -272,7 +272,7 @@ public class TripManagementPage extends BasePanel {
         return label;
     }
 
-    private JTextField createModernTextField(String placeholder) {
+    private JTextField createTextField(String placeholder) {
         JTextField field = new JTextField() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -323,7 +323,7 @@ public class TripManagementPage extends BasePanel {
         return field;
     }
 
-    private JComboBox<String> createModernComboBox(String[] items) {
+    private JComboBox<String> createComboBox(String[] items) {
         JComboBox<String> comboBox = new JComboBox<String>(items) {
             @Override
             protected void paintComponent(Graphics g) {
@@ -352,7 +352,7 @@ public class TripManagementPage extends BasePanel {
         return comboBox;
     }
 
-    private JButton createModernButton(String text, Color baseColor, boolean isPrimary) {
+    private JButton createButton(String text, Color baseColor, boolean isPrimary) {
         JButton button = new JButton(text) {
             @Override
             protected void paintComponent(Graphics g) {
@@ -614,8 +614,8 @@ public class TripManagementPage extends BasePanel {
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.setBackground(new Color(25, 25, 55));
-        JButton saveButton = createModernButton("Save Trip", new Color(52, 152, 219), true);
-        JButton cancelButton = createModernButton("Cancel", new Color(231, 76, 60), false);
+        JButton saveButton = createButton("Save Trip", new Color(52, 152, 219), true);
+        JButton cancelButton = createButton("Cancel", new Color(231, 76, 60), false);
 
         buttonPanel.add(saveButton);
         buttonPanel.add(cancelButton);
@@ -793,8 +793,8 @@ public class TripManagementPage extends BasePanel {
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.setBackground(new Color(25, 25, 55));
-        JButton saveButton = createModernButton("Save Changes", new Color(52, 152, 219), true);
-        JButton cancelButton = createModernButton("Cancel", new Color(231, 76, 60), false);
+        JButton saveButton = createButton("Save Changes", new Color(52, 152, 219), true);
+        JButton cancelButton = createButton("Cancel", new Color(231, 76, 60), false);
 
         buttonPanel.add(saveButton);
         buttonPanel.add(cancelButton);
@@ -967,7 +967,7 @@ private void showStyledMessage(String title, String message, Window parent) {
     messageLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
     messageLabel.setHorizontalAlignment(SwingConstants.CENTER);
     
-    JButton okButton = createModernButton("OK", new Color(138, 43, 226), true);
+    JButton okButton = createButton("OK", new Color(138, 43, 226), true);
     okButton.addActionListener(e -> dialog.dispose());
     
     JPanel buttonPanel = new JPanel(new FlowLayout());

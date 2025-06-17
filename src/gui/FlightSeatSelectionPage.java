@@ -114,8 +114,6 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
                 preReservedSeats.add(41);
                 preReservedSeats.add(48);
             }
-            
-            // Save demo seats
             seatStatusManager.markSeatsAsOccupied(tripKey, preReservedSeats);
         }
     }
@@ -125,7 +123,6 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         setLayout(new BorderLayout());
         getContentPane().setBackground(new Color(15, 15, 35));
 
-        // Ana panel - gradient arkaplan
         JPanel mainPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -155,7 +152,7 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         mainPanel.setOpaque(false);
 
         // Header panel
-        JPanel headerPanel = createModernHeaderPanel();
+        JPanel headerPanel = createHeaderPanel();
         
         // Content panel
         JPanel contentPanel = new JPanel(new BorderLayout());
@@ -163,10 +160,10 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         contentPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         // Flight seat map panel with glassmorphism
-        createModernFlightSeatMapPanel();
+        createFlightSeatMapPanel();
         
         // Sidebar panel with glassmorphism
-        JPanel sidebarPanel = createModernSidebarPanel();
+        JPanel sidebarPanel = createSidebarPanel();
 
         contentPanel.add(seatMapPanel, BorderLayout.CENTER);
         contentPanel.add(sidebarPanel, BorderLayout.EAST);
@@ -176,7 +173,7 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         add(mainPanel, BorderLayout.CENTER);
     }
 
-    private JPanel createModernHeaderPanel() {
+    private JPanel createHeaderPanel() {
         JPanel headerPanel = new JPanel();
         headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
         headerPanel.setOpaque(false);
@@ -185,7 +182,7 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         // Back button
         JPanel backPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         backPanel.setOpaque(false);
-        backButton = createModernButton("← Back", new Color(108, 92, 231), false);
+        backButton = createButton("← Back", new Color(108, 92, 231), false);
         backButton.setPreferredSize(new Dimension(100, 35));
         backButton.setFont(new Font("Segoe UI", Font.BOLD, 12));
         backPanel.add(backButton);
@@ -225,11 +222,11 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         infoCard.setMaximumSize(new Dimension(1200, 100));
 
         // Info items
-        JPanel airlineInfo = createModernInfoItem("✈️", airline, "Airline");
-        JPanel routeInfo = createModernInfoItem("📍", fromAirport + " → " + toAirport, "Route");
-        JPanel timeInfo = createModernInfoItem("🕒", departureTime + " - " + arrivalTime, "Flight Time");
-        JPanel aircraftInfo = createModernInfoItem("🛩️", aircraft, "Aircraft");
-        JPanel passengerInfo = createModernInfoItem("👥", passengerCount + " passenger(s)", "Passengers");
+        JPanel airlineInfo = createInfoItem("✈️", airline, "Airline");
+        JPanel routeInfo = createInfoItem("📍", fromAirport + " → " + toAirport, "Route");
+        JPanel timeInfo = createInfoItem("🕒", departureTime + " - " + arrivalTime, "Flight Time");
+        JPanel aircraftInfo = createInfoItem("🛩️", aircraft, "Aircraft");
+        JPanel passengerInfo = createInfoItem("👥", passengerCount + " passenger(s)", "Passengers");
 
         infoCard.add(airlineInfo);
         infoCard.add(routeInfo);
@@ -250,11 +247,10 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
             dispose();
             new SearchFlightsPage().display();
         });
-
         return headerPanel;
     }
 
-    private JPanel createModernInfoItem(String icon, String value, String label) {
+    private JPanel createInfoItem(String icon, String value, String label) {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setOpaque(false);
@@ -282,7 +278,7 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         return panel;
     }
 
-    private void createModernFlightSeatMapPanel() {
+    private void createFlightSeatMapPanel() {
         seatMapPanel = new JPanel(new BorderLayout());
         seatMapPanel.setOpaque(false);
 
@@ -317,20 +313,16 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
 
         aircraftHeader.add(aircraftLabel, BorderLayout.CENTER);
 
-        // Seat layout
-        JPanel seatsPanel = createModernSeatLayout();
-
-        // Legend
-        JPanel legendPanel = createModernLegendPanel();
+        JPanel seatsPanel = createSeatLayout();
+        JPanel legendPanel = createLegendPanel();
 
         aircraftContainer.add(aircraftHeader, BorderLayout.NORTH);
         aircraftContainer.add(seatsPanel, BorderLayout.CENTER);
         aircraftContainer.add(legendPanel, BorderLayout.SOUTH);
-
         seatMapPanel.add(aircraftContainer, BorderLayout.CENTER);
     }
 
-    private JPanel createModernSeatLayout() {
+    private JPanel createSeatLayout() {
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setOpaque(false);
         mainPanel.setBorder(BorderFactory.createEmptyBorder(30, 0, 0, 0));
@@ -403,7 +395,7 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         
         JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
         verticalScrollBar.setOpaque(false);
-        verticalScrollBar.setUI(new ModernScrollBarUI());
+        verticalScrollBar.setUI(new ScrollBarUI());
         verticalScrollBar.setPreferredSize(new Dimension(12, 0));
         verticalScrollBar.setUnitIncrement(16);
         verticalScrollBar.setBlockIncrement(64);
@@ -412,23 +404,20 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         return mainPanel;
     }
 
-    private class ModernScrollBarUI extends javax.swing.plaf.basic.BasicScrollBarUI {
+    private class ScrollBarUI extends javax.swing.plaf.basic.BasicScrollBarUI {
         @Override
         protected void configureScrollBarColors() {
             this.thumbColor = new Color(138, 43, 226, 100);
             this.trackColor = new Color(255, 255, 255, 20);
         }
-
         @Override
         protected JButton createDecreaseButton(int orientation) {
             return createZeroButton();
         }
-
         @Override
         protected JButton createIncreaseButton(int orientation) {
             return createZeroButton();
         }
-
         private JButton createZeroButton() {
             JButton button = new JButton();
             button.setPreferredSize(new Dimension(0, 0));
@@ -480,16 +469,16 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         }
     }
 
-    private JPanel createModernLegendPanel() {
+    private JPanel createLegendPanel() {
         JPanel legendPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 40, 15));
         legendPanel.setOpaque(false);
         legendPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
 
-        JPanel availableItem = createModernLegendItem("Available", new Color(75, 181, 67), "1A");
-        JPanel selectedItem = createModernLegendItem("Selected", new Color(138, 43, 226), "1A");
-        JPanel occupiedItem = createModernLegendItem("Occupied", new Color(220, 53, 69), "X");
-        JPanel premiumItem = createModernLegendItem("Premium (+50%)", new Color(255, 193, 7), "P1");
-        JPanel windowItem = createModernLegendItem("Window (+20%)", new Color(52, 152, 219), "W1");
+        JPanel availableItem = createLegendItem("Available", new Color(75, 181, 67), "1A");
+        JPanel selectedItem = createLegendItem("Selected", new Color(138, 43, 226), "1A");
+        JPanel occupiedItem = createLegendItem("Occupied", new Color(220, 53, 69), "X");
+        JPanel premiumItem = createLegendItem("Premium (+50%)", new Color(255, 193, 7), "P1");
+        JPanel windowItem = createLegendItem("Window (+20%)", new Color(52, 152, 219), "W1");
 
         legendPanel.add(availableItem);
         legendPanel.add(selectedItem);
@@ -500,7 +489,7 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         return legendPanel;
     }
 
-    private JPanel createModernLegendItem(String label, Color color, String seatText) {
+    private JPanel createLegendItem(String label, Color color, String seatText) {
         JPanel item = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 0));
         item.setOpaque(false);
 
@@ -536,7 +525,7 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         return item;
     }
 
-    private JPanel createModernSidebarPanel() {
+    private JPanel createSidebarPanel() {
         JPanel sidebar = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -577,15 +566,15 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         totalPriceLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         // Buttons
-        confirmButton = createModernButton("Confirm Selection", new Color(138, 43, 226), true);
+        confirmButton = createButton("Confirm Selection", new Color(138, 43, 226), true);
         confirmButton.setEnabled(false);
         confirmButton.setMaximumSize(new Dimension(280, 50));
 
-        JButton clearButton = createModernButton("Clear Selection", new Color(108, 92, 231), false);
+        JButton clearButton = createButton("Clear Selection", new Color(108, 92, 231), false);
         clearButton.setMaximumSize(new Dimension(280, 50));
 
         // Features panel
-        JPanel featuresPanel = createModernFeaturesPanel();
+        JPanel featuresPanel = createFeaturesPanel();
 
         // Layout
         sidebar.add(Box.createVerticalStrut(25));
@@ -608,7 +597,7 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         return sidebar;
     }
 
-    private JButton createModernButton(String text, Color baseColor, boolean isPrimary) {
+    private JButton createButton(String text, Color baseColor, boolean isPrimary) {
         JButton button = new JButton(text) {
             @Override
             protected void paintComponent(Graphics g) {
@@ -627,7 +616,6 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
                 super.paintComponent(g);
             }
         };
-        
         button.setForeground(Color.WHITE);
         button.setFont(new Font("Segoe UI", Font.BOLD, 14));
         button.setFocusPainted(false);
@@ -639,7 +627,7 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         return button;
     }
 
-    private JPanel createModernFeaturesPanel() {
+    private JPanel createFeaturesPanel() {
         JPanel panel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -669,9 +657,7 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         String[] features = {
             "• In-flight entertainment",
             "• Complimentary refreshments",
-            "• Professional cabin crew",
-            "• Modern aircraft",
-            "• Safety certified"
+            "• Professional cabin crew"
         };
 
         panel.add(title);
@@ -745,7 +731,6 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         }
 
         try {
-            // Create a proper FlightTrip using the factory pattern
             TripFactoryManager factoryManager = new TripFactoryManager();
             TripFactory flightFactory = factoryManager.getFactory("Flight");
             
@@ -799,8 +784,6 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
             
             // Get the global reservation repository instance
             ReservationRepository globalReservationRepo = getGlobalReservationRepository();
-            
-            // Save reservation to the global repository
             globalReservationRepo.save(reservation);
             
             // Create reservation state context
@@ -837,7 +820,6 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         return GlobalRepositoryManager.getInstance().getReservationRepository();
     }
 
-    // Modern flight seat button inner class
     private class FlightSeatButton extends JButton {
         private String seatLabel;
         private int seatId;
@@ -859,7 +841,7 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
             this.isPremium = isPremium;
             this.price = calculateSeatPrice();
 
-            setupModernButton();
+            setupButton();
         }
 
         public int getSeatId() {
@@ -894,7 +876,7 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
             this.seatManager = seatManager;
         }
 
-        private void setupModernButton() {
+        private void setupButton() {
             setPreferredSize(new Dimension(40, 35));
             setFont(new Font("Segoe UI", Font.BOLD, 10));
             setFocusPainted(false);

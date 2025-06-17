@@ -20,7 +20,6 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
     private String fromCity;
     private String toCity;
     private String departureDate;
-    private String returnDate;
     private String departureTime;
     private String arrivalTime;
     private String basePrice;
@@ -48,16 +47,14 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
 
     private List<Integer> preReservedSeats;
 
-    public BusSeatSelectionPage(String busCompany, String fromCity, String toCity, 
-                               String returnDate, String departureDate, String arrivalTime,
+    public BusSeatSelectionPage(String busCompany, String fromCity, String toCity, String departureDate, String arrivalTime,
                                String basePrice, int passengerCount, String amenities) {
         super("Bus Seat Selection - " + busCompany, 1400, 800);
         this.busCompany = busCompany;
         this.fromCity = fromCity;
         this.toCity = toCity;
         this.departureDate = departureDate;
-        this.returnDate = returnDate;
-        this.departureTime = extractTime(departureDate); // Extract time if combined
+        this.departureTime = extractDefault(departureDate); // Extract time if combined
         this.arrivalTime = arrivalTime;
         this.basePrice = basePrice;
         this.passengerCount = passengerCount;
@@ -105,8 +102,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         }
     }
     
-    private String extractTime(String dateTimeString) {
-        // If the string contains time, extract it, otherwise return a default
+    private String extractDefault(String dateTimeString) {
         if (dateTimeString != null && dateTimeString.contains(" ")) {
             String[] parts = dateTimeString.split(" ");
             if (parts.length > 1) {
@@ -120,8 +116,6 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
     public void setupUI() {
         setLayout(new BorderLayout());
         getContentPane().setBackground(new Color(15, 15, 35));
-
-        // Ana panel - gradient arkaplan (LoginPage ile aynı)
         JPanel mainPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -151,18 +145,16 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         mainPanel.setOpaque(false);
 
         // Header panel
-        JPanel headerPanel = createModernHeaderPanel();
+        JPanel headerPanel = createHeaderPanel();
         
         // Content panel
         JPanel contentPanel = new JPanel(new BorderLayout());
         contentPanel.setOpaque(false);
         contentPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Bus seat map panel with glassmorphism
-        createModernBusSeatMapPanel();
-        
-        // Sidebar panel with glassmorphism
-        JPanel sidebarPanel = createModernSidebarPanel();
+        createBusSeatMapPanel();
+    
+        JPanel sidebarPanel = createSidebarPanel();
 
         contentPanel.add(seatMapPanel, BorderLayout.CENTER);
         contentPanel.add(sidebarPanel, BorderLayout.EAST);
@@ -172,7 +164,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         add(mainPanel, BorderLayout.CENTER);
     }
 
-    private JPanel createModernHeaderPanel() {
+    private JPanel createHeaderPanel() {
         JPanel headerPanel = new JPanel();
         headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
         headerPanel.setOpaque(false);
@@ -181,7 +173,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         // Back button
         JPanel backPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         backPanel.setOpaque(false);
-        backButton = createModernButton("← Back", new Color(108, 92, 231), false);
+        backButton = createButton("← Back", new Color(108, 92, 231), false);
         backButton.setPreferredSize(new Dimension(100, 35));
         backButton.setFont(new Font("Segoe UI", Font.BOLD, 12));
         backPanel.add(backButton);
@@ -222,10 +214,10 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
 
 
         // Info items
-        JPanel companyInfo = createModernInfoItem("🚌", busCompany, "Company");
-        JPanel routeInfo = createModernInfoItem("📍", fromCity + " → " + toCity, "Route");
-        JPanel dateInfo = createModernInfoItem("📅", departureDate + " " + departureTime, "Departure");
-        JPanel passengerInfo = createModernInfoItem("👥", passengerCount + " passenger(s)", "Passengers");
+        JPanel companyInfo = createInfoItem("🚌", busCompany, "Company");
+        JPanel routeInfo = createInfoItem("📍", fromCity + " → " + toCity, "Route");
+        JPanel dateInfo = createInfoItem("📅", departureDate + " " + departureTime, "Departure");
+        JPanel passengerInfo = createInfoItem("👥", passengerCount + " passenger(s)", "Passengers");
 
         infoCard.add(companyInfo);
         infoCard.add(routeInfo);
@@ -249,7 +241,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         return headerPanel;
     }
 
-    private JPanel createModernInfoItem(String icon, String value, String label) {
+    private JPanel createInfoItem(String icon, String value, String label) {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setOpaque(false);
@@ -277,7 +269,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         return panel;
     }
 
-    private void createModernBusSeatMapPanel() {
+    private void createBusSeatMapPanel() {
         seatMapPanel = new JPanel(new BorderLayout());
         seatMapPanel.setOpaque(false);
 
@@ -313,10 +305,10 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         busHeader.add(busLabel, BorderLayout.CENTER);
 
         // Seat layout
-        JPanel seatsPanel = createModernSeatLayout();
+        JPanel seatsPanel = createSeatLayout();
 
         // Legend
-        JPanel legendPanel = createModernLegendPanel();
+        JPanel legendPanel = createLegendPanel();
 
         busContainer.add(busHeader, BorderLayout.NORTH);
         busContainer.add(seatsPanel, BorderLayout.CENTER);
@@ -325,7 +317,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         seatMapPanel.add(busContainer, BorderLayout.CENTER);
     }
 
-    private JPanel createModernSeatLayout() {
+    private JPanel createSeatLayout() {
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setOpaque(false);
         mainPanel.setBorder(BorderFactory.createEmptyBorder(30, 0, 30, 0));
@@ -359,23 +351,21 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
                     rowPanel.add(seat);
                 } 
             }
-
             busLayout.add(rowPanel);
         }
-
         mainPanel.add(busLayout, BorderLayout.CENTER);
         return mainPanel;
     }
 
-    private JPanel createModernLegendPanel() {
+    private JPanel createLegendPanel() {
         JPanel legendPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 40, 15));
         legendPanel.setOpaque(false);
         legendPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
 
-        JPanel availableItem = createModernLegendItem("Available", new Color(75, 181, 67), "12");
-        JPanel selectedItem = createModernLegendItem("Selected", new Color(138, 43, 226), "12");
-        JPanel occupiedItem = createModernLegendItem("Occupied", new Color(220, 53, 69), "X");
-        JPanel premiumItem = createModernLegendItem("Premium (+30%)", new Color(255, 193, 7), "P1");
+        JPanel availableItem = createLegendItem("Available", new Color(75, 181, 67), "12");
+        JPanel selectedItem = createLegendItem("Selected", new Color(138, 43, 226), "12");
+        JPanel occupiedItem = createLegendItem("Occupied", new Color(220, 53, 69), "X");
+        JPanel premiumItem = createLegendItem("Premium (+30%)", new Color(255, 193, 7), "P1");
 
         legendPanel.add(availableItem);
         legendPanel.add(selectedItem);
@@ -385,7 +375,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         return legendPanel;
     }
 
-   private JPanel createModernLegendItem(String label, Color color, String seatText) {
+   private JPanel createLegendItem(String label, Color color, String seatText) {
     JPanel item = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 0));
     item.setOpaque(false);
 
@@ -421,7 +411,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
     return item;
 }
 
-    private JPanel createModernSidebarPanel() {
+    private JPanel createSidebarPanel() {
         JPanel sidebar = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -462,15 +452,15 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         totalPriceLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         // Buttons
-        confirmButton = createModernButton("Confirm Selection", new Color(138, 43, 226), true);
+        confirmButton = createButton("Confirm Selection", new Color(138, 43, 226), true);
         confirmButton.setEnabled(false);
         confirmButton.setMaximumSize(new Dimension(280, 50));
 
-        JButton clearButton = createModernButton("Clear Selection", new Color(108, 92, 231), false);
+        JButton clearButton = createButton("Clear Selection", new Color(108, 92, 231), false);
         clearButton.setMaximumSize(new Dimension(280, 50));
 
         // Features panel
-        JPanel featuresPanel = createModernFeaturesPanel();
+        JPanel featuresPanel = createFeaturesPanel();
 
         // Layout
         sidebar.add(Box.createVerticalStrut(25));
@@ -493,7 +483,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         return sidebar;
     }
 
-    private JButton createModernButton(String text, Color baseColor, boolean isPrimary) {
+    private JButton createButton(String text, Color baseColor, boolean isPrimary) {
         JButton button = new JButton(text) {
             @Override
             protected void paintComponent(Graphics g) {
@@ -507,12 +497,10 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
                 } else {
                     g2d.setColor(baseColor);
                 }
-                
                 g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
                 super.paintComponent(g);
             }
         };
-        
         button.setForeground(Color.WHITE);
         button.setFont(new Font("Segoe UI", Font.BOLD, 14));
         button.setFocusPainted(false);
@@ -524,7 +512,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         return button;
     }
 
-    private JPanel createModernFeaturesPanel() {
+    private JPanel createFeaturesPanel() {
         JPanel panel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -554,9 +542,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         String[] features = {
             "• Comfortable reclining seats",
             "• " + amenities,
-            "• Professional driver service",
-            "• Air conditioning",
-            "• Safety certified"
+            "• Professional driver service"
         };
 
         panel.add(title);
@@ -570,7 +556,6 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
             panel.add(featureLabel);
             panel.add(Box.createVerticalStrut(5));
         }
-
         return panel;
     }
 
@@ -608,7 +593,6 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
                 seatNumbers.append(selectedSeats.get(i).getSeatNumber());
                 totalPrice += selectedSeats.get(i).getPrice()/ 100.0;  //kuruşu tl ye çevirme
             }
-
             selectedSeatsLabel.setText("Seats: " + seatNumbers.toString());
             totalPriceLabel.setText(String.format("Total: %.2f TL", totalPrice));
 
@@ -701,7 +685,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
 
             PageComponents.showStyledMessage("Bus Reservation Successful!", successMessage, this);
 
-            // Navigate back to main menu
+            // back to main menu
             dispose();
             new MainMenuPage().display();
 
@@ -728,7 +712,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         
         // UI'yi yeniden oluştur
         seatMapPanel.removeAll();
-        createModernBusSeatMapPanel();
+        createBusSeatMapPanel();
         
         // UI'yi güncelle
         updateSelectionInfo();
@@ -736,7 +720,6 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         repaint();
     }
 
-    // Modern bus seat button inner class
     private class BusSeatButton extends JButton {
         private int seatNumber;
         private boolean isOccupied;
@@ -754,36 +737,34 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
             this.isPremium = isPremium;
             this.price = calculateSeatPrice();
 
-            setupModernButton();
+            setupButton();
         }
 
         @Override
-protected void paintComponent(Graphics g) {
-    Graphics2D g2 = (Graphics2D) g.create();
-    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-    // Arka plan rengi - seçili durumu da kontrol et
-    if (isSelected) {
-        g2.setColor(new Color(138, 43, 226)); // Mor - seçili
-    } else if (isOccupied) {
-        g2.setColor(new Color(220, 53, 69)); // Kırmızı - dolu
-    } else if (isPremium) {
-        g2.setColor(new Color(255, 193, 7)); // Sarı - premium
-    } else {
-        g2.setColor(new Color(75, 181, 67)); // Yeşil - müsait
-    }
-    
-    g2.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
-    g2.dispose();
-
-    super.paintComponent(g); // Yazı ve ikonları çiz
-}
+            if (isSelected) {
+                g2.setColor(new Color(138, 43, 226)); // Mor - seçili
+            } else if (isOccupied) {
+                g2.setColor(new Color(220, 53, 69)); // Kırmızı - dolu
+            } else if (isPremium) {
+                g2.setColor(new Color(255, 193, 7)); // Sarı - premium
+            } else {
+                g2.setColor(new Color(75, 181, 67)); // Yeşil - müsait
+            }
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
+            g2.dispose();
+        
+            super.paintComponent(g); // Yazı ve ikonları çiz
+        }
 
          public void setSeatManager(SeatManager seatManager) {
              this.seatManager = seatManager;
          }
 
-        private void setupModernButton() {
+        private void setupButton() {
             setPreferredSize(new Dimension(35, 35));
             setFont(new Font("Segoe UI", Font.BOLD, 11));
             setFocusPainted(false);
@@ -807,10 +788,8 @@ protected void paintComponent(Graphics g) {
                     isWindow ? " (Window)" : "",
                     isPremium ? " (Premium)" : ""
                 ));
-
                 addActionListener(e -> toggleSelection());
             }
-
             setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255, 50), 1, true));
         }
 
@@ -819,7 +798,6 @@ protected void paintComponent(Graphics g) {
 
             if (isPremium) multiplier += 0.3;
             if (isWindow) multiplier += 0.1;
-
             return basePriceValue * multiplier;
         }
 
@@ -842,7 +820,6 @@ protected void paintComponent(Graphics g) {
             }
         }
 
-        
         public void setSelected(boolean selected) {
             this.isSelected = selected;
 
@@ -851,8 +828,6 @@ protected void paintComponent(Graphics g) {
             } else {
                 setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255, 50), 1, true));
             }
-    
-            // Componenti yeniden çiz
             repaint();
         }
 

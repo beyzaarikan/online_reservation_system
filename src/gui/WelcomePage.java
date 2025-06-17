@@ -88,7 +88,6 @@ public class WelcomePage extends BasePanel {
         headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
         headerPanel.setOpaque(false);
         
-        // Logo with modern styling
         JLabel logoLabel = new JLabel("✈️ 🚌", SwingConstants.CENTER);
         logoLabel.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 64));
         logoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -171,15 +170,15 @@ public class WelcomePage extends BasePanel {
         buttonsPanel.setOpaque(false);
         
         // Create Account Button
-        JButton signUpButton = createModernButton("Create New Account", new Color(138, 43, 226));
+        JButton signUpButton = createButton("Create New Account", new Color(138, 43, 226));
         signUpButton.setMaximumSize(new Dimension(400, 55));
         
         // Sign In Button
-        JButton signInButton = createModernButton("Sign In", new Color(108, 92, 231));
+        JButton signInButton = createButton("Sign In", new Color(108, 92, 231));
         signInButton.setMaximumSize(new Dimension(400, 55));
         
         // Exit Button
-        JButton exitButton = createModernButton("Exit Application", new Color(220, 38, 127));
+        JButton exitButton = createButton("Exit Application", new Color(220, 38, 127));
         exitButton.setMaximumSize(new Dimension(400, 55));
 
         // Action listeners
@@ -209,7 +208,7 @@ public class WelcomePage extends BasePanel {
         return contentPanel;
     }
     
-    private JButton createModernButton(String text, Color baseColor) {
+    private JButton createButton(String text, Color baseColor) {
         JButton button = new JButton(text) {
             @Override
             protected void paintComponent(Graphics g) {
