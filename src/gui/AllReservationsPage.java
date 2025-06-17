@@ -527,19 +527,20 @@ public class AllReservationsPage extends BasePanel {
                     .orElse("N/A");
             
             double totalPrice = 0;
-            PricingContext pricingContext = null;
             if (reservation.getTrip() instanceof BusTrip) { 
-                pricingContext = new PricingContext(new BusPricingStrategy()); 
-            } else if (reservation.getTrip() instanceof FlightTrip) { 
-                pricingContext = new PricingContext(new FlightPricingStrategy());
-            }
-            
-            if (pricingContext != null) {
+                PricingContext busPricingContext = new PricingContext(new BusPricingStrategy()); 
                 for (models.Seat seat : reservation.getSeats()) { 
-                    totalPrice += pricingContext.calculatePrice(reservation.getTrip(), seat.getSeatNo()); 
+                    totalPrice += busPricingContext.calculatePrice(reservation.getTrip(), seat.getSeatNo()); 
+                    totalPrice = totalPrice / 100;
+                }
+            } else if (reservation.getTrip() instanceof FlightTrip) { 
+                PricingContext flightPricingContext = new PricingContext(new FlightPricingStrategy());
+                for (models.Seat seat : reservation.getSeats()) { 
+                    totalPrice += flightPricingContext.calculatePrice(reservation.getTrip(), seat.getSeatNo()); 
                 }
             } else {
                 totalPrice = reservation.getTrip().getBasePrice() * reservation.getSeats().size(); 
+                totalPrice = totalPrice / 100;
             }
 
             String details = String.format(
@@ -551,7 +552,7 @@ public class AllReservationsPage extends BasePanel {
                 "Route: %s → %s\n" +
                 "Date & Time: %s\n" +
                 "Seats: %s\n" +
-                "Total Price: $%.2f\n\n" +
+                "Total Price: TL %.2f\n\n" +
                 "Vehicle Type: %s",
                 reservation.getId(),
                 reservation.getUser().getName(),
