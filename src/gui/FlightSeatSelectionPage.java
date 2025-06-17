@@ -486,8 +486,12 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         JPanel selectedItem = createLegendItem("Selected", new Color(138, 43, 226), "1A");
         JPanel occupiedItem = createLegendItem("Occupied", new Color(220, 53, 69), "X");
         JPanel premiumItem = createLegendItem("Premium (+200%)", new Color(255, 193, 7), "P1");
+<<<<<<< HEAD
         // Removed windowItem creation
         // JPanel windowItem = createLegendItem("Window (+15%)", new Color(52, 152, 219), "W1");
+=======
+        JPanel windowItem = createLegendItem("Window (+15%)", new Color(52, 152, 219), "W1");
+>>>>>>> 9833f311afccb05ee766a913058caa8cda577d3e
 
         legendPanel.add(availableItem);
         legendPanel.add(selectedItem);

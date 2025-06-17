@@ -604,7 +604,11 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
             for (int i = 0; i < selectedSeats.size(); i++) {
                 if (i > 0) seatNumbers.append(", ");
                 seatNumbers.append(selectedSeats.get(i).getSeatNumber());
+<<<<<<< HEAD
                 totalPrice += selectedSeats.get(i).getPrice(); // Removed division by 100.0
+=======
+                totalPrice += selectedSeats.get(i).getPrice();
+>>>>>>> 9833f311afccb05ee766a913058caa8cda577d3e
             }
             selectedSeatsLabel.setText("Seats: " + seatNumbers.toString());
             totalPriceLabel.setText(String.format("Total: %.2f TL", totalPrice));
@@ -684,7 +688,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
             ReservationContext reservationContext = new ReservationContext(reservationId);
             reservationContext.confirm(); // Confirm the reservation
 
-            // Calculate total price
+            // Calculate total price using strategy pattern
             double totalPrice = 0;
             for (BusSeatButton seat : selectedSeats) {
                 totalPrice += seat.getPrice();
@@ -748,7 +752,9 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
             this.isSelected = false;
             // Removed isWindow from constructor assignment
             this.isPremium = isPremium;
-            this.price = calculateSeatPrice();
+            
+            // Use Strategy pattern to calculate price
+            this.price = calculateSeatPriceWithStrategy();
 
             setupButton();
         }
@@ -806,12 +812,26 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
             setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255, 50), 1, true));
         }
 
+<<<<<<< HEAD
         private double calculateSeatPrice() {
             double multiplier = 1.0;
 
             if (isPremium) multiplier += 0.3;
             // Removed isWindow from price calculation
             return basePriceValue * multiplier;
+=======
+        private double calculateSeatPriceWithStrategy() {
+            // Create a dummy trip for price calculation
+            Trip dummyTrip = new BusTrip(
+                "DUMMY", "", "", 
+                java.time.LocalDateTime.now(), 
+                java.time.LocalDateTime.now(), 
+                basePriceValue, 40, "", "", "", ""
+            );
+            
+            // Use the pricing context to calculate price
+            return pricingContext.calculatePrice(dummyTrip, seatNumber);
+>>>>>>> 9833f311afccb05ee766a913058caa8cda577d3e
         }
 
         private void toggleSelection() {
