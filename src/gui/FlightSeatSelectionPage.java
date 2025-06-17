@@ -348,16 +348,13 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
 
         char currentLetter = 'A';
         for (int col = 0; col < seatsPerRow; col++) {
-            // Add spacing for different class configurations
             if ("First Class".equals(flightClass) || "Business".equals(flightClass)) {
-                // For First Class and Business: 1-1-1 configuration with spaces
                 if (col == 1 || col == 2) {
                     JLabel spaceLabel = new JLabel("  ");
                     spaceLabel.setPreferredSize(new Dimension(30, 35));
                     rowPanel.add(spaceLabel);
                 }
             } else {
-                // For Economy: 3-3 configuration with aisle
                 if (seatsPerRow == 6 && (col == 2 || col == 4)) {
                     JLabel aisleLabel = new JLabel("  ");
                     aisleLabel.setPreferredSize(new Dimension(20, 35));
@@ -782,7 +779,7 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
                 int seatNo = Integer.parseInt(seatLabel.replaceAll("[^0-9]", ""));
                 
                 // Create new seat
-                Seat seat = new Seat(seatNo, false);
+                Seat seat = new Seat(seatNo, false, seatLabel);
                 seat.reserve(); // Reserve the seat
                 reservedSeats.add(seat);
             }

@@ -655,8 +655,8 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
             // Create list of selected seats from the bus trip
             List<Seat> reservedSeats = new ArrayList<>();
             for (BusSeatButton seatButton : selectedSeats) {
-                // Create new seat
-                Seat seat = new Seat(seatButton.getSeatNumber(), false);
+                String seatNo=seatButton.getSeatNumber()+"";
+                Seat seat = new Seat(seatButton.getSeatNumber(), false ,seatNo);
                 seat.reserve(); // Reserve the seat
                 reservedSeats.add(seat);
             }

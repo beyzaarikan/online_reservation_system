@@ -499,7 +499,7 @@ public class AllReservationsPage extends BasePanel {
         
         for (Reservation reservation : displayReservations) {
             String seatList = reservation.getSeats().stream()
-                    .map(seat -> String.valueOf(seat.getSeatNo()))
+                    .map(seat -> seat.getSeatLabel())
                     .reduce((s1, s2) -> s1 + ", " + s2)
                     .orElse("N/A");
             
@@ -575,11 +575,11 @@ public class AllReservationsPage extends BasePanel {
         
         if (reservation != null) {
             String seatList = reservation.getSeats().stream()
-                    .map(seat -> String.valueOf(seat.getSeatNo()))
+                    .map(seat -> seat.getSeatLabel())
                     .reduce((s1, s2) -> s1 + ", " + s2)
                     .orElse("N/A");
             
-            double totalPrice = reservation.getTrip().getBasePrice() * reservation.getSeats().size();
+            double totalPrice = reservation.getTrip().getBasePrice() * reservation.getSeats().size()/100.0;
             
             String details = String.format(
                 "=== RESERVATION DETAILS ===\n\n" +
@@ -676,7 +676,7 @@ public class AllReservationsPage extends BasePanel {
             
             if (selectedType.equals("All Types") || selectedType.equals(reservationType)) {
                 String seatList = reservation.getSeats().stream()
-                        .map(seat -> String.valueOf(seat.getSeatNo()))
+                        .map(seat -> seat.getSeatLabel())
                         .reduce((s1, s2) -> s1 + ", " + s2)
                         .orElse("N/A");
                 

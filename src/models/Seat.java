@@ -6,10 +6,12 @@ import java.util.List;
 public class Seat {
     private int seatNo;
     private boolean reserved;
+    private String seatLabel;
 
-    public Seat(int seatNo, boolean reserved) {
+    public Seat(int seatNo, boolean reserved,String seatLabel) {
         this.seatNo = seatNo;
         this.reserved = reserved;
+        this.seatLabel=seatLabel;
     }
     
     public boolean isReserved() {
@@ -18,6 +20,9 @@ public class Seat {
     
     public int getSeatNo() {
         return seatNo;
+    }
+    public String getSeatLabel(){
+        return seatLabel;
     }
 
     public void reserve() {
@@ -45,7 +50,7 @@ public class Seat {
     public static List<Seat> createSeats(int totalSeats) {
         List<Seat> seatList = new ArrayList<>();
         for (int i = 1; i <= totalSeats; i++) {
-            seatList.add(new Seat(i,false));
+            seatList.add(new Seat(i,false,null));
         }
         return seatList;
     }
