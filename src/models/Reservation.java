@@ -24,28 +24,11 @@ public class Reservation {
     public Trip getTrip() {
         return trip;
     }
-    public void setUser(User user) {
-        this.user = user;
-    }
-    public void setTrip(Trip trip) {
-        this.trip = trip;
-    }
-    public void setSeats(List<Seat> seats) {
-        this.seats = seats;
-    }
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public int getSeatCount() {
-        return seats.size(); // burada seatCount doğrudan hesaplanır
+        return seats.size(); 
     }
-
-    public boolean isReserved() {
-        return seats.stream().allMatch(Seat::isReserved);
-    }
-
-    public List<Seat> getSeats() { //gerekliligi tartiusilir
+    public List<Seat> getSeats() { 
         return seats;
     }
 
