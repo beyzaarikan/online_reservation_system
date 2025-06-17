@@ -15,7 +15,6 @@ import repository.*;
 import service.*;
 import singleton.*;
 import state.*;
-import strategy.*;
 
 public class BusSeatSelectionPage extends BasePanel implements Observer {
     private String busCompany;
@@ -47,9 +46,6 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
     private ReservationService reservationService;
     private CommandInvoker commandInvoker;
 
-    // Strategy pattern for pricing
-    private PricingContext pricingContext;
-
     private List<Integer> preReservedSeats;
 
     public BusSeatSelectionPage(String busCompany, String fromCity, String toCity, String departureDate, String arrivalTime,
@@ -75,9 +71,6 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         } catch (NumberFormatException e) {
             this.basePriceValue = 45.0;
         }
-        
-        // Initialize pricing strategy for bus
-        this.pricingContext = new PricingContext(new BusPricingStrategy());
         
         initializePreReservedSeats();
         // Initialize services and repositories
@@ -750,13 +743,13 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
             this.isPremium = isPremium;
             
             // Use Strategy pattern to calculate price
-            this.price = calculateSeatPriceWithStrategy();
+            this.price = calculateSeatPrice();
 
             setupButton();
         }
 
         @Override
-        protected void paintComponent(Graphics g) {
+    protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
@@ -814,19 +807,6 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
             if (isPremium) multiplier += 0.3;
             // Removed isWindow from price calculation
             return basePriceValue * multiplier;
-        }
-
-        private double calculateSeatPriceWithStrategy() {
-            // Create a dummy trip for price calculation
-            Trip dummyTrip = new BusTrip(
-                "DUMMY", "", "", 
-                java.time.LocalDateTime.now(), 
-                java.time.LocalDateTime.now(), 
-                basePriceValue, 40, "", "", "", ""
-            );
-            
-            // Use the pricing context to calculate price
-            return pricingContext.calculatePrice(dummyTrip, seatNumber);
         }
 
         private void toggleSelection() {

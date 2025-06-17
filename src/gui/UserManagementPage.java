@@ -352,13 +352,10 @@ public class UserManagementPage extends BasePanel {
     }
     
     private void initializeSampleUsers() {
-        if (userRepository.isEmpty()) {
-            userRepository.save(new models.Admin("admin1", "admin@travel.com", "admin123", "admin@travel.com"));
-            userRepository.save(new models.Customer("user1", "john_doe", "pass123", "john@example.com"));
-            userRepository.save(new models.Customer("user2", "jane_smith", "pass456", "jane@example.com"));
-            userRepository.save(new models.Customer("user3", "mike_wilson", "password789", "mike@example.com"));
-        }
         userRepository.save(new models.Admin("admin1", "admin@travel.com", "admin@travel.com", "admin@travel.com"));
+        userRepository.save(new models.Customer("user1", "john_doe", "pass123", "john@example.com"));
+        userRepository.save(new models.Customer("user2", "jane_smith", "pass456", "jane@example.com"));
+        userRepository.save(new models.Customer("user3", "mike_wilson", "password789", "mike@example.com"));
     }
     
     private void searchUsers() {
