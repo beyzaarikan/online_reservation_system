@@ -1,3 +1,4 @@
+// File: iremmozkaynak/online_reservation_system/online_reservation_system-61299e72ae0da5a99ccbfd5f0db2d5e6e560fc9b/src/gui/SearchFlightsPage.java
 package gui;
 import factory.*;
 import java.awt.*;
@@ -10,6 +11,7 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
 import models.*;
 import repository.*;
 import service.*;
@@ -213,9 +215,10 @@ public class SearchFlightsPage extends BasePanel {
         resultsTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         // Create table
+        // Sütun isimleri güncellendi (TripNo eklendi)
         String[] columnNames = {
             "Airline", "Route", "Departure", "Arrival", "Duration", 
-            "Price", "Seats Available", "Aircraft"
+            "Price", "Seats Available", "Aircraft", "TripNo" // TripNo eklendi
         };
         
         tableModel = new DefaultTableModel(columnNames, 0) {
@@ -226,7 +229,7 @@ public class SearchFlightsPage extends BasePanel {
         };
         
         flightTable = new JTable(tableModel);
-        styleTable(flightTable);
+        styleTable(flightTable); // styleTable metodunu çağırırken yeni sütun için ayarları da yapacak şekilde güncellenecek
         
         JScrollPane tableScrollPane = new JScrollPane(flightTable);
         styleScrollPane(tableScrollPane);
@@ -443,15 +446,22 @@ public class SearchFlightsPage extends BasePanel {
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         
         // Set column widths
-        table.getColumnModel().getColumn(0).setPreferredWidth(140);
-        table.getColumnModel().getColumn(1).setPreferredWidth(180);
-        table.getColumnModel().getColumn(2).setPreferredWidth(90);
-        table.getColumnModel().getColumn(3).setPreferredWidth(90);
-        table.getColumnModel().getColumn(4).setPreferredWidth(80);
-        table.getColumnModel().getColumn(5).setPreferredWidth(80);
-        table.getColumnModel().getColumn(6).setPreferredWidth(120);
-        table.getColumnModel().getColumn(7).setPreferredWidth(180);
+        table.getColumnModel().getColumn(0).setPreferredWidth(140); // Airline
+        table.getColumnModel().getColumn(1).setPreferredWidth(180); // Route
+        table.getColumnModel().getColumn(2).setPreferredWidth(90);  // Departure
+        table.getColumnModel().getColumn(3).setPreferredWidth(90);  // Arrival
+        table.getColumnModel().getColumn(4).setPreferredWidth(80);  // Duration
+        table.getColumnModel().getColumn(5).setPreferredWidth(80);  // Price
+        table.getColumnModel().getColumn(6).setPreferredWidth(120); // Seats Available
+        table.getColumnModel().getColumn(7).setPreferredWidth(180); // Aircraft
+        table.getColumnModel().getColumn(8).setPreferredWidth(0);   // TripNo (gizli)
         
+        // Gizli sütunu tamamen gizle
+        TableColumnModel tcm = table.getColumnModel();
+        tcm.getColumn(8).setMinWidth(0);
+        tcm.getColumn(8).setMaxWidth(0);
+        tcm.getColumn(8).setWidth(0);
+
         // Center align some columns
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(JLabel.CENTER);
@@ -520,6 +530,7 @@ public class SearchFlightsPage extends BasePanel {
                         flightTrip.getBasePrice() + " TL",
                         availableCount + " seats",
                         flightTrip.getAmentities(),
+                        flightTrip.getTripNo()
                     });
                 }
             }
@@ -554,6 +565,7 @@ public class SearchFlightsPage extends BasePanel {
         String arrivalTime = (String) tableModel.getValueAt(selectedRow, 3);
         String price = (String) tableModel.getValueAt(selectedRow, 5);
         String aircraft = (String) tableModel.getValueAt(selectedRow, 7);
+        String selectedTripNo = (String) tableModel.getValueAt(selectedRow, 8); // Gizli sütundan TripNo'yu alıyoruz
         
         // Form bilgilerini al
         String fromAirport = fromField.getText();
@@ -572,6 +584,7 @@ public class SearchFlightsPage extends BasePanel {
         dispose();
         try {
             FlightSeatSelectionPage seatSelectionPage = new FlightSeatSelectionPage(
+                selectedTripNo,    
                 airline, 
                 fromAirport, 
                 toAirport, 

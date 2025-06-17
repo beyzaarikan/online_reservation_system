@@ -25,6 +25,7 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
     private int passengerCount;
     private String aircraft;
     private String flightClass;
+    private String tripNo;
 
     private JPanel seatMapPanel;
     private JLabel selectedSeatsLabel;
@@ -48,10 +49,11 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
 
     private List<Integer> preReservedSeats;
 
-    public FlightSeatSelectionPage(String airline, String fromAirport, String toAirport,
+    public FlightSeatSelectionPage(String tripNo,String airline, String fromAirport, String toAirport,
                                  String departureTime, String arrivalTime, String basePrice,
                                  int passengerCount, String aircraft, String flightClass) {
         super("Flight Seat Selection", 1400, 800);
+        this.tripNo=tripNo;
         this.airline = airline;
         this.fromAirport = fromAirport;
         this.toAirport = toAirport;
@@ -87,7 +89,7 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
 
     private void initializePreReservedSeats() {
         seatStatusManager = SeatStatusManager.getInstance();
-        String tripKey = airline + "_" + fromAirport + "_" + toAirport + "_" + departureTime;
+        String tripKey = this.tripNo; 
         Set<Integer> occupiedSeatsForThisFlight = seatStatusManager.getOccupiedSeats(tripKey);
         
         preReservedSeats = new ArrayList<>(occupiedSeatsForThisFlight);
@@ -739,13 +741,13 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         }
 
         try {
+            
             TripFactoryManager factoryManager = new TripFactoryManager();
             TripFactory flightFactory = factoryManager.getFactory("Flight");
             
             // Generate unique trip ID for this reservation
             String tripId = "FLIGHT_" + java.util.UUID.randomUUID().toString().substring(0, 8);
             
-            // Create the flight trip with proper details
             Trip flightTrip = flightFactory.createTrip(
                 tripId,
                 fromAirport,
@@ -759,52 +761,44 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
                 "In-flight entertainment, Meal service",
                 aircraft // flight number/aircraft
             );
-            
+            Trip actualTrip = flightRepository.findByTripNo(this.tripNo);
+            if(actualTrip == null) {
+                 PageComponents.showStyledMessage("Error", "Selected flight trip not found in system!", this);
+                 return;
+            }
             // Seçilen koltukların benzersiz tam sayı ID'lerini topla
             List<Integer> selectedSeatUniqueIds = new ArrayList<>();
             for (FlightSeatButton seatButton : selectedSeats) {
                 selectedSeatUniqueIds.add(seatButton.getSeatId());
             }
 
-            // Bu koltukları SeatStatusManager'da rezerve edilmiş olarak işaretle
-            String tripKey = airline + "_" + fromAirport + "_" + toAirport + "_" + departureTime;
+            String tripKey = this.tripNo;
             SeatStatusManager.getInstance().markSeatsAsOccupied(tripKey, selectedSeatUniqueIds);
 
             // Create list of selected seats from the flight trip
             List<Seat> reservedSeats = new ArrayList<>();
             for (FlightSeatButton seatButton : selectedSeats) {
-                // For flights, we need to create seats based on seat labels
-                String seatLabel = seatButton.getSeatLabel();
-                // Extract seat number from label (e.g., "1A" -> 1)
-                int seatNo = Integer.parseInt(seatLabel.replaceAll("[^0-9]", ""));
-                
-                // Create new seat
-                Seat seat = new Seat(seatNo, false, seatLabel);
-                seat.reserve(); // Reserve the seat
+                int seatNo = seatButton.getSeatId();
+                Seat seat = new Seat(seatNo, false, seatButton.getSeatLabel());
+                seat.reserve();
                 reservedSeats.add(seat);
             }
             
-            // Generate unique reservation ID
             String reservationId = java.util.UUID.randomUUID().toString();
             
-            // Create reservation with the FlightTrip
-            Reservation reservation = new Reservation(reservationId, currentUser, flightTrip, reservedSeats);
+            Reservation reservation = new Reservation(reservationId, currentUser, actualTrip, reservedSeats);
             
-            // Get the global reservation repository instance
             ReservationRepository globalReservationRepo = getGlobalReservationRepository();
             globalReservationRepo.save(reservation);
             
-            // Create reservation state context
             ReservationContext reservationContext = new ReservationContext(reservationId);
             reservationContext.confirm(); // Confirm the reservation
             
-            // Calculate total price using strategy pattern
             double totalPrice = 0;
             for (FlightSeatButton seat : selectedSeats) {
                 totalPrice += seat.getPrice();
             }
             
-            // Show success message
             String successMessage = String.format(
                 "🎉 Flight Reservation Confirmed!\n\n" +
                 "Your flight reservation has been saved successfully!"

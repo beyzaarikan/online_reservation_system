@@ -9,30 +9,37 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import repository.ReservationRepository;
 import singleton.SessionManager;
-import service.UserService;
 import repository.UserRepository;
+import repository.TripRepository; // Import TripRepository for ReservationService initialization
+import service.ReservationService; // Import ReservationService
+import strategy.BusPricingStrategy; // Import for pricing calculation
+import strategy.FlightPricingStrategy; // Import for pricing calculation
+import strategy.PricingContext; // Import for pricing calculation
+import models.BusTrip; // Import BusTrip for instanceof checks
+import models.FlightTrip; // Import FlightTrip for instanceof checks
 
 public class AllReservationsPage extends BasePanel {
     private JTable reservationTable;
     private DefaultTableModel tableModel;
     private JComboBox<String> typeFilter;
     private ReservationRepository reservationRepository;
-    private boolean isAdminView;
-    
+    private ReservationService reservationService; // Add ReservationService field
+    // private boolean isAdminView; // isAdminView kaldırıldı
+
+    // GIZLI SUTUN INDEKSI (sabit olarak tanimliyoruz)
+    private static final int RESERVATION_ID_COLUMN_INDEX = 6;   // Trip Type, Route, Dep Date, Dep Time, Arr Time, Seats, **Reservation ID**
+
     public AllReservationsPage() {
         super("My Reservations", 1200, 800);
-        // Check if current user is admin
-        User currentUser = SessionManager.getInstance().getLoggedInUser();
-        UserService userService = new UserService(UserRepository.getInstance());
-        this.isAdminView = (currentUser != null && userService.isAdmin(currentUser));
+        setTitle("My Reservations");
         
-        // Use the global repository instance
-        this.reservationRepository = GlobalRepositoryManager.getInstance().getReservationRepository();
-        
-        // Update title based on user type
-        if (isAdminView) {
-            setTitle("All Reservations - Admin Panel");
-        }
+        this.reservationRepository = GlobalRepositoryManager.getInstance().getReservationRepository(); //
+        // Initialize ReservationService
+        this.reservationService = new ReservationService(
+                                    this.reservationRepository,
+                                    UserRepository.getInstance(),
+                                    TripRepository.getInstance() 
+                                );
     }
     
     @Override
@@ -56,7 +63,6 @@ public class AllReservationsPage extends BasePanel {
                 g2d.setPaint(gradient);
                 g2d.fillRect(0, 0, getWidth(), getHeight());
                 
-               // Dekoratif yumuşak ışık efektleri
                 g2d.setColor(new Color(147, 112, 219, 25));
                 g2d.fillOval(-100, -100, 300, 300);
                 g2d.fillOval(getWidth()-200, getHeight()-200, 300, 300);
@@ -69,20 +75,16 @@ public class AllReservationsPage extends BasePanel {
         mainPanel.setLayout(new BorderLayout());
         mainPanel.setOpaque(false);
 
-        // Header panel
         JPanel headerPanel = createHeaderPanel();
         
-        // Main Content Panel
         JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
         contentPanel.setOpaque(false);
         contentPanel.setBorder(BorderFactory.createEmptyBorder(20, 60, 40, 60));
         
-        // Title Panel
         JPanel titlePanel = createTitlePanel();
         titlePanel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
-        // Menu Grid Panel
         JPanel menuPanel = createMenuPanel();
         menuPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
@@ -101,23 +103,21 @@ public class AllReservationsPage extends BasePanel {
         headerPanel.setOpaque(false);
         headerPanel.setBorder(BorderFactory.createEmptyBorder(25, 40, 25, 40));
 
-        // Back button panel
         JPanel backPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         backPanel.setOpaque(false);
         JButton backButton = createBackButton("← Back to Menu");
         backPanel.add(backButton);
 
-        // Title section
         JPanel titlePanel = new JPanel();
         titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.Y_AXIS));
         titlePanel.setOpaque(false);
 
-        JLabel titleLabel = new JLabel(isAdminView ? "All Reservations" : "My Reservations", SwingConstants.CENTER);
+        JLabel titleLabel = new JLabel("My Reservations", SwingConstants.CENTER); // Admin kontrolu kaldirildi
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 32));
         titleLabel.setForeground(Color.WHITE);
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JLabel subtitleLabel = new JLabel(isAdminView ? "Manage all system reservations" : "Manage your account settings and preferences", SwingConstants.CENTER);
+        JLabel subtitleLabel = new JLabel("Manage your account settings and preferences", SwingConstants.CENTER); // Admin kontrolu kaldirildi
         subtitleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         subtitleLabel.setForeground(new Color(189, 147, 249));
         subtitleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -126,17 +126,13 @@ public class AllReservationsPage extends BasePanel {
         titlePanel.add(Box.createVerticalStrut(8));
         titlePanel.add(subtitleLabel);
 
-        headerPanel.add(backPanel, BorderLayout.WEST);
+        headerPanel.add(backButton, BorderLayout.WEST);
         headerPanel.add(titlePanel, BorderLayout.CENTER);
         
-        // Action listeners
         backButton.addActionListener(e -> {
             dispose();
-            if (isAdminView) {
-                new MainMenuPage(true).display();
-            } else {
-                new MainMenuPage().display();
-            }
+
+            new MainMenuPage().display(); 
         });
         
         return headerPanel;
@@ -156,7 +152,6 @@ public class AllReservationsPage extends BasePanel {
         menuContainer.setLayout(new BoxLayout(menuContainer, BoxLayout.Y_AXIS));
         menuContainer.setOpaque(false);
         
-        // Glassmorphism container for menu cards
         JPanel menuPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -164,11 +159,9 @@ public class AllReservationsPage extends BasePanel {
                 Graphics2D g2d = (Graphics2D) g;
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 
-                // Glassmorphism background
                 g2d.setColor(new Color(255, 255, 255, 8));
                 g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
                 
-                // Border
                 g2d.setColor(new Color(255, 255, 255, 25));
                 g2d.setStroke(new BasicStroke(1));
                 g2d.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 20, 20);
@@ -185,18 +178,13 @@ public class AllReservationsPage extends BasePanel {
         statsRow.setOpaque(false);
         statsRow.setBorder(BorderFactory.createEmptyBorder(0, 0, 30, 0));
         
-        Collection<Reservation> allReservations = reservationRepository.reservationMap.values();
+        Collection<Reservation> allReservations = reservationRepository.reservationMap.values(); //
         
-        // Filter reservations based on user type
-        Collection<Reservation> displayReservations;
-        if (isAdminView) {
-            displayReservations = allReservations; // Admin sees all reservations
-        } else {
-            User currentUser = SessionManager.getInstance().getLoggedInUser();
-            displayReservations = allReservations.stream()
-                .filter(r -> r.getUser().getId().equals(currentUser.getId()))
-                .collect(java.util.stream.Collectors.toList());
-        }
+        // Filter reservations based on user type (Admin görmediği için sadece kendi rezervasyonları)
+        User currentUser = SessionManager.getInstance().getLoggedInUser(); //
+        Collection<Reservation> displayReservations = allReservations.stream()
+            .filter(r -> r.getUser().getId().equals(currentUser.getId())) //
+            .collect(java.util.stream.Collectors.toList());
         
         int totalReservations = displayReservations.size();
         int busReservations = (int) displayReservations.stream().filter(r -> "Bus".equals(getReservationType(r))).count();
@@ -222,7 +210,6 @@ public class AllReservationsPage extends BasePanel {
         filterSection.add(Box.createHorizontalStrut(15));
         filterSection.add(refreshButton);
 
-        // Table section
         createTable();
         loadReservationsFromRepository();
         
@@ -232,7 +219,6 @@ public class AllReservationsPage extends BasePanel {
         scrollPane.setPreferredSize(new Dimension(1100, 350));
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         
-        // Action buttons
         JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 20));
         actionPanel.setOpaque(false);
         
@@ -240,6 +226,7 @@ public class AllReservationsPage extends BasePanel {
         JButton cancelReservationButton = createActionButton("Cancel Reservation", new Color(231, 76, 60));
         
         actionPanel.add(viewDetailsButton);
+        actionPanel.add(Box.createHorizontalStrut(15)); // Butonlar arası boşluk
         actionPanel.add(cancelReservationButton);
         
         menuPanel.add(statsRow, BorderLayout.NORTH);
@@ -397,11 +384,7 @@ public class AllReservationsPage extends BasePanel {
 
     private void createTable() {
         String[] columnNames;
-        if (isAdminView) {
-            columnNames = new String[]{"Customer", "Trip Type", "Route", "Departure Date", "Departure Time", "Arrival Time", "Seats"};
-        } else {
-            columnNames = new String[]{"Trip Type", "Route", "Departure Date", "Departure Time", "Arrival Time", "Seats"};
-        }
+        columnNames = new String[]{"Trip Type", "Route", "Departure Date", "Departure Time", "Arrival Time", "Seats", "Reservation ID"}; //
         
         tableModel = new DefaultTableModel(columnNames, 0) {
             @Override
@@ -468,34 +451,26 @@ public class AllReservationsPage extends BasePanel {
             reservationTable.getColumnModel().getColumn(i).setCellRenderer(cellRenderer);
         }
         
-        // Set column widths based on admin view
-        if (isAdminView) {
-            int[] columnWidths = {150, 100, 200, 120, 100, 100, 150};
-            for (int i = 0; i < columnWidths.length; i++) {
-                reservationTable.getColumnModel().getColumn(i).setPreferredWidth(columnWidths[i]);
-            }
-        } else {
-            int[] columnWidths = {100, 200, 120, 100, 100, 150};
-            for (int i = 0; i < columnWidths.length; i++) {
-                reservationTable.getColumnModel().getColumn(i).setPreferredWidth(columnWidths[i]);
+        int[] columnWidths = {90, 180, 110, 80, 120, 100, 0}; // Son sütun (Reservation ID) genişliği 0 yapıldı (gizli)
+        for (int i = 0; i < columnWidths.length; i++) {
+            reservationTable.getColumnModel().getColumn(i).setPreferredWidth(columnWidths[i]);
+            if (i == RESERVATION_ID_COLUMN_INDEX) { // Eğer gizli sütun ise
+                reservationTable.getColumnModel().getColumn(i).setMinWidth(0);
+                reservationTable.getColumnModel().getColumn(i).setMaxWidth(0);
+                reservationTable.getColumnModel().getColumn(i).setWidth(0);
             }
         }
     }
     
     private void loadReservationsFromRepository() {
         tableModel.setRowCount(0);
-        Collection<Reservation> reservations = reservationRepository.reservationMap.values();
+        Collection<Reservation> allReservations = reservationRepository.reservationMap.values(); //
         
-        // Filter reservations based on user type
-        Collection<Reservation> displayReservations;
-        if (isAdminView) {
-            displayReservations = reservations; // Admin sees all reservations
-        } else {
-            User currentUser = SessionManager.getInstance().getLoggedInUser();
-            displayReservations = reservations.stream()
-                .filter(r -> r.getUser().getId().equals(currentUser.getId()))
-                .collect(java.util.stream.Collectors.toList());
-        }
+        // Filter reservations based on current logged-in user
+        User currentUser = SessionManager.getInstance().getLoggedInUser(); //
+        Collection<Reservation> displayReservations = allReservations.stream()
+            .filter(r -> r.getUser().getId().equals(currentUser.getId())) //
+            .collect(java.util.stream.Collectors.toList());
         
         for (Reservation reservation : displayReservations) {
             String seatList = reservation.getSeats().stream()
@@ -510,77 +485,63 @@ public class AllReservationsPage extends BasePanel {
             String departureTime = reservation.getTrip().getDepartureTime().format(timeFormatter);
             String arrivalTime = reservation.getTrip().getArrivalTime().format(timeFormatter);
             
-            if (isAdminView) {
-                tableModel.addRow(new Object[]{
-                    reservation.getUser().getName(),
-                    reservation.getTrip().getTripType(),
-                    reservation.getTrip().getStartPoint() + " → " + reservation.getTrip().getEndPoint(),
-                    departureDate,
-                    departureTime,
-                    arrivalTime,
-                    seatList
-                });
-            } else {
-                tableModel.addRow(new Object[]{
-                    reservation.getTrip().getTripType(),
-                    reservation.getTrip().getStartPoint() + " → " + reservation.getTrip().getEndPoint(),
-                    departureDate,
-                    departureTime,
-                    arrivalTime,
-                    seatList
-                });
-            }
+            tableModel.addRow(new Object[]{
+                reservation.getTrip().getTripType(),
+                reservation.getTrip().getStartPoint() + " → " + reservation.getTrip().getEndPoint(),
+                departureDate,
+                departureTime,
+                arrivalTime,
+                seatList,
+                reservation.getId()
+            });
         }
     }
 
     private void setupActionListeners(JButton refreshButton, JButton viewDetailsButton, JButton cancelReservationButton) {
         refreshButton.addActionListener(e -> refreshData());
         viewDetailsButton.addActionListener(e -> viewReservationDetails());
-        cancelReservationButton.addActionListener(e -> cancelReservation());
+        cancelReservationButton.addActionListener(e -> cancelReservation()); // Doğru çağrı
         typeFilter.addActionListener(e -> filterByType());
     }
     
     private void refreshData() {
         loadReservationsFromRepository();
-        PageComponents.showStyledMessage("Success", "Reservation data refreshed successfully!", this);
+        PageComponents.showStyledMessage("Success", "Reservation data refreshed successfully!", this); //
     }
     
     private void viewReservationDetails() {
         int selectedRow = reservationTable.getSelectedRow();
         if (selectedRow == -1) {
-            PageComponents.showStyledMessage("Error", "Please select a reservation to view details!", this);
+            PageComponents.showStyledMessage("Error", "Please select a reservation to view details!", this); //
             return;
         }
         
-        String customerName;
-        if (isAdminView) {
-            customerName = (String) tableModel.getValueAt(selectedRow, 0);
-        } else {
-            User currentUser = SessionManager.getInstance().getLoggedInUser();
-            customerName = currentUser.getName();
-        }
+        String reservationId = (String) tableModel.getValueAt(selectedRow, RESERVATION_ID_COLUMN_INDEX); //
         
-        // Find reservation by customer name
-        Reservation reservation = null;
-        for (Reservation r : reservationRepository.reservationMap.values()) {
-            if (r.getUser().getName().equals(customerName)) {
-                // If admin view, get the first matching reservation
-                // If user view, ensure it's the user's reservation
-                if (isAdminView || r.getUser().getId().equals(SessionManager.getInstance().getLoggedInUser().getId())) {
-                    reservation = r;
-                    break;
-                }
-            }
-        }
-        
+        Reservation reservation = reservationRepository.findById(reservationId); //
+
         if (reservation != null) {
             String seatList = reservation.getSeats().stream()
                     .map(seat -> seat.getSeatLabel())
                     .reduce((s1, s2) -> s1 + ", " + s2)
                     .orElse("N/A");
             
-            double totalPrice = reservation.getTrip().getBasePrice() * reservation.getSeats().size()/100.0;
+            double totalPrice = 0;
+            PricingContext pricingContext = null;
+            if (reservation.getTrip() instanceof BusTrip) { 
+                pricingContext = new PricingContext(new BusPricingStrategy()); 
+            } else if (reservation.getTrip() instanceof FlightTrip) { 
+                pricingContext = new PricingContext(new FlightPricingStrategy());
+            }
             
+            if (pricingContext != null) {
+                for (models.Seat seat : reservation.getSeats()) { 
+                    totalPrice += pricingContext.calculatePrice(reservation.getTrip(), seat.getSeatNo()); 
+                }
+            } else {
+                totalPrice = reservation.getTrip().getBasePrice() * reservation.getSeats().size(); 
+            }
+
             String details = String.format(
                 "=== RESERVATION DETAILS ===\n\n" +
                 "Reservation ID: %s\n" +
@@ -598,56 +559,46 @@ public class AllReservationsPage extends BasePanel {
                 reservation.getTrip().getTripNo(),
                 reservation.getTrip().getStartPoint(),
                 reservation.getTrip().getEndPoint(),
-                reservation.getTrip().getDepartureTime(),
+                reservation.getTrip().getDepartureTime().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
                 seatList,
                 totalPrice,
                 reservation.getTrip().getTripType()
             );
             
-            PageComponents.showStyledMessage("Reservation Details", details, this);
+            PageComponents.showStyledMessage("Reservation Details", details, this); //
+        } else {
+            PageComponents.showStyledMessage("Error", "Selected reservation not found in system!", this); //
         }
     }
     
-    private void cancelReservation() {
+    private void cancelReservation() { // Bu metod artık doğru şekilde çağrılıyor
         int selectedRow = reservationTable.getSelectedRow();
         if (selectedRow == -1) {
-            PageComponents.showStyledMessage("Error", "Please select a reservation to cancel!", this);
+            PageComponents.showStyledMessage("Error", "Please select a reservation to cancel!", this); //
             return;
         }
         
-        String customerName;
-        if (isAdminView) {
-            customerName = (String) tableModel.getValueAt(selectedRow, 0);
-        } else {
-            User currentUser = SessionManager.getInstance().getLoggedInUser();
-            customerName = currentUser.getName();
-        }
+        String reservationId = (String) tableModel.getValueAt(selectedRow, RESERVATION_ID_COLUMN_INDEX); //
         
         int result = JOptionPane.showConfirmDialog(
             this,
             "Are you sure you want to cancel this reservation?\nThis action cannot be undone.",
-            "Cancel Reservation",
+            "Confirm Reservation",
             JOptionPane.YES_NO_OPTION,
             JOptionPane.WARNING_MESSAGE
         );
         
         if (result == JOptionPane.YES_OPTION) {
-            // Find and remove the reservation
-            Reservation toRemove = null;
-            for (Reservation r : reservationRepository.reservationMap.values()) {
-                if (r.getUser().getName().equals(customerName)) {
-                    if (isAdminView || r.getUser().getId().equals(SessionManager.getInstance().getLoggedInUser().getId())) {
-                        toRemove = r;
-                        break;
-                    }
-                }
-            }
-            
-            if (toRemove != null) {
-                reservationRepository.deleteById(toRemove.getId());
+            try {
+                reservationService.cancelReservation(reservationId); //
                 PageComponents.showStyledMessage("Success",
-                    "Reservation for " + customerName + " has been cancelled successfully!", this);
-                refreshData(); // Refresh the table after cancellation
+                    "Reservation has been cancelled successfully!", this); //
+                refreshData(); 
+            } catch (IllegalArgumentException ex) {
+                PageComponents.showStyledMessage("Error", ex.getMessage(), this); //
+            } catch (Exception ex) {
+                PageComponents.showStyledMessage("Error", "An unexpected error occurred: " + ex.getMessage(), this); //
+                ex.printStackTrace();
             }
         }
     }
@@ -656,18 +607,12 @@ public class AllReservationsPage extends BasePanel {
         String selectedType = (String) typeFilter.getSelectedItem();
         tableModel.setRowCount(0);
         
-        Collection<Reservation> allReservations = reservationRepository.reservationMap.values();
+        Collection<Reservation> allReservations = reservationRepository.reservationMap.values(); //
         
-        // Filter reservations based on user type
-        Collection<Reservation> displayReservations;
-        if (isAdminView) {
-            displayReservations = allReservations;
-        } else {
-            User currentUser = SessionManager.getInstance().getLoggedInUser();
-            displayReservations = allReservations.stream()
-                .filter(r -> r.getUser().getId().equals(currentUser.getId()))
-                .collect(java.util.stream.Collectors.toList());
-        }
+        User currentUser = SessionManager.getInstance().getLoggedInUser(); //
+        Collection<Reservation> displayReservations = allReservations.stream()
+            .filter(r -> r.getUser().getId().equals(currentUser.getId())) //
+            .collect(java.util.stream.Collectors.toList());
         
         int filteredCount = 0;
         
@@ -687,73 +632,59 @@ public class AllReservationsPage extends BasePanel {
                 String departureTime = reservation.getTrip().getDepartureTime().format(timeFormatter);
                 String arrivalTime = reservation.getTrip().getArrivalTime().format(timeFormatter);
                 
-                if (isAdminView) {
-                    tableModel.addRow(new Object[]{
-                        reservation.getUser().getName(),
-                        reservation.getTrip().getTripType(),
-                        reservation.getTrip().getStartPoint() + " → " + reservation.getTrip().getEndPoint(),
-                        departureDate,
-                        departureTime,
-                        arrivalTime,
-                        seatList
-                    });
-                } else {
-                    tableModel.addRow(new Object[]{
-                        reservation.getTrip().getTripType(),
-                        reservation.getTrip().getStartPoint() + " → " + reservation.getTrip().getEndPoint(),
-                        departureDate,
-                        departureTime,
-                        arrivalTime,
-                        seatList
-                    });
-                }
+                // Admin görünümü kaldırıldığı için tek bir addRow mantığı yeterli
+                tableModel.addRow(new Object[]{
+                    reservation.getTrip().getTripType(),
+                    reservation.getTrip().getStartPoint() + " → " + reservation.getTrip().getEndPoint(),
+                    departureDate,
+                    departureTime,
+                    arrivalTime,
+                    seatList,
+                    reservation.getId()
+                });
                 filteredCount++;
             }
         }
         
         if (!selectedType.equals("All Types")) {
             PageComponents.showStyledMessage("Filter Applied", 
-                "Showing " + filteredCount + " " + selectedType + " reservations", this);
+                "Showing " + filteredCount + " " + selectedType + " reservations", this); //
         }
     }
     
     private String getReservationType(Reservation reservation) {
-        String tripType = reservation.getTrip().getTripType();
+        String tripType = reservation.getTrip().getTripType(); //
         
         if (tripType != null) {
             return tripType;
         }
         
         // Fallback: check the class type
-        if (reservation.getTrip() instanceof models.BusTrip) {
+        if (reservation.getTrip() instanceof BusTrip) { //
             return "Bus";
-        } else if (reservation.getTrip() instanceof models.FlightTrip) {
+        } else if (reservation.getTrip() instanceof FlightTrip) { //
             return "Flight";
         }
         
         return "Unknown";
     }
         
-    // Method to handle table row selection events
     private void handleTableSelection() {
         reservationTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 int selectedRow = reservationTable.getSelectedRow();
                 if (selectedRow != -1) {
-                    // Optional: Show preview of selected reservation
                 }
             }
         });
     }
     
-    // Initialize the page
     public void initializePage() {
         setupUI();
         handleTableSelection();
         loadReservationsFromRepository();
     }
     
-    // Override display method to ensure proper initialization
     @Override
     public void display() {
         initializePage();

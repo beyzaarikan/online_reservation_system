@@ -3,6 +3,8 @@ package service;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
+
+import models.BusTrip;
 import models.Reservation;
 import models.Seat;
 import models.Trip;
@@ -10,6 +12,7 @@ import models.User;
 import repository.ReservationRepository;
 import repository.TripRepository;
 import repository.UserRepository;
+import singleton.SeatStatusManager; // Import SeatStatusManager
 
 public class ReservationService {
     private ReservationRepository reservationRepository;
@@ -76,13 +79,27 @@ public class ReservationService {
         // Get reservation to free up seats
         Reservation reservation = reservationRepository.findById(reservationId);
         if (reservation != null) {
-            // Free up the seats by setting reserved to false
-            reservation.getSeats().forEach(seat -> {
-                seat.unreserve();
-            });
+            // Get the SeatStatusManager instance
+            SeatStatusManager seatStatusManager = SeatStatusManager.getInstance();
+            Trip trip = reservation.getTrip();
+            String tripKey;
+
+            if (reservation.getTrip() instanceof models.BusTrip) {
+                tripKey = ((BusTrip) trip).getCompany();
+            } else if (reservation.getTrip() instanceof models.FlightTrip) {
+                tripKey = trip.getTripNo();
+            } else {
+                tripKey = trip.getTripNo();
+            }
+
+            // Unmark each seat as occupied in SeatStatusManager
+            for (Seat seat : reservation.getSeats()) {
+                seat.unreserve(); // Mark seat as unreserved in the Seat object
+                // Remove seat from SeatStatusManager's occupied list
+                seatStatusManager.getOccupiedSeats(tripKey).remove(Integer.valueOf(seat.getSeatNo()));
+            }
         }
         
-        // Cancel reservation
         return reservationRepository.deleteReservation(reservationId);
     }
     
