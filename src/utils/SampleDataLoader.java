@@ -1,6 +1,7 @@
 // iremmozkaynak/online_reservation_system/online_reservation_system-28ba3ad86cb9b46dda1defc47db65f71a11cf40a/src/utils/SampleDataLoader.java
 package utils;
 
+import builder.TripBuilder;
 import factory.BusTripFactory;
 import factory.FlightTripFactory;
 import factory.TripFactoryManager;
@@ -21,89 +22,211 @@ public class SampleDataLoader {
             try {
                 factoryManager.registerFactory("Bus", new BusTripFactory());
                 factoryManager.registerFactory("Flight", new FlightTripFactory());
-                Trip busTrip1 = factoryManager.getFactory("Bus").createTrip(
-                        "BT001", "Istanbul", "Ankara",
+                
+                // Using Builder Pattern for cleaner trip creation
+                Trip busTrip1 = new TripBuilder()
+                    .tripNo("BT001")
+                    .route("Istanbul", "Ankara")
+                    .schedule(
                         LocalDateTime.of(2025, 6, 15, 8, 0),
-                        LocalDateTime.of(2025, 6, 15, 14, 30),
-                        45.0, 29, "Metro Turizm", "6h 30m", "AC, WiFi, TV", "34-MT-001");
+                        LocalDateTime.of(2025, 6, 15, 14, 30)
+                    )
+                    .pricing(45.0)
+                    .capacity(29)
+                    .operator("Metro Turizm")
+                    .duration("6h 30m")
+                    .amenities("AC, WiFi, TV")
+                    .vehicle("34-MT-001")
+                    .type("Bus")
+                    .build();
                 tripService.addTrip(busTrip1);
 
-                Trip busTrip2 = factoryManager.getFactory("Bus").createTrip(
-                        "BT002", "Istanbul", "Izmir",
+                Trip busTrip2 = new TripBuilder()
+                    .tripNo("BT002")
+                    .route("Istanbul", "Izmir")
+                    .schedule(
                         LocalDateTime.of(2025, 6, 15, 10, 15),
-                        LocalDateTime.of(2025, 6, 15, 16, 45),
-                        50.0, 29, "Varan Turizm", "6h 30m", "AC, Refreshment", "34-VR-002");
+                        LocalDateTime.of(2025, 6, 15, 16, 45)
+                    )
+                    .pricing(50.0)
+                    .capacity(29)
+                    .operator("Varan Turizm")
+                    .duration("6h 30m")
+                    .amenities("AC, Refreshment")
+                    .vehicle("34-VR-002")
+                    .type("Bus")
+                    .build();
                 tripService.addTrip(busTrip2);
                 
-                Trip busTrip3 = factoryManager.getFactory("Bus").createTrip(
-                        "BT003", "Istanbul", "Ankara",
+                Trip busTrip3 = new TripBuilder()
+                    .tripNo("BT003")
+                    .route("Istanbul", "Ankara")
+                    .schedule(
                         LocalDateTime.of(2025, 6, 15, 14, 0),
-                        LocalDateTime.of(2025, 6, 15, 20, 30),
-                        45.0, 29, "Kamil Koç", "6h 30m", "AC, WiFi", "34-KK-003");
+                        LocalDateTime.of(2025, 6, 15, 20, 30)
+                    )
+                    .pricing(45.0)
+                    .capacity(29)
+                    .operator("Kamil Koç")
+                    .duration("6h 30m")
+                    .amenities("AC, WiFi")
+                    .vehicle("34-KK-003")
+                    .type("Bus")
+                    .build();
                 tripService.addTrip(busTrip3);
                 
-                Trip busTrip4 = factoryManager.getFactory("Bus").createTrip(
-                        "BT004", "Istanbul", "Ankara",
+                Trip busTrip4 = new TripBuilder()
+                    .tripNo("BT004")
+                    .route("Istanbul", "Ankara")
+                    .schedule(
                         LocalDateTime.of(2025, 6, 15, 18, 30),
-                        LocalDateTime.of(2025, 6, 16, 1, 0),
-                        50.0, 29, "Pamukkale Turizm", "6h 30m", "AC, TV, Meal", "34-PK-004");
+                        LocalDateTime.of(2025, 6, 16, 1, 0)
+                    )
+                    .pricing(50.0)
+                    .capacity(29)
+                    .operator("Pamukkale Turizm")
+                    .duration("6h 30m")
+                    .amenities("AC, TV, Meal")
+                    .vehicle("34-PK-004")
+                    .type("Bus")
+                    .build();
                 tripService.addTrip(busTrip4);
                 
-                Trip busTrip5 = factoryManager.getFactory("Bus").createTrip(
-                        "BT005", "Istanbul", "Ankara",
+                Trip busTrip5 = new TripBuilder()
+                    .tripNo("BT005")
+                    .route("Istanbul", "Ankara")
+                    .schedule(
                         LocalDateTime.of(2025, 6, 15, 22, 0),
-                        LocalDateTime.of(2025, 6, 16, 4, 30),
-                        45.0, 29, "Ulusoy", "6h 30m", "AC, WiFi", "34-UL-005");
+                        LocalDateTime.of(2025, 6, 16, 4, 30)
+                    )
+                    .pricing(45.0)
+                    .capacity(29)
+                    .operator("Ulusoy")
+                    .duration("6h 30m")
+                    .amenities("AC, WiFi")
+                    .vehicle("34-UL-005")
+                    .type("Bus")
+                    .build();
                 tripService.addTrip(busTrip5);
                 
-                Trip busTrip6 = factoryManager.getFactory("Bus").createTrip(
-                        "BT006", "Ankara", "Izmir",
+                Trip busTrip6 = new TripBuilder()
+                    .tripNo("BT006")
+                    .route("Ankara", "Izmir")
+                    .schedule(
                         LocalDateTime.of(2025, 6, 15, 9, 0),
-                        LocalDateTime.of(2025, 6, 15, 16, 0),
-                        50.0, 29, "Metro Turizm", "7h 0m", "AC, WiFi, TV", "06-MT-006");
+                        LocalDateTime.of(2025, 6, 15, 16, 0)
+                    )
+                    .pricing(50.0)
+                    .capacity(29)
+                    .operator("Metro Turizm")
+                    .duration("7h 0m")
+                    .amenities("AC, WiFi, TV")
+                    .vehicle("06-MT-006")
+                    .type("Bus")
+                    .build();
                 tripService.addTrip(busTrip6);
                 
-                Trip busTrip7 = factoryManager.getFactory("Bus").createTrip(
-                        "BT007", "Izmir", "Istanbul",
+                Trip busTrip7 = new TripBuilder()
+                    .tripNo("BT007")
+                    .route("Izmir", "Istanbul")
+                    .schedule(
                         LocalDateTime.of(2025, 6, 15, 11, 30),
-                        LocalDateTime.of(2025, 6, 15, 19, 0),
-                        70.0, 29, "Varan Turizm", "7h 30m", "AC, Refreshment", "35-VR-007");
+                        LocalDateTime.of(2025, 6, 15, 19, 0)
+                    )
+                    .pricing(70.0)
+                    .capacity(29)
+                    .operator("Varan Turizm")
+                    .duration("7h 30m")
+                    .amenities("AC, Refreshment")
+                    .vehicle("35-VR-007")
+                    .type("Bus")
+                    .build();
                 tripService.addTrip(busTrip7);
 
                 
-                Trip flightTrip1 = factoryManager.getFactory("Flight").createTrip(
-                        "FT001", "Istanbul", "Ankara",
+                Trip flightTrip1 = new TripBuilder()
+                    .tripNo("FT001")
+                    .route("Istanbul", "Ankara")
+                    .schedule(
                         LocalDate.of(2025, 06, 18).atTime(8, 30),
-                        LocalDate.of(2025, 06, 18).atTime(9, 45),
-                        150.0, 150, "THY ", "1h 15m", "WiFi, Meal Service", "Boeing 737");
+                        LocalDate.of(2025, 06, 18).atTime(9, 45)
+                    )
+                    .pricing(150.0)
+                    .capacity(150)
+                    .operator("THY")
+                    .duration("1h 15m")
+                    .amenities("WiFi, Meal Service")
+                    .vehicle("Boeing 737")
+                    .type("Flight")
+                    .build();
                 tripService.addTrip(flightTrip1);
 
-                Trip flightTrip2 = factoryManager.getFactory("Flight").createTrip(
-                        "FT002", "Istanbul", "Izmir",
+                Trip flightTrip2 = new TripBuilder()
+                    .tripNo("FT002")
+                    .route("Istanbul", "Izmir")
+                    .schedule(
                         LocalDate.of(2025, 06, 18).atTime(10, 15),
-                        LocalDate.of(2025, 06, 18).atTime(11, 30),
-                        120.0, 150, "Pegasus", "1h 15m", "WiFi, Meal Service", "Airbus A320");
+                        LocalDate.of(2025, 06, 18).atTime(11, 30)
+                    )
+                    .pricing(120.0)
+                    .capacity(150)
+                    .operator("Pegasus")
+                    .duration("1h 15m")
+                    .amenities("WiFi, Meal Service")
+                    .vehicle("Airbus A320")
+                    .type("Flight")
+                    .build();
                 tripService.addTrip(flightTrip2);
 
-                Trip flightTrip3 = factoryManager.getFactory("Flight").createTrip(
-                        "FT003", "Istanbul", "Antalya",
+                Trip flightTrip3 = new TripBuilder()
+                    .tripNo("FT003")
+                    .route("Istanbul", "Antalya")
+                    .schedule(
                         LocalDate.of(2025, 06, 18).atTime(14, 0),
-                        LocalDate.of(2025, 06, 18).atTime(15, 15),
-                        180.0, 150, "SunExpress", "1h 15m", "WiFi, Meal Service", "Boeing 7377");
+                        LocalDate.of(2025, 06, 18).atTime(15, 15)
+                    )
+                    .pricing(180.0)
+                    .capacity(150)
+                    .operator("SunExpress")
+                    .duration("1h 15m")
+                    .amenities("WiFi, Meal Service")
+                    .vehicle("Boeing 7377")
+                    .type("Flight")
+                    .build();
                 tripService.addTrip(flightTrip3);
 
-                Trip flightTrip4 = factoryManager.getFactory("Flight").createTrip(
-                        "FT004", "Ankara", "Bodrum",
+                Trip flightTrip4 = new TripBuilder()
+                    .tripNo("FT004")
+                    .route("Ankara", "Bodrum")
+                    .schedule(
                         LocalDate.of(2025, 06, 18).atTime(16, 30),
-                        LocalDate.of(2025, 06, 18).atTime(17, 45),
-                        200.0, 150, "THY", "1h 15m", "WiFi, Meal Service", "Airbus A321");
+                        LocalDate.of(2025, 06, 18).atTime(17, 45)
+                    )
+                    .pricing(200.0)
+                    .capacity(150)
+                    .operator("THY")
+                    .duration("1h 15m")
+                    .amenities("WiFi, Meal Service")
+                    .vehicle("Airbus A321")
+                    .type("Flight")
+                    .build();
                 tripService.addTrip(flightTrip4);
 
-                Trip flightTrip5 = factoryManager.getFactory("Flight").createTrip(
-                        "FT005", "Izmir", "Trabzon",
+                Trip flightTrip5 = new TripBuilder()
+                    .tripNo("FT005")
+                    .route("Izmir", "Trabzon")
+                    .schedule(
                         LocalDate.of(2025, 06, 18).atTime(19, 0),
-                        LocalDate.of(2025, 06, 18).atTime(20, 15),
-                        160.0, 150, "Pegasus", "1h 15m", "WiFi, Meal Service", "Boeing 737");
+                        LocalDate.of(2025, 06, 18).atTime(20, 15)
+                    )
+                    .pricing(160.0)
+                    .capacity(150)
+                    .operator("Pegasus")
+                    .duration("1h 15m")
+                    .amenities("WiFi, Meal Service")
+                    .vehicle("Boeing 737")
+                    .type("Flight")
+                    .build();
                 tripService.addTrip(flightTrip5);
 
             } catch (Exception e) {

@@ -1,6 +1,7 @@
 // iremmozkaynak/online_reservation_system/online_reservation_system-28ba3ad86cb9b46dda1defc47db65f71a11cf40a/src/gui/TripManagementPage.java
 package gui;
 
+import builder.TripBuilder;
 import factory.BusTripFactory;
 import factory.FlightTripFactory;
 import factory.TripFactoryManager;
@@ -655,11 +656,19 @@ public class TripManagementPage extends BasePanel {
                     return;
                 }
 
-                // Use the factory to create the trip based on selected type
-                Trip newTrip = factoryManager.getFactory(tripType).createTrip(
-                    tripNo, startPoint, endPoint, departureTime, arrivalTime,
-                    price, totalSeats, company, duration, amenities, vehicleNo
-                );
+                // Use Builder Pattern for creating new trip
+                Trip newTrip = new TripBuilder()
+                    .tripNo(tripNo)
+                    .route(startPoint, endPoint)
+                    .schedule(departureTime, arrivalTime)
+                    .pricing(price)
+                    .capacity(totalSeats)
+                    .operator(company)
+                    .duration(duration)
+                    .amenities(amenities)
+                    .vehicle(vehicleNo)
+                    .type(tripType)
+                    .build();
 
                 tripService.addTrip(newTrip);
                 populateTripTable();
@@ -832,16 +841,19 @@ public class TripManagementPage extends BasePanel {
                     return;
                 }
 
-                Trip updatedTrip;
-                if ("Bus".equals(newTripType)) {
-                    updatedTrip = factoryManager.getFactory("Bus").createTrip(existingTrip.getTripNo(),
-                            newStartPoint, newEndPoint, newDepartureTime, newArrivalTime, newPrice,
-                            newTotalSeats, newCompany, newDuration, newAmenities, newVehicleNo);
-                } else { // Flight
-                    updatedTrip = factoryManager.getFactory("Flight").createTrip(existingTrip.getTripNo(),
-                            newStartPoint, newEndPoint, newDepartureTime, newArrivalTime, newPrice,
-                            newTotalSeats, newCompany, newDuration, newAmenities, newVehicleNo);
-                }
+                // Use Builder Pattern for updating trip
+                Trip updatedTrip = new TripBuilder()
+                    .tripNo(existingTrip.getTripNo())
+                    .route(newStartPoint, newEndPoint)
+                    .schedule(newDepartureTime, newArrivalTime)
+                    .pricing(newPrice)
+                    .capacity(newTotalSeats)
+                    .operator(newCompany)
+                    .duration(newDuration)
+                    .amenities(newAmenities)
+                    .vehicle(newVehicleNo)
+                    .type(newTripType)
+                    .build();
                 
                 tripService.updateTrip(updatedTrip);
                 populateTripTable();
