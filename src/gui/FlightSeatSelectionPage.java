@@ -14,6 +14,7 @@ import repository.*;
 import service.*;
 import singleton.*;
 import state.*;
+import strategy.*;
 
 public class FlightSeatSelectionPage extends BasePanel implements Observer {
     private String airline;
@@ -46,6 +47,9 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
     private ReservationService reservationService;
     private CommandInvoker commandInvoker;
 
+    // Strategy pattern for pricing
+    private PricingContext pricingContext;
+
     private List<Integer> preReservedSeats;
 
     public FlightSeatSelectionPage(String airline, String fromAirport, String toAirport,
@@ -72,6 +76,9 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         } catch (NumberFormatException e) {
             this.basePriceValue = 280.0;
         }
+
+        // Initialize pricing strategy for flight
+        this.pricingContext = new PricingContext(new FlightPricingStrategy());
 
         initializeServices();
         initializePreReservedSeats();
@@ -477,8 +484,8 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         JPanel availableItem = createLegendItem("Available", new Color(75, 181, 67), "1A");
         JPanel selectedItem = createLegendItem("Selected", new Color(138, 43, 226), "1A");
         JPanel occupiedItem = createLegendItem("Occupied", new Color(220, 53, 69), "X");
-        JPanel premiumItem = createLegendItem("Premium (+50%)", new Color(255, 193, 7), "P1");
-        JPanel windowItem = createLegendItem("Window (+20%)", new Color(52, 152, 219), "W1");
+        JPanel premiumItem = createLegendItem("Premium (+200%)", new Color(255, 193, 7), "P1");
+        JPanel windowItem = createLegendItem("Window (+15%)", new Color(52, 152, 219), "W1");
 
         legendPanel.add(availableItem);
         legendPanel.add(selectedItem);
@@ -790,10 +797,10 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
             ReservationContext reservationContext = new ReservationContext(reservationId);
             reservationContext.confirm(); // Confirm the reservation
             
-            // Calculate total price
+            // Calculate total price using strategy pattern
             double totalPrice = 0;
             for (FlightSeatButton seat : selectedSeats) {
-                totalPrice += seat.getPrice()/100.0;
+                totalPrice += seat.getPrice();
             }
             
             // Show success message
@@ -839,7 +846,9 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
             this.isWindow = isWindow;
             this.isAisle = isAisle;
             this.isPremium = isPremium;
-            this.price = calculateSeatPrice();
+            
+            // Use Strategy pattern to calculate price
+            this.price = calculateSeatPriceWithStrategy();
 
             setupButton();
         }
@@ -906,13 +915,17 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
             setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255, 50), 1, true));
         }
 
-        private double calculateSeatPrice() {
-            double multiplier = 1.0;
-
-            if (isPremium) multiplier += 0.5;
-            if (isWindow) multiplier += 0.2;
-            if (isAisle) multiplier += 0.1;
-            return basePriceValue * multiplier;
+        private double calculateSeatPriceWithStrategy() {
+            // Create a dummy trip for price calculation
+            Trip dummyTrip = new FlightTrip(
+                "DUMMY", "", "", 
+                java.time.LocalDateTime.now(), 
+                java.time.LocalDateTime.now(), 
+                basePriceValue, 150, "", "", "", ""
+            );
+            
+            // Use the pricing context to calculate price
+            return pricingContext.calculatePrice(dummyTrip, seatId);
         }
         
         private void toggleSelection() {

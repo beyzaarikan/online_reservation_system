@@ -14,6 +14,7 @@ import repository.*;
 import service.*;
 import singleton.*;
 import state.*;
+import strategy.*;
 
 public class BusSeatSelectionPage extends BasePanel implements Observer {
     private String busCompany;
@@ -45,6 +46,9 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
     private ReservationService reservationService;
     private CommandInvoker commandInvoker;
 
+    // Strategy pattern for pricing
+    private PricingContext pricingContext;
+
     private List<Integer> preReservedSeats;
 
     public BusSeatSelectionPage(String busCompany, String fromCity, String toCity, String departureDate, String arrivalTime,
@@ -70,6 +74,10 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         } catch (NumberFormatException e) {
             this.basePriceValue = 45.0;
         }
+        
+        // Initialize pricing strategy for bus
+        this.pricingContext = new PricingContext(new BusPricingStrategy());
+        
         initializePreReservedSeats();
         // Initialize services and repositories
         initializeServices();
@@ -591,7 +599,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
             for (int i = 0; i < selectedSeats.size(); i++) {
                 if (i > 0) seatNumbers.append(", ");
                 seatNumbers.append(selectedSeats.get(i).getSeatNumber());
-                totalPrice += selectedSeats.get(i).getPrice()/ 100.0;  //kuruşu tl ye çevirme
+                totalPrice += selectedSeats.get(i).getPrice();
             }
             selectedSeatsLabel.setText("Seats: " + seatNumbers.toString());
             totalPriceLabel.setText(String.format("Total: %.2f TL", totalPrice));
@@ -671,7 +679,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
             ReservationContext reservationContext = new ReservationContext(reservationId);
             reservationContext.confirm(); // Confirm the reservation
 
-            // Calculate total price
+            // Calculate total price using strategy pattern
             double totalPrice = 0;
             for (BusSeatButton seat : selectedSeats) {
                 totalPrice += seat.getPrice();
@@ -735,7 +743,9 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
             this.isSelected = false;
             this.isWindow = isWindow;
             this.isPremium = isPremium;
-            this.price = calculateSeatPrice();
+            
+            // Use Strategy pattern to calculate price
+            this.price = calculateSeatPriceWithStrategy();
 
             setupButton();
         }
@@ -793,12 +803,17 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
             setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255, 50), 1, true));
         }
 
-        private double calculateSeatPrice() {
-            double multiplier = 1.0;
-
-            if (isPremium) multiplier += 0.3;
-            if (isWindow) multiplier += 0.1;
-            return basePriceValue * multiplier;
+        private double calculateSeatPriceWithStrategy() {
+            // Create a dummy trip for price calculation
+            Trip dummyTrip = new BusTrip(
+                "DUMMY", "", "", 
+                java.time.LocalDateTime.now(), 
+                java.time.LocalDateTime.now(), 
+                basePriceValue, 40, "", "", "", ""
+            );
+            
+            // Use the pricing context to calculate price
+            return pricingContext.calculatePrice(dummyTrip, seatNumber);
         }
 
         private void toggleSelection() {
