@@ -57,7 +57,6 @@ public class BusTrip extends Trip {
         return "Bus";
     }
     public void initializeSeats() {
-        // Initialize seats specific to bus trips
         this.seats = Seat.createSeats(totalSeats);
     }
     @Override   

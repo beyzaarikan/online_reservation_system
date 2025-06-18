@@ -1,4 +1,3 @@
-// iremmozkaynak/online_reservation_system/online_reservation_system-28ba3ad86cb9b46dda1defc47db65f71a11cf40a/src/utils/SampleDataLoader.java
 package utils;
 
 import factory.BusTripFactory;

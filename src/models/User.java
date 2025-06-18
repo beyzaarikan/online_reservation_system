@@ -1,7 +1,7 @@
 package models;
 
 public abstract class User {
-    private String id; // ID is not used in this class, but can be added if needed
+    private String id; 
     private String name;
     private String password;
     private String email;

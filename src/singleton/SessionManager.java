@@ -4,10 +4,9 @@ package singleton;
 import models.User;
 
 public class SessionManager {
-    private static SessionManager instance; // Singleton örneği
-    private User loggedInUser; // Giriş yapan kullanıcı
+    private static SessionManager instance; 
+    private User loggedInUser;
 
-    // Private constructor for Singleton
     private SessionManager() {
     }
 
@@ -18,19 +17,19 @@ public class SessionManager {
         return instance;
     }
 
-    public void setLoggedInUser(User user) { // Giriş yapan kullanıcıyı ayarlama
+    public void setLoggedInUser(User user) { 
         this.loggedInUser = user;
     }
 
-    public User getLoggedInUser() { // Giriş yapan kullanıcıyı alma
+    public User getLoggedInUser() {
         return loggedInUser;
     }
 
-    public boolean isLoggedIn() { // Kullanıcının oturum açıp açmadığını kontrol etme
+    public boolean isLoggedIn() { 
         return loggedInUser != null;
     }
 
     public void logout() {
-        this.loggedInUser = null; // Kullanıcıyı oturumdan çıkarma işlemi
+        this.loggedInUser = null; 
     }
 }

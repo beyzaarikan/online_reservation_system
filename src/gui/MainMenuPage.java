@@ -221,7 +221,6 @@ public class MainMenuPage extends JFrame {
         menuContainer.setLayout(new BoxLayout(menuContainer, BoxLayout.Y_AXIS));
         menuContainer.setOpaque(false);
         
-        // Glassmorphism container for menu cards
         JPanel menuPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -241,11 +240,9 @@ public class MainMenuPage extends JFrame {
         };
         
         if (isAdmin) {
-            // For admin: only 2 cards, use 1x2 layout
             menuPanel.setLayout(new GridLayout(1, 2, 25, 25));
             menuPanel.setPreferredSize(new Dimension(600, 180));
         } else {
-            // For user: 4 cards, use 2x2 layout
             menuPanel.setLayout(new GridLayout(2, 2, 25, 25));
             menuPanel.setPreferredSize(new Dimension(700, 320));
         }
@@ -264,7 +261,6 @@ public class MainMenuPage extends JFrame {
     }
     
     private void setupUserMenu(JPanel menuGrid) {
-        // User menu options
         JPanel busTripsCard = createMenuCard("Search Bus Trips", 
             "Find and book bus journeys", new Color(138, 43, 226), "🚌");
         JPanel flightTripsCard = createMenuCard("Search Flights", 
@@ -274,7 +270,6 @@ public class MainMenuPage extends JFrame {
         JPanel profileCard = createMenuCard("My Profile", 
             "Manage your account", new Color(251, 146, 60), "👤");
         
-        // Event listeners
         addClickListener(busTripsCard, () -> {
             dispose();
             new SearchBusTripPage().display();
@@ -302,13 +297,11 @@ public class MainMenuPage extends JFrame {
     }
     
     private void setupAdminMenu(JPanel menuGrid) {
-        // Admin menu options - only User Management and Trip Management
         JPanel userManagementCard = createMenuCard("User Management", 
             "Manage system users", new Color(108, 92, 231), "👥");
         JPanel tripManagementCard = createMenuCard("Trip Management", 
             "Manage trips and routes", new Color(138, 43, 226), "🗺️");
         
-        // Event listeners
         addClickListener(userManagementCard, () -> {
             dispose();
             new UserManagementPage().display();
@@ -406,7 +399,6 @@ public class MainMenuPage extends JFrame {
         card.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                // Enhanced glassmorphism on hover
                 card.repaint();
             }
             

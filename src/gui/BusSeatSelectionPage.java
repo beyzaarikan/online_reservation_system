@@ -73,7 +73,6 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         }
         
         initializePreReservedSeats();
-        // Initialize services and repositories
         initializeServices();
     }
     
@@ -91,15 +90,12 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         
         preReservedSeats = new ArrayList<>(occupiedSeatsSet);
         
-        // Eğer hiç occupied seat yoksa, demo için birkaç tane ekle
         if (preReservedSeats.isEmpty()) {
             preReservedSeats.add(3);
             preReservedSeats.add(7);
             preReservedSeats.add(12);
             preReservedSeats.add(18);
             preReservedSeats.add(23);
-
-            // Bu demo seat'leri de kaydet
             seatStatusManager.markSeatsAsOccupied(busCompany, preReservedSeats);
         }
     }
@@ -191,7 +187,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         subtitleLabel.setForeground(new Color(189, 147, 249));
         subtitleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // Trip info card with glassmorphism
+        // Trip info card 
         JPanel infoCard = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -199,7 +195,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
                 Graphics2D g2d = (Graphics2D) g;
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 
-                // Glassmorphism background
+                // Background
                 g2d.setColor(new Color(255, 255, 255, 10));
                 g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
                 
@@ -275,7 +271,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         seatMapPanel = new JPanel(new BorderLayout());
         seatMapPanel.setOpaque(false);
 
-        // Bus container with glassmorphism
+        // Bus container 
         JPanel busContainer = new JPanel(new BorderLayout()) {
             @Override
             protected void paintComponent(Graphics g) {
@@ -343,7 +339,6 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
                     aisleLabel.setHorizontalAlignment(SwingConstants.CENTER);
                     rowPanel.add(aisleLabel);
                 } else {
-                    // Removed isWindow determination
                     boolean isOccupied = preReservedSeats.contains(seatNumber);
                     boolean isPremium = col < 3;
 
@@ -368,15 +363,11 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         JPanel selectedItem = createLegendItem("Selected", new Color(138, 43, 226), "12");
         JPanel occupiedItem = createLegendItem("Occupied", new Color(220, 53, 69), "X");
         JPanel premiumItem = createLegendItem("Premium (+30%)", new Color(255, 193, 7), "P1");
-        // Removed windowItem creation
-        // JPanel windowItem = createLegendItem("Window (+10%)", new Color(52, 152, 219), "W1");
 
         legendPanel.add(availableItem);
         legendPanel.add(selectedItem);
         legendPanel.add(occupiedItem);
         legendPanel.add(premiumItem);
-        // Removed windowItem addition
-        // legendPanel.add(windowItem);
 
         return legendPanel;
     }
@@ -620,62 +611,46 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         }
 
         try {
-            // Seçilen seat numaralarını topla
             List<Integer> selectedSeatNumbers = new ArrayList<>();
             for (BusSeatButton seat : selectedSeats) {
                 selectedSeatNumbers.add(seat.getSeatNumber());
             }
-
-            // Seat'leri occupied olarak işaretle
             SeatStatusManager seatStatusManager = SeatStatusManager.getInstance();
             seatStatusManager.markSeatsAsOccupied(busCompany, selectedSeatNumbers);
 
-            // Create a proper BusTrip using the factory pattern
             TripFactoryManager factoryManager = new TripFactoryManager();
             TripFactory busFactory = factoryManager.getFactory("Bus");
 
-            // Generate unique trip ID for this reservation
             String tripId = "BUS_" + java.util.UUID.randomUUID().toString().substring(0, 8);
 
-            // Create the bus trip with proper details
             Trip busTrip = busFactory.createTrip(
                 tripId,
                 fromCity,
                 toCity,
-                java.time.LocalDateTime.now().plusDays(1), // departure time
-                java.time.LocalDateTime.now().plusDays(1).plusHours(6), // arrival time
+                java.time.LocalDateTime.now().plusDays(1), 
+                java.time.LocalDateTime.now().plusDays(1).plusHours(6), 
                 basePriceValue,
-                40, // total seats for bus
+                40, 
                 busCompany,
-                "6h 30m", // duration
+                "6h 30m", 
                 amenities,
-                "BUS-" + tripId // bus number
+                "BUS-" + tripId
             );
 
-            // Create list of selected seats from the bus trip
             List<Seat> reservedSeats = new ArrayList<>();
             for (BusSeatButton seatButton : selectedSeats) {
                 String seatNo=seatButton.getSeatNumber()+"";
                 Seat seat = new Seat(seatButton.getSeatNumber(), false ,seatNo);
-                seat.reserve(); // Reserve the seat
+                seat.reserve();
                 reservedSeats.add(seat);
             }
 
-            // Generate unique reservation ID
             String reservationId = java.util.UUID.randomUUID().toString();
-
-            // Create reservation with the BusTrip
             Reservation reservation = new Reservation(reservationId, currentUser, busTrip, reservedSeats);
-
-            // Get the global reservation repository instance
             ReservationRepository globalReservationRepo = getGlobalReservationRepository();
-
-            // Save reservation to the global repository
             globalReservationRepo.save(reservation);
-
-            // Create reservation state context
             ReservationContext reservationContext = new ReservationContext(reservationId);
-            reservationContext.confirm(); // Confirm the reservation
+            reservationContext.confirm(); 
 
             // Calculate total price using strategy pattern
             double totalPrice = 0;
@@ -683,7 +658,6 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
                 totalPrice += seat.getPrice();
             }
 
-            // Show success message
             String successMessage = String.format(
                 "🎉 Bus Reservation Confirmed!\n\n" +
                 "Your bus reservation has been saved successfully!"
@@ -702,9 +676,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
         }
     } 
    
-    // Method to get the global reservation repository instance
     private ReservationRepository getGlobalReservationRepository() {
-        // This should return the same instance used by AllReservationsPage
         return GlobalRepositoryManager.getInstance().getReservationRepository();
     }
 
@@ -739,10 +711,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
             this.seatNumber = seatNumber;
             this.isOccupied = isOccupied;
             this.isSelected = false;
-            // Removed isWindow from constructor assignment
             this.isPremium = isPremium;
-            
-            // Use Strategy pattern to calculate price
             this.price = calculateSeatPrice();
 
             setupButton();
@@ -759,7 +728,7 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
                 g2.setColor(new Color(220, 53, 69)); // Kırmızı - dolu
             } else if (isPremium) {
                 g2.setColor(new Color(255, 193, 7)); // Sarı - premium
-            } else { // Removed isWindow check
+            } else {
                 g2.setColor(new Color(75, 181, 67)); // Yeşil - müsait
             }
             g2.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
@@ -777,8 +746,8 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
             setFont(new Font("Segoe UI", Font.BOLD, 11));
             setFocusPainted(false);
             setCursor(new Cursor(Cursor.HAND_CURSOR));
-            setContentAreaFilled(false); // Arka planı biz çizeceğiz
-            setBorderPainted(false);     // Kenarlık da bizde
+            setContentAreaFilled(false);
+            setBorderPainted(false);    
             setOpaque(false); 
 
             if (isOccupied) {
@@ -791,9 +760,8 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
                 setText(isPremium ? "P" + seatNumber : String.valueOf(seatNumber));
                 setBackground(isPremium ? new Color(255, 193, 7) : new Color(75, 181, 67));
                 setForeground(Color.WHITE);
-                setToolTipText(String.format("Seat %d - %.2f TL%s", // Removed %s for isWindow
+                setToolTipText(String.format("Seat %d - %.2f TL%s",
                     seatNumber, price,
-                    // Removed isWindow from tooltip
                     isPremium ? " (Premium)" : ""
                 ));
                 addActionListener(e -> toggleSelection());
@@ -805,7 +773,6 @@ public class BusSeatSelectionPage extends BasePanel implements Observer {
             double multiplier = 1.0;
 
             if (isPremium) multiplier += 0.3;
-            // Removed isWindow from price calculation
             return basePriceValue * multiplier;
         }
 

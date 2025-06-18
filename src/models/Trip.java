@@ -23,7 +23,7 @@ public abstract class Trip {
         this.departureTime = departureTime;
         this.arrivalTime = arrivalTime;
         this.basePrice = basePrice;
-        this.totalSeats = totalSeats; // Use the provided totalSeats parameter instead of hardcoding 29
+        this.totalSeats = totalSeats; 
         this.company = company;
         this.duration = duration;
         this.amentities = amentities;
@@ -33,7 +33,7 @@ public abstract class Trip {
     protected abstract void initializeSeats();
     public abstract String getTripType();
 
-    // Getters and setters
+
     public String getTripNo() { return tripNo; }
     public String getStartPoint() { return startPoint; }
     public String getEndPoint() { return endPoint; }

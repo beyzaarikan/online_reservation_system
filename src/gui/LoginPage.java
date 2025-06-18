@@ -25,7 +25,7 @@ public class LoginPage extends BasePanel {
         setLayout(new BorderLayout());
         getContentPane().setBackground(new Color(15, 15, 35));
 
-        // Ana panel - gradient arkaplan
+        // Ana panel 
         JPanel mainPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {

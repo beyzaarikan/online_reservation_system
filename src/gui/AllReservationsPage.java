@@ -10,30 +10,28 @@ import javax.swing.table.DefaultTableCellRenderer;
 import repository.ReservationRepository;
 import singleton.SessionManager;
 import repository.UserRepository;
-import repository.TripRepository; // Import TripRepository for ReservationService initialization
-import service.ReservationService; // Import ReservationService
-import strategy.BusPricingStrategy; // Import for pricing calculation
-import strategy.FlightPricingStrategy; // Import for pricing calculation
-import strategy.PricingContext; // Import for pricing calculation
-import models.BusTrip; // Import BusTrip for instanceof checks
-import models.FlightTrip; // Import FlightTrip for instanceof checks
+import repository.TripRepository; 
+import service.ReservationService; 
+import strategy.BusPricingStrategy; 
+import strategy.FlightPricingStrategy; 
+import strategy.PricingContext; 
+import models.BusTrip; 
+import models.FlightTrip; 
 
 public class AllReservationsPage extends BasePanel {
     private JTable reservationTable;
     private DefaultTableModel tableModel;
     private JComboBox<String> typeFilter;
     private ReservationRepository reservationRepository;
-    private ReservationService reservationService; // Add ReservationService field
-    // private boolean isAdminView; // isAdminView kaldırıldı
+    private ReservationService reservationService;
 
-    // GIZLI SUTUN INDEKSI (sabit olarak tanimliyoruz)
-    private static final int RESERVATION_ID_COLUMN_INDEX = 6;   // Trip Type, Route, Dep Date, Dep Time, Arr Time, Seats, **Reservation ID**
+    private static final int RESERVATION_ID_COLUMN_INDEX = 6;   
 
     public AllReservationsPage() {
         super("My Reservations", 1200, 800);
         setTitle("My Reservations");
         
-        this.reservationRepository = GlobalRepositoryManager.getInstance().getReservationRepository(); //
+        this.reservationRepository = GlobalRepositoryManager.getInstance().getReservationRepository(); 
         // Initialize ReservationService
         this.reservationService = new ReservationService(
                                     this.reservationRepository,
@@ -47,7 +45,6 @@ public class AllReservationsPage extends BasePanel {
         setLayout(new BorderLayout());
         getContentPane().setBackground(new Color(42, 39, 83));
 
-        // Ana panel - gradient arkaplan
         JPanel mainPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -55,7 +52,6 @@ public class AllReservationsPage extends BasePanel {
                 Graphics2D g2d = (Graphics2D) g;
                 g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
                 
-                // Gradient background
                 GradientPaint gradient = new GradientPaint(
                     0, 0, new Color(42, 39, 83),
                     getWidth(), getHeight(), new Color(65, 50, 110)
@@ -173,17 +169,15 @@ public class AllReservationsPage extends BasePanel {
         menuPanel.setBorder(BorderFactory.createEmptyBorder(40, 40, 40, 40));
         menuPanel.setPreferredSize(new Dimension(1000, 600));
 
-        // Statistics row
         JPanel statsRow = new JPanel(new GridLayout(1, 3, 20, 0));
         statsRow.setOpaque(false);
         statsRow.setBorder(BorderFactory.createEmptyBorder(0, 0, 30, 0));
         
-        Collection<Reservation> allReservations = reservationRepository.reservationMap.values(); //
+        Collection<Reservation> allReservations = reservationRepository.reservationMap.values(); 
         
-        // Filter reservations based on user type (Admin görmediği için sadece kendi rezervasyonları)
-        User currentUser = SessionManager.getInstance().getLoggedInUser(); //
+        User currentUser = SessionManager.getInstance().getLoggedInUser(); 
         Collection<Reservation> displayReservations = allReservations.stream()
-            .filter(r -> r.getUser().getId().equals(currentUser.getId())) //
+            .filter(r -> r.getUser().getId().equals(currentUser.getId())) 
             .collect(java.util.stream.Collectors.toList());
         
         int totalReservations = displayReservations.size();
@@ -198,7 +192,6 @@ public class AllReservationsPage extends BasePanel {
         statsRow.add(busCard);
         statsRow.add(flightCard);
 
-        // Filter section
         JPanel filterSection = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 15));
         filterSection.setOpaque(false);
         filterSection.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
@@ -241,7 +234,6 @@ public class AllReservationsPage extends BasePanel {
         
         menuContainer.add(menuPanel);
         
-        // Setup action listeners
         setupActionListeners(refreshButton, viewDetailsButton, cancelReservationButton);
         
         return menuContainer;
@@ -291,7 +283,7 @@ public class AllReservationsPage extends BasePanel {
                 Graphics2D g2d = (Graphics2D) g;
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 
-                // Kart arka planı - daha belirgin
+                // Kart arka planı 
                 g2d.setColor(new Color(255, 255, 255, 8));
                 g2d.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
                 
@@ -451,10 +443,10 @@ public class AllReservationsPage extends BasePanel {
             reservationTable.getColumnModel().getColumn(i).setCellRenderer(cellRenderer);
         }
         
-        int[] columnWidths = {90, 180, 110, 80, 120, 100, 0}; // Son sütun (Reservation ID) genişliği 0 yapıldı (gizli)
+        int[] columnWidths = {90, 180, 110, 80, 120, 100, 0};
         for (int i = 0; i < columnWidths.length; i++) {
             reservationTable.getColumnModel().getColumn(i).setPreferredWidth(columnWidths[i]);
-            if (i == RESERVATION_ID_COLUMN_INDEX) { // Eğer gizli sütun ise
+            if (i == RESERVATION_ID_COLUMN_INDEX) { 
                 reservationTable.getColumnModel().getColumn(i).setMinWidth(0);
                 reservationTable.getColumnModel().getColumn(i).setMaxWidth(0);
                 reservationTable.getColumnModel().getColumn(i).setWidth(0);
@@ -466,7 +458,6 @@ public class AllReservationsPage extends BasePanel {
         tableModel.setRowCount(0);
         Collection<Reservation> allReservations = reservationRepository.reservationMap.values(); //
         
-        // Filter reservations based on current logged-in user
         User currentUser = SessionManager.getInstance().getLoggedInUser(); //
         Collection<Reservation> displayReservations = allReservations.stream()
             .filter(r -> r.getUser().getId().equals(currentUser.getId())) //
@@ -500,25 +491,25 @@ public class AllReservationsPage extends BasePanel {
     private void setupActionListeners(JButton refreshButton, JButton viewDetailsButton, JButton cancelReservationButton) {
         refreshButton.addActionListener(e -> refreshData());
         viewDetailsButton.addActionListener(e -> viewReservationDetails());
-        cancelReservationButton.addActionListener(e -> cancelReservation()); // Doğru çağrı
+        cancelReservationButton.addActionListener(e -> cancelReservation());
         typeFilter.addActionListener(e -> filterByType());
     }
     
     private void refreshData() {
         loadReservationsFromRepository();
-        PageComponents.showStyledMessage("Success", "Reservation data refreshed successfully!", this); //
+        PageComponents.showStyledMessage("Success", "Reservation data refreshed successfully!", this); 
     }
     
     private void viewReservationDetails() {
         int selectedRow = reservationTable.getSelectedRow();
         if (selectedRow == -1) {
-            PageComponents.showStyledMessage("Error", "Please select a reservation to view details!", this); //
+            PageComponents.showStyledMessage("Error", "Please select a reservation to view details!", this); 
             return;
         }
         
-        String reservationId = (String) tableModel.getValueAt(selectedRow, RESERVATION_ID_COLUMN_INDEX); //
+        String reservationId = (String) tableModel.getValueAt(selectedRow, RESERVATION_ID_COLUMN_INDEX); 
         
-        Reservation reservation = reservationRepository.findById(reservationId); //
+        Reservation reservation = reservationRepository.findById(reservationId); 
 
         if (reservation != null) {
             String seatList = reservation.getSeats().stream()
@@ -566,20 +557,20 @@ public class AllReservationsPage extends BasePanel {
                 reservation.getTrip().getTripType()
             );
             
-            PageComponents.showStyledMessage("Reservation Details", details, this); //
+            PageComponents.showStyledMessage("Reservation Details", details, this); 
         } else {
-            PageComponents.showStyledMessage("Error", "Selected reservation not found in system!", this); //
+            PageComponents.showStyledMessage("Error", "Selected reservation not found in system!", this); 
         }
     }
     
-    private void cancelReservation() { // Bu metod artık doğru şekilde çağrılıyor
+    private void cancelReservation() {
         int selectedRow = reservationTable.getSelectedRow();
         if (selectedRow == -1) {
-            PageComponents.showStyledMessage("Error", "Please select a reservation to cancel!", this); //
+            PageComponents.showStyledMessage("Error", "Please select a reservation to cancel!", this); 
             return;
         }
         
-        String reservationId = (String) tableModel.getValueAt(selectedRow, RESERVATION_ID_COLUMN_INDEX); //
+        String reservationId = (String) tableModel.getValueAt(selectedRow, RESERVATION_ID_COLUMN_INDEX); 
         
         int result = JOptionPane.showConfirmDialog(
             this,
@@ -591,14 +582,14 @@ public class AllReservationsPage extends BasePanel {
         
         if (result == JOptionPane.YES_OPTION) {
             try {
-                reservationService.cancelReservation(reservationId); //
+                reservationService.cancelReservation(reservationId); 
                 PageComponents.showStyledMessage("Success",
-                    "Reservation has been cancelled successfully!", this); //
+                    "Reservation has been cancelled successfully!", this); 
                 refreshData(); 
             } catch (IllegalArgumentException ex) {
-                PageComponents.showStyledMessage("Error", ex.getMessage(), this); //
+                PageComponents.showStyledMessage("Error", ex.getMessage(), this); 
             } catch (Exception ex) {
-                PageComponents.showStyledMessage("Error", "An unexpected error occurred: " + ex.getMessage(), this); //
+                PageComponents.showStyledMessage("Error", "An unexpected error occurred: " + ex.getMessage(), this); 
                 ex.printStackTrace();
             }
         }
@@ -608,11 +599,11 @@ public class AllReservationsPage extends BasePanel {
         String selectedType = (String) typeFilter.getSelectedItem();
         tableModel.setRowCount(0);
         
-        Collection<Reservation> allReservations = reservationRepository.reservationMap.values(); //
+        Collection<Reservation> allReservations = reservationRepository.reservationMap.values(); 
         
-        User currentUser = SessionManager.getInstance().getLoggedInUser(); //
+        User currentUser = SessionManager.getInstance().getLoggedInUser(); 
         Collection<Reservation> displayReservations = allReservations.stream()
-            .filter(r -> r.getUser().getId().equals(currentUser.getId())) //
+            .filter(r -> r.getUser().getId().equals(currentUser.getId())) 
             .collect(java.util.stream.Collectors.toList());
         
         int filteredCount = 0;
@@ -633,7 +624,6 @@ public class AllReservationsPage extends BasePanel {
                 String departureTime = reservation.getTrip().getDepartureTime().format(timeFormatter);
                 String arrivalTime = reservation.getTrip().getArrivalTime().format(timeFormatter);
                 
-                // Admin görünümü kaldırıldığı için tek bir addRow mantığı yeterli
                 tableModel.addRow(new Object[]{
                     reservation.getTrip().getTripType(),
                     reservation.getTrip().getStartPoint() + " → " + reservation.getTrip().getEndPoint(),
@@ -649,21 +639,20 @@ public class AllReservationsPage extends BasePanel {
         
         if (!selectedType.equals("All Types")) {
             PageComponents.showStyledMessage("Filter Applied", 
-                "Showing " + filteredCount + " " + selectedType + " reservations", this); //
+                "Showing " + filteredCount + " " + selectedType + " reservations", this); 
         }
     }
     
     private String getReservationType(Reservation reservation) {
-        String tripType = reservation.getTrip().getTripType(); //
+        String tripType = reservation.getTrip().getTripType(); 
         
         if (tripType != null) {
             return tripType;
         }
         
-        // Fallback: check the class type
-        if (reservation.getTrip() instanceof BusTrip) { //
+        if (reservation.getTrip() instanceof BusTrip) { 
             return "Bus";
-        } else if (reservation.getTrip() instanceof FlightTrip) { //
+        } else if (reservation.getTrip() instanceof FlightTrip) { 
             return "Flight";
         }
         

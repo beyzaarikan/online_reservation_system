@@ -2,12 +2,10 @@ package singleton;
 import models.Trip;
 
 public class SessionManagerTrip {
-    private static SessionManagerTrip instance; // Singleton örneği
-    private Trip currentTrip; // Geçerli seyahat
+    private static SessionManagerTrip instance; 
+    private Trip currentTrip;
 
-    private SessionManagerTrip() {
-        // Private constructor for Singleton
-    }
+    private SessionManagerTrip() {}
     public static synchronized SessionManagerTrip getInstance() {
         if (instance == null) {
             instance = new SessionManagerTrip();
@@ -23,11 +21,11 @@ public class SessionManagerTrip {
         return currentTrip;
     }
 
-    public boolean hasCurrentTrip() { // Geçerli bir seyahat var mı kontrol etme
+    public boolean hasCurrentTrip() { 
         return currentTrip != null;
     }
 
     public void clearCurrentTrip() {
-        this.currentTrip = null; // Geçerli seyahati temizle
+        this.currentTrip = null;
     }    
 }

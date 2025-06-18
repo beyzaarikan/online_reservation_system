@@ -78,7 +78,6 @@ public class FlightTrip extends Trip {
         this.amentities = amentities;
     }
     public void initializeSeats() {
-        // Initialize seats specific to flight trips
         this.seats = Seat.createSeats(totalSeats);
     }
     

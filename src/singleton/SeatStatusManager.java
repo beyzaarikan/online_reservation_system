@@ -8,9 +8,9 @@ import java.util.Set;
 
 public class SeatStatusManager {
     private static SeatStatusManager instance;
-    private Map<String, Set<Integer>> occupiedSeats; // busCompany -> occupied seat numbers
+    private Map<String, Set<Integer>> occupiedSeats;
     
-    private SeatStatusManager() { // Singleton yapıcı metot
+    private SeatStatusManager() { 
         occupiedSeats = new HashMap<>();
     }
     
@@ -20,31 +20,18 @@ public class SeatStatusManager {
         }
         return instance;
     }
-    
-    // Belirli bir bus company için occupied seat'leri alıyoruz
     public Set<Integer> getOccupiedSeats(String busCompany) {
         return occupiedSeats.getOrDefault(busCompany, new HashSet<>());
     }
-    
-    // Seat'i occupied olarak işaretleme
+    // Tek bir seat için
     public void markSeatAsOccupied(String busCompany, int seatNumber) {
         occupiedSeats.computeIfAbsent(busCompany, k -> new HashSet<>()).add(seatNumber);
     }
     
-    // Birden fazla seat'i occupied olarak işaretleme
+    // Birden fazla seat için
     public void markSeatsAsOccupied(String busCompany, List<Integer> seatNumbers) {
         Set<Integer> companySeats = occupiedSeats.computeIfAbsent(busCompany, k -> new HashSet<>());
         companySeats.addAll(seatNumbers);
     }
-    
-    // Seat'in occupied olup olmadığını kontrol etme
-    public boolean isSeatOccupied(String busCompany, int seatNumber) {
-        return occupiedSeats.getOrDefault(busCompany, new HashSet<>()).contains(seatNumber);
-    }
-    
-    // Tüm koltuk doluluk verilerini temizleme methodu
-    public void clearAllOccupiedSeats() {
-        occupiedSeats.clear();
-    }
-    
+
 }

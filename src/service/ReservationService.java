@@ -26,7 +26,6 @@ public class ReservationService {
         this.tripRepository = tripRepository;
     }
     
-    // Make a reservation for a user on a specific trip and seat
     public boolean makeReservation(String userId, String tripId, String seatId) { 
         Optional<User> userOpt = userRepository.findById(userId);
         if (!userOpt.isPresent()) {
@@ -44,7 +43,7 @@ public class ReservationService {
         
         Optional<Seat> seatOpt = trip.getSeats().stream() 
                 .filter(seat -> String.valueOf(seat.getSeatNo()).equals(seatId))
-                .findFirst(); // Find the seat by its ID
+                .findFirst(); 
         
         if (!seatOpt.isPresent()) {
             throw new IllegalArgumentException("Seat does not exist on this trip");
@@ -71,7 +70,6 @@ public class ReservationService {
             throw new IllegalArgumentException("Reservation does not exist");
         }
         
-        // Get reservation to free up seats
         Reservation reservation = reservationRepository.findById(reservationId);
         if (reservation != null) {
             SeatStatusManager seatStatusManager = SeatStatusManager.getInstance();

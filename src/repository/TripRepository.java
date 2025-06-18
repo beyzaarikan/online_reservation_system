@@ -26,7 +26,7 @@ public class TripRepository {
         trips.add(trip);
     }
 
-    public Trip findByTripNo(String tripNo) { // Retrieve a trip by its trip number
+    public Trip findByTripNo(String tripNo) { 
         for (Trip trip : trips) {
             if (trip.getTripNo().equals(tripNo)) {
                 return trip;
@@ -43,16 +43,16 @@ public class TripRepository {
         return new ArrayList<>(trips);
     }
 
-    public void updateTrip(Trip trip) { // Update an existing trip by replacing it with a new one
+    public void updateTrip(Trip trip) { 
         Trip existingTrip = findByTripNo(trip.getTripNo());
         if (existingTrip != null) {
-            delete(existingTrip); // Remove the old trip
-            save(trip); // Add the updated trip
+            delete(existingTrip); 
+            save(trip); 
         } else {
             throw new IllegalArgumentException("Trip not found");
         }
     }
-    // Find trips based on start point, end point, and date
+    
     public List<Trip> findTrips(String startPoint, String endPoint, LocalDateTime date) { 
         return trips.stream()
                 .filter(trip -> trip.getStartPoint().equalsIgnoreCase(startPoint) &&

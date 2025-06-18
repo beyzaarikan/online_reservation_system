@@ -439,9 +439,7 @@ public class MyProfilePage extends BasePanel {
         return button;
     }
 
-    // Tab switching functionality
     private void switchTab(JButton activeTab, String tabType) {
-        // Reset all tab buttons
         Component[] components = activeTab.getParent().getComponents();
         for (Component comp : components) {
             if (comp instanceof JButton) {
@@ -451,14 +449,11 @@ public class MyProfilePage extends BasePanel {
             }
         }
         
-        // Set active tab
         activeTab.setSelected(true);
         activeTab.setForeground(Color.WHITE);
         
-        // Remove current content
         currentContentPanel.removeAll();
         
-        // Add new content based on tab type
         JPanel newContent = null;
         switch (tabType) {
             case "personal":
@@ -533,7 +528,7 @@ public class MyProfilePage extends BasePanel {
         titleSection.setOpaque(false);
         titleSection.setBorder(new EmptyBorder(0, 0, 40, 0));
         
-        JLabel titleLabel = new JLabel("🔐 Security Settings");
+        JLabel titleLabel = new JLabel(" Security Settings");
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
         titleLabel.setForeground(Color.WHITE);
         
@@ -591,7 +586,7 @@ public class MyProfilePage extends BasePanel {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 30));
         buttonPanel.setOpaque(false);
 
-        JButton updatePasswordButton = createButton("🔑 Update Password", new Color(139, 92, 246), true);
+        JButton updatePasswordButton = createButton(" Update Password", new Color(139, 92, 246), true);
         JButton cancelButton = createButton("Cancel", new Color(138, 92, 246), false);
 
         updatePasswordButton.addActionListener(e -> updatePassword());

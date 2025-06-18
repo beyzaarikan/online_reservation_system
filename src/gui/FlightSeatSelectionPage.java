@@ -107,7 +107,7 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
                 preReservedSeats.add(10);
                 preReservedSeats.add(14);
             } else {
-                // Economy class demo occupied seats
+                // Economy class 
                 preReservedSeats.add(15);
                 preReservedSeats.add(18);
                 preReservedSeats.add(22);
@@ -153,18 +153,14 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         mainPanel.setLayout(new BorderLayout());
         mainPanel.setOpaque(false);
 
-        // Header panel
         JPanel headerPanel = createHeaderPanel();
         
-        // Content panel
         JPanel contentPanel = new JPanel(new BorderLayout());
         contentPanel.setOpaque(false);
         contentPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Flight seat map panel with glassmorphism
         createFlightSeatMapPanel();
         
-        // Sidebar panel with glassmorphism
         JPanel sidebarPanel = createSidebarPanel();
 
         contentPanel.add(seatMapPanel, BorderLayout.CENTER);
@@ -741,7 +737,6 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         }
 
         try {
-            
             TripFactoryManager factoryManager = new TripFactoryManager();
             TripFactory flightFactory = factoryManager.getFactory("Flight");
             
@@ -752,14 +747,14 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
                 tripId,
                 fromAirport,
                 toAirport,
-                java.time.LocalDateTime.now().plusDays(1), // departure time
-                java.time.LocalDateTime.now().plusDays(1).plusHours(2), // arrival time
+                java.time.LocalDateTime.now().plusDays(1),
+                java.time.LocalDateTime.now().plusDays(1).plusHours(2), 
                 basePriceValue,
-                150, // total seats for flight
+                150, 
                 airline,
-                "2h 0m", // duration
+                "2h 0m", 
                 "In-flight entertainment, Meal service",
-                aircraft // flight number/aircraft
+                aircraft 
             );
             Trip actualTrip = flightRepository.findByTripNo(this.tripNo);
             if(actualTrip == null) {
@@ -775,7 +770,6 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
             String tripKey = this.tripNo;
             SeatStatusManager.getInstance().markSeatsAsOccupied(tripKey, selectedSeatUniqueIds);
 
-            // Create list of selected seats from the flight trip
             List<Seat> reservedSeats = new ArrayList<>();
             for (FlightSeatButton seatButton : selectedSeats) {
                 int seatNo = seatButton.getSeatId();
@@ -817,7 +811,6 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         }
     }
     
-    // Method to get the global reservation repository instance
     private ReservationRepository getGlobalReservationRepository() {
         return GlobalRepositoryManager.getInstance().getReservationRepository();
     }
@@ -827,7 +820,7 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
         private int seatId;
         private boolean isOccupied;
         private boolean isSelected;
-        private boolean isAisle; // isWindow removed
+        private boolean isAisle; 
         private boolean isPremium;
         private double price;
         private SeatManager seatManager;
@@ -839,8 +832,6 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
             this.isSelected = false;
             this.isAisle = isAisle;
             this.isPremium = isPremium;
-            
-            // Use Strategy pattern to calculate price
             this.price = calculateSeatPrice();
 
             setupButton();
@@ -862,7 +853,7 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
                 g2.setColor(new Color(220, 53, 69)); // Red
             } else if (isPremium) {
                 g2.setColor(new Color(255, 193, 7)); // Yellow
-            } else { // No special color for window seats
+            } else {
                 g2.setColor(new Color(75, 181, 67)); // Green
             }
             
@@ -895,7 +886,6 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
                 setForeground(Color.WHITE);
                 
                 String tooltip = String.format("Seat %s - $%.2f", seatLabel, price);
-                // Removed (Window) from tooltip
                 if (isAisle) tooltip += " (Aisle)";
                 if (isPremium) tooltip += " (Premium)";
                 
@@ -910,7 +900,6 @@ public class FlightSeatSelectionPage extends BasePanel implements Observer {
             double multiplier = 1.0;
 
             if (isPremium) multiplier += 0.3;
-            // Removed isWindow from price calculation
             return basePriceValue * multiplier;
         }
         

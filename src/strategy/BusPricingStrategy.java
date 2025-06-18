@@ -8,7 +8,7 @@ public class BusPricingStrategy implements PricingStrategy {
         double basePrice = trip.getBasePrice();
         double multiplier = 1.0;
         
-        // Premium seats (first 10 seats) cost 30% more
+        // Premium seats
         if (seatNumber ==1 || seatNumber == 2 || seatNumber == 11 || seatNumber == 20 || seatNumber == 21 || seatNumber == 22) {
             multiplier += 0.3;
         }
