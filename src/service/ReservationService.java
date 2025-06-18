@@ -1,5 +1,5 @@
 package service;
-
+ 
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
@@ -12,7 +12,7 @@ import models.User;
 import repository.ReservationRepository;
 import repository.TripRepository;
 import repository.UserRepository;
-import singleton.SeatStatusManager; // Import SeatStatusManager
+import singleton.SeatStatusManager; 
 
 public class ReservationService {
     private ReservationRepository reservationRepository;
@@ -28,24 +28,20 @@ public class ReservationService {
     }
     
     public boolean makeReservation(String userId, String tripId, String seatId) {
-        // Check if user exists
         Optional<User> userOpt = userRepository.findById(userId);
         if (!userOpt.isPresent()) {
             throw new IllegalArgumentException("User does not exist");
         }
         
-        // Check if trip exists
         Trip trip = tripRepository.findByTripNo(tripId);
         if (trip == null) {
             throw new IllegalArgumentException("Trip does not exist");
         }
         
-        // Check if seat is available
         if (!isSeatAvailable(tripId, seatId)) {
             throw new IllegalArgumentException("Seat is not available");
         }
         
-        // Find the specific seat from the trip
         Optional<Seat> seatOpt = trip.getSeats().stream()
                 .filter(seat -> String.valueOf(seat.getSeatNo()).equals(seatId))
                 .findFirst();
@@ -57,7 +53,7 @@ public class ReservationService {
         // Create reservation
         String reservationId = UUID.randomUUID().toString();
         Seat seat = seatOpt.get();
-        seat.reserve(); // Mark seat as reserved
+        seat.reserve(); 
         
         Reservation reservation = new Reservation(
             reservationId, 
@@ -71,7 +67,6 @@ public class ReservationService {
     }
 
     public boolean cancelReservation(String reservationId) {
-        // Check if reservation exists
         if (!reservationRepository.reservationExists(reservationId)) {
             throw new IllegalArgumentException("Reservation does not exist");
         }
@@ -79,7 +74,6 @@ public class ReservationService {
         // Get reservation to free up seats
         Reservation reservation = reservationRepository.findById(reservationId);
         if (reservation != null) {
-            // Get the SeatStatusManager instance
             SeatStatusManager seatStatusManager = SeatStatusManager.getInstance();
             Trip trip = reservation.getTrip();
             String tripKey;
@@ -92,10 +86,8 @@ public class ReservationService {
                 tripKey = trip.getTripNo();
             }
 
-            // Unmark each seat as occupied in SeatStatusManager
             for (Seat seat : reservation.getSeats()) {
-                seat.unreserve(); // Mark seat as unreserved in the Seat object
-                // Remove seat from SeatStatusManager's occupied list
+                seat.unreserve(); 
                 seatStatusManager.getOccupiedSeats(tripKey).remove(Integer.valueOf(seat.getSeatNo()));
             }
         }

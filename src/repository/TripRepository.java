@@ -9,15 +9,13 @@ import java.util.stream.Collectors;
 import models.Trip;
 
 public class TripRepository { 
-    private static TripRepository instance; // Singleton örneği
+    private static TripRepository instance; 
     private List<Trip> trips;
 
-    // Private constructor for Singleton pattern
-    private TripRepository() { // Constructor'ı private yaptık
+    private TripRepository() { 
         this.trips = new ArrayList<>();
     }
 
-    // Singleton erişim metodu
     public static synchronized TripRepository getInstance() {
         if (instance == null) {
             instance = new TripRepository();
@@ -45,36 +43,6 @@ public class TripRepository {
     public List<Trip> findAll() {
         return new ArrayList<>(trips);
     }
-    
-    public List<Trip> findByType(String tripType) {
-        return trips.stream()
-                .filter(trip -> trip.getTripType().equalsIgnoreCase(tripType))
-                .collect(Collectors.toList());
-    }
-
-    public List<Trip> findByDate(LocalDateTime date) {
-        return trips.stream()
-                .filter(trip -> trip.getDepartureTime().toLocalDate().equals(date.toLocalDate()))
-                .collect(Collectors.toList());
-    }
-
-    public List<Trip> findByStartPoint(String startPoint) {
-        return trips.stream()
-                .filter(trip -> trip.getStartPoint().equalsIgnoreCase(startPoint))
-                .collect(Collectors.toList());
-    }
-
-    public List<Trip> findByEndPoint(String endPoint) {
-        return trips.stream()
-                .filter(trip -> trip.getEndPoint().equalsIgnoreCase(endPoint))
-                .collect(Collectors.toList());
-    }
-
-    public List<Trip> findByPriceRange(double minPrice, double maxPrice) {
-        return trips.stream()
-                .filter(trip -> trip.getBasePrice() >= minPrice && trip.getBasePrice() <= maxPrice)
-                .collect(Collectors.toList());
-    }
 
     public void updateTrip(Trip trip) { //
         Trip existingTrip = findByTripNo(trip.getTripNo());
@@ -85,10 +53,7 @@ public class TripRepository {
             throw new IllegalArgumentException("Trip not found");
         }
     }
-    public boolean existsByTripNo(String tripNo) {
-        return trips.stream().anyMatch(trip -> trip.getTripNo().equals(tripNo));
-    }
-    
+
     public List<Trip> findTrips(String startPoint, String endPoint, LocalDateTime date) {
         return trips.stream()
                 .filter(trip -> trip.getStartPoint().equalsIgnoreCase(startPoint) &&

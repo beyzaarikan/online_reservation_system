@@ -11,14 +11,6 @@ public class ReservationRepository {
         this.reservationMap = new HashMap<>();
     }
     
-    public Reservation createReservation(String id, Reservation reservation) {
-        if (reservationMap.containsKey(id)) {
-            throw new IllegalArgumentException("Reservation with id " + id + " already exists.");
-        }
-        reservationMap.put(id, reservation);
-        return reservation;
-    }
-
     public void save(Reservation reservation) {
         reservationMap.put(reservation.getId(), reservation);
     }
@@ -31,19 +23,6 @@ public class ReservationRepository {
         return reservationMap.containsKey(id);
     }
     
-    public void deleteById(String id) {
-        reservationMap.remove(id);
-    }
-    
-    public void update(Reservation reservation) {
-        if (existsById(reservation.getId())) {
-            reservationMap.put(reservation.getId(), reservation);
-        } else {
-            throw new IllegalArgumentException("Reservation with id " + reservation.getId() + " does not exist.");
-        }
-    }
-    
-    // Additional methods needed by ReservationService
     public boolean reservationExists(String reservationId) {
         return reservationMap.containsKey(reservationId);
     }
@@ -51,17 +30,6 @@ public class ReservationRepository {
     public boolean deleteReservation(String reservationId) {
         if (reservationExists(reservationId)) {
             reservationMap.remove(reservationId);
-            return true;
-        }
-        return false;
-    }
-    
-    public boolean updateReservation(String reservationId, String newSeatId) {
-        Reservation reservation = reservationMap.get(reservationId);
-        if (reservation != null) {
-            // Logic to update seat would depend on your specific requirements
-            // This is a simplified implementation
-            reservationMap.put(reservationId, reservation);
             return true;
         }
         return false;

@@ -39,27 +39,4 @@ public class UserRepository {
     public void deleteById(String id) {
         userMap.remove(id);
     }
-    public boolean existsById(String id) {
-        return userMap.values().stream()
-                .anyMatch(user -> user.getId().equals(id));
-    }
-    public void clear() {
-        userMap.clear();
-    }
-    public int size() {
-        return userMap.size();
-    }
-    public boolean isEmpty() {
-        return userMap.isEmpty();
-    }
-    public boolean containsKey(String id) {
-        return userMap.containsKey(id);
-    }
-    public void update(User user) {
-        if (userMap.containsKey(user.getId())) {
-            userMap.put(user.getId(), user);
-        } else {
-            throw new IllegalArgumentException("User with id " + user.getId() + " does not exist.");
-        }
-    }
 }

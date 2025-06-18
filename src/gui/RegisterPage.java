@@ -364,7 +364,7 @@ public class RegisterPage extends BasePanel {
         
         try {
             // Kullanıcıyı kaydetme
-            userService.registerCustomer(username, password, email, username, "");
+            userService.registerCustomer(username, password, email);
             PageComponents.showStyledMessage("Success!", "Account created successfully!", this);
 
             // Navigate to login page

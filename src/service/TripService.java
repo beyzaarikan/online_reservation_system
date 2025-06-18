@@ -4,9 +4,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 import models.*;
 import repository.*;
-
+ 
 public class TripService {
     private TripRepository tripRepository;
+    
     public TripService(TripRepository tripRepository) {
         this.tripRepository = tripRepository;
     }
@@ -38,11 +39,6 @@ public class TripService {
         tripRepository.delete(trip);
     }
 
-    public double calculatePrice(Reservation reservation) {
-        int seatCount = reservation.getSeatCount();
-        return reservation.getTrip().getBasePrice() * seatCount;
-    }
-    
     public List<Trip> getAllTrips() {
         return tripRepository.findAll();
     }

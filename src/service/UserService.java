@@ -6,7 +6,7 @@ import models.Admin;
 import models.Customer;
 import models.User;
 import repository.UserRepository;
-
+ 
 public class UserService {
     private UserRepository userRepository;
 
@@ -14,7 +14,7 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public User registerCustomer(String username, String password, String email, String fullName, String phoneNumber) {
+    public User registerCustomer(String username, String password, String email) {
         if (userRepository.findByEmail(email).isPresent()) {
             throw new IllegalArgumentException("Username already exists");
         }
