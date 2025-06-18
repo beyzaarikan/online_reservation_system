@@ -8,5 +8,4 @@ public class Admin extends User {
     public String getUserType() {
         return "ADMIN";
     }
-    
 }

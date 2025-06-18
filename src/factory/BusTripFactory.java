@@ -1,6 +1,6 @@
 package factory;
-import models.*;
 import java.time.LocalDateTime;
+import models.*;
 
 public class BusTripFactory extends TripFactory {
     @Override

@@ -15,15 +15,15 @@ public class ReservationRepository {
         reservationMap.put(reservation.getId(), reservation);
     }
 
-    public Reservation findById(String id) {
+    public Reservation findById(String id) { // Retrieve a reservation by its ID
         return reservationMap.get(id);
     }
     
-    public boolean existsById(String id) {
+    public boolean existsById(String id) { // Check if a reservation exists by its ID
         return reservationMap.containsKey(id);
     }
     
-    public boolean reservationExists(String reservationId) {
+    public boolean reservationExists(String reservationId) { // Check if a reservation exists by its ID
         return reservationMap.containsKey(reservationId);
     }
     

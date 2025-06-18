@@ -9,7 +9,7 @@ public class CommandInvoker {
         history.push(command);
     }
     
-    public void undoLastCommand() {
+    public void undoLastCommand() { // Undo the last executed command
         if (!history.isEmpty()) {
             Command lastCommand = history.pop();
             lastCommand.undo();
@@ -17,8 +17,7 @@ public class CommandInvoker {
             System.out.println("No commands to undo");
         }
     }
-    
-    public void clearHistory() {
+    public void clearHistory() { 
         history.clear();
     }
 }

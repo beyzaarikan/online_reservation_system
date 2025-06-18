@@ -1,11 +1,10 @@
-// iremmozkaynak/online_reservation_system/online_reservation_system-28ba3ad86cb9b46dda1defc47db65f71a11cf40a/src/repository/TripRepository.java
+
 package repository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import models.Trip;
 
 public class TripRepository { 
@@ -27,7 +26,7 @@ public class TripRepository {
         trips.add(trip);
     }
 
-    public Trip findByTripNo(String tripNo) {
+    public Trip findByTripNo(String tripNo) { // Retrieve a trip by its trip number
         for (Trip trip : trips) {
             if (trip.getTripNo().equals(tripNo)) {
                 return trip;
@@ -44,17 +43,17 @@ public class TripRepository {
         return new ArrayList<>(trips);
     }
 
-    public void updateTrip(Trip trip) { //
+    public void updateTrip(Trip trip) { // Update an existing trip by replacing it with a new one
         Trip existingTrip = findByTripNo(trip.getTripNo());
         if (existingTrip != null) {
-            delete(existingTrip); //
-            save(trip); //
+            delete(existingTrip); // Remove the old trip
+            save(trip); // Add the updated trip
         } else {
             throw new IllegalArgumentException("Trip not found");
         }
     }
-
-    public List<Trip> findTrips(String startPoint, String endPoint, LocalDateTime date) {
+    // Find trips based on start point, end point, and date
+    public List<Trip> findTrips(String startPoint, String endPoint, LocalDateTime date) { 
         return trips.stream()
                 .filter(trip -> trip.getStartPoint().equalsIgnoreCase(startPoint) &&
                                 trip.getEndPoint().equalsIgnoreCase(endPoint) &&

@@ -17,7 +17,7 @@ public class MakeReservationCommand implements Command {
     }
     
     @Override
-    public void execute() {
+    public void execute() { // Attempt to make a reservation
         try {
             boolean success = reservationService.makeReservation(userId, tripId, seatId);
             if (success) {
@@ -29,7 +29,7 @@ public class MakeReservationCommand implements Command {
     }
     
     @Override
-    public void undo() {
+    public void undo() { // Attempt to cancel the reservation
         if (reservationId != null) {
             try {
                 reservationService.cancelReservation(reservationId);

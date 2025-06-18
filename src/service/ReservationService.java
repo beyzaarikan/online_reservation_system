@@ -3,7 +3,6 @@ package service;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
-
 import models.BusTrip;
 import models.Reservation;
 import models.Seat;
@@ -27,7 +26,8 @@ public class ReservationService {
         this.tripRepository = tripRepository;
     }
     
-    public boolean makeReservation(String userId, String tripId, String seatId) {
+    // Make a reservation for a user on a specific trip and seat
+    public boolean makeReservation(String userId, String tripId, String seatId) { 
         Optional<User> userOpt = userRepository.findById(userId);
         if (!userOpt.isPresent()) {
             throw new IllegalArgumentException("User does not exist");
@@ -42,9 +42,9 @@ public class ReservationService {
             throw new IllegalArgumentException("Seat is not available");
         }
         
-        Optional<Seat> seatOpt = trip.getSeats().stream()
+        Optional<Seat> seatOpt = trip.getSeats().stream() 
                 .filter(seat -> String.valueOf(seat.getSeatNo()).equals(seatId))
-                .findFirst();
+                .findFirst(); // Find the seat by its ID
         
         if (!seatOpt.isPresent()) {
             throw new IllegalArgumentException("Seat does not exist on this trip");

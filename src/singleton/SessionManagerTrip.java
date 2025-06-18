@@ -8,7 +8,6 @@ public class SessionManagerTrip {
     private SessionManagerTrip() {
         // Private constructor for Singleton
     }
-
     public static synchronized SessionManagerTrip getInstance() {
         if (instance == null) {
             instance = new SessionManagerTrip();
@@ -16,7 +15,7 @@ public class SessionManagerTrip {
         return instance;
     }
 
-    public void setCurrentTrip(Trip trip) {
+    public void setCurrentTrip(Trip trip) { 
         this.currentTrip = trip;
     }
 
@@ -24,7 +23,7 @@ public class SessionManagerTrip {
         return currentTrip;
     }
 
-    public boolean hasCurrentTrip() {
+    public boolean hasCurrentTrip() { // Geçerli bir seyahat var mı kontrol etme
         return currentTrip != null;
     }
 

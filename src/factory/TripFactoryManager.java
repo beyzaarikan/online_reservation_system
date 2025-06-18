@@ -3,7 +3,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TripFactoryManager {
-    private Map<String, TripFactory> factories = new HashMap<>();
+    // Map to hold different trip factories
+    private Map<String, TripFactory> factories = new HashMap<>(); 
     
     public TripFactoryManager() {
         factories.put("Bus", new BusTripFactory());
@@ -13,12 +14,13 @@ public class TripFactoryManager {
     public TripFactory getFactory(String tripType) {
         TripFactory factory = factories.get(tripType);
         if (factory == null) {
-            throw new IllegalArgumentException("Unsupported trip type: " + tripType);
-        }
+            throw new IllegalArgumentException("Unsupported trip type: " + tripType); 
+        } // Throw an exception if the trip type is not supported
         return factory;
     }
-    
-    public void registerFactory(String tripType, TripFactory factory) {
+
+    // Method to register a new trip factory
+    public void registerFactory(String tripType, TripFactory factory) { 
         factories.put(tripType, factory);
     }
 }
