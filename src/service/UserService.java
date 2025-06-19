@@ -6,7 +6,7 @@ import models.Admin;
 import models.Customer;
 import models.User;
 import repository.UserRepository;
- 
+   
 public class UserService {
     private UserRepository userRepository;
 
